@@ -7,11 +7,11 @@
 
         O P E R A T I N G   S Y S T E M  ·  S I T E   C O N T R O L
         ─────────────────────────────────────────────────────────────
-        design-testing — the eight screens, and the reasoning inside them
+        design-mockup — the eight screens, and the reasoning inside them
 ```
 
 ```
-[ 0.000 ]  branch ............................ design-testing
+[ 0.000 ]  branch ............................ design-mockup
 [ 0.001 ]  screens ........................... 8
 [ 0.002 ]  build step ........................ NONE
 [ 0.003 ]  dependencies ...................... NONE
@@ -524,7 +524,7 @@ Recorded so they are not re-discovered.
 
 ```
 remote ....... github.com/GB-Infrared/Portal-UI
-branch ....... design-testing
+branch ....... design-mockup
 nested ....... design-testing/ is its own git repository,
                separate from the tree that contains it
 ```
