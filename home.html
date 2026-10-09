@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -602,6 +602,29 @@ select:focus{border-color:var(--line-hi);background-color:var(--hover)}
 .kpistrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(146px,100%),1fr));
   gap:clamp(6px,.45vw,9px)}
 .kpistrip .kpi{min-height:60px;padding:8px 10px}
+/* LAST UPDATED, on every card but the peak.
+   A figure on a live page says nothing about how old it is. With refresh off,
+   or a plant that has stopped reporting, the strip can be showing the morning
+   while the header clock reads the afternoon - so each card now says when its
+   reading was taken. The peak is left out: it already carries a time, and that
+   is the time of the peak, not of the read. A second one beside it would be two
+   clocks on one card answering different questions.
+
+   The line is pinned to the FOOT of the card, which is why these cards now
+   stack from the top instead of centring: the labels share one line along the
+   top of the strip and the stamps share one along the bottom. Centred, every
+   card would put both wherever its own height left them.
+
+   Muted and small, because it is about the reading rather than a reading - it
+   must not compete with the figure above it. The clock glyph stands in for the
+   word "Updated", which does not fit beside a full date at this card width; the
+   glyph's label and the tooltip say it in words. */
+.kpistrip .kpi{justify-content:flex-start}
+.kpi .stamp{margin-top:auto;padding-top:6px;display:flex;align-items:center;gap:4px;
+  font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:-.2px;
+  color:var(--muted);white-space:nowrap;min-width:0}
+.kpi .stamp svg{flex:none}
+.kpi .stamp .t{overflow:hidden;text-overflow:ellipsis}
 
 /* ---------- v2 · fleet rail ---------- */
 /* No overscroll containment: this list sits inside a page that scrolls on a
@@ -764,22 +787,21 @@ select:focus{border-color:var(--line-hi);background-color:var(--hover)}
    Settings rather than being made again on each. The sign-in and the site
    overview never read it: they are the void either way.
 
-   DARK IS THE DEFAULT NOW, AND LIGHT IS THE CHOICE. It was the other way round.
-   The globe you arrive through is a night sky, and a portal that painted white
-   the instant you picked a site off it read as two products rather than one -
-   the arrival went void, void, white. So the portal opens in the room the site
-   overview handed it over in, and the switch in the header is there for anybody
-   who wants the daylit half of the palette.
+   LIGHT IS THE DEFAULT AGAIN, AND DARK IS THE CHOICE. For one revision it was
+   the other way round: the portal opened dark, so that sign-in, globe and
+   portal read as one night-sky room the whole way through. Light was asked for
+   as the state people land in, so the portal opens daylit and the switch in the
+   header is there for anybody who wants the dark half of the palette. The
+   sign-in and the globe are still the void - only the portal behind them moved.
 
-   THE DEFAULT IS ON THE TAG, NOT IN THIS SCRIPT. <html data-theme="dark"> is in
-   the markup, and all this line does is TAKE IT OFF again for somebody who
-   chose light. Written the other way round - script adds dark - the default
-   would live behind a try/catch, and a browser with storage blocked would open
-   light: the fallback would be the one theme nobody asked for. This way storage
-   can fail outright and the page is still what it says it is. */
+   THE DEFAULT IS STILL ON THE TAG, NOT IN THIS SCRIPT. <html> carries no
+   data-theme, and no data-theme IS light; all this line does is PUT dark on for
+   somebody who chose it. That leaves the try/catch on the right side: a browser
+   with storage blocked cannot read anybody's choice, so it opens in the
+   default, which is the theme the page says it is. */
 (function(){
   var KEY='enerops-theme', root=document.documentElement;
-  try{ if(localStorage.getItem(KEY)==='light') root.removeAttribute('data-theme'); }catch(e){}
+  try{ if(localStorage.getItem(KEY)==='dark') root.setAttribute('data-theme','dark'); }catch(e){}
   function say(){
     var b=document.getElementById('themebtn');
     if(!b) return;
@@ -879,6 +901,7 @@ select:focus{border-color:var(--line-hi);background-color:var(--hover)}
         <div class="val"><span id="k-pw">376.8</span><span class="u">kW</span></div>
         <div class="meterbar"><i id="k-pw-bar" style="width:15%"></i></div>
         <div class="sub warn"><span id="k-pw-pct">15</span>% of <span id="k-cap">2500</span> kW capacity</div>
+        <div class="stamp" title="Last updated"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Last updated"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg><span class="t">—</span></div>
       </div>
       <div class="kpi">
         <div class="lbl">Peak power today</div>
@@ -893,31 +916,37 @@ select:focus{border-color:var(--line-hi);background-color:var(--hover)}
         <!-- a number on its own says nothing about whether the day is going
              well; against yesterday at the same hour, it does -->
         <div class="sub"><span class="delta" id="k-eday-d">—</span> vs yesterday</div>
+        <div class="stamp" title="Last updated"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Last updated"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg><span class="t">—</span></div>
       </div>
       <div class="kpi">
         <div class="lbl">Plant energy</div>
         <span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4.5 13.5H11L9.8 22 19 10h-6.6L13 2Z"/></svg></span>
         <div class="val"><span id="k-etot">101158.90</span><span class="u">kWh</span></div>
+        <div class="stamp" title="Last updated"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Last updated"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg><span class="t">—</span></div>
       </div>
       <div class="kpi">
         <div class="lbl">Performance ratio</div>
         <span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4.2-4.6"/></svg></span>
         <div class="val"><span id="k-pr">0.0</span><span class="u">%</span></div>
+        <div class="stamp" title="Last updated"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Last updated"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg><span class="t">—</span></div>
       </div>
       <div class="kpi">
         <div class="lbl">Irradiance</div>
         <span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6"/></svg></span>
         <div class="val"><span id="k-irr">0</span><span class="u">W/m2</span></div>
+        <div class="stamp" title="Last updated"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Last updated"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg><span class="t">—</span></div>
       </div>
       <div class="kpi">
         <div class="lbl">Revenue generated</div>
         <span class="ico">₹</span>
         <div class="val"><span class="u" style="margin:0 3px 0 0">₹</span><span id="k-rev">287291.28</span></div>
+        <div class="stamp" title="Last updated"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Last updated"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg><span class="t">—</span></div>
       </div>
       <div class="kpi">
         <div class="lbl">CO₂ avoided</div>
         <span class="ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M20 4c0 8-5 12-11 12H5c0-8 5-12 11-12h4Z"/><path d="M5 20c2.5-4 5.5-6.5 9-8"/></svg></span>
         <div class="val"><span id="k-co2">71823.82</span><span class="u">kg</span></div>
+        <div class="stamp" title="Last updated"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Last updated"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg><span class="t">—</span></div>
       </div>
   </div>
 
@@ -1996,6 +2025,26 @@ let peakP=0,peakT=SUNRISE;
 (function(){const end=Math.min(nowT(),SUNSET);
   for(let t=SUNRISE;t<=end;t+=1/60){const v=plantP(t);if(v>peakP){peakP=v;peakT=t;}}})();
 
+/* ---------- when the strip was last read ----------
+   Every card the tick fills is read on the same pass, so they share its time.
+   The date is the demo's today - 27 Jul 2026, the day the charts are fixed to -
+   plus however many midnights the page has been left open across: fmtT wraps
+   the hour, so without the day count a page left running overnight would stamp
+   the new day's readings with the old day's date.
+
+   With refresh off the tick stops, and so do these. The stamps freeze at the
+   last read while the header clock carries on, and that gap is what they are
+   for. */
+const STAMPS=Array.prototype.slice.call(document.querySelectorAll('.kpistrip .stamp'));
+function stampStrip(t){
+  const d=new Date(2026,6,TODAY+Math.floor(t/24));
+  const day=d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear();
+  STAMPS.forEach(function(el){
+    el.querySelector('.t').textContent=day+', '+fmtT(t);
+    el.title='Last updated '+day+', '+fmtT(t,true);
+  });
+}
+
 /* ---------- live tick ---------- */
 let TICK=2500,timer=null;
 function tick(){
@@ -2036,6 +2085,7 @@ function tick(){
   /* PR: how much of the irradiance-implied output the plant is actually making */
   $('k-pr').textContent=(ir>0 ? (tp/CAP)/(ir/1000)*100 : 0).toFixed(1);
   $('clk').textContent=fmtT(nt,true);
+  stampStrip(nt);
   drawPw();
 }
 /* The chosen interval lives here rather than being read back out of a control.

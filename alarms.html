@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -42,6 +42,8 @@
   --blue-soft:rgba(26,115,200,.12);
   --red:#d92d20;           /* offline / alarms           */
   --red-soft:rgba(217,45,32,.1);
+  --crit:#8c1109;          /* critical - the deep red Home uses */
+  --crit-soft:rgba(140,17,9,.1);
   --amber:#dc7a06;         /* yield / deviations         */
   --amber-soft:rgba(220,122,6,.12);
   --brand:#a87b0f;         /* wordmark · gold            */
@@ -114,6 +116,8 @@ html[data-theme="dark"]{
   --blue-soft:rgba(127,178,238,.16);
   --red:#ff6b5e;
   --red-soft:rgba(255,107,94,.14);
+  --crit:#ff9d94;          /* as on Home: deep red vanishes on the void */
+  --crit-soft:rgba(255,157,148,.14);
   --crit:#ff9d94;
   --amber:#f0b74a;
   --amber-soft:rgba(240,183,74,.15);
@@ -460,13 +464,19 @@ select:focus{border-color:var(--line-hi);background-color:var(--hover)}
 .sum.alarm .v{color:var(--red)}
 .sum.warn .v{color:var(--amber)}
 .sum.ok .v{color:var(--green)}
+.sum.crit .v{color:var(--crit)}
+.sum.event .v{color:var(--muted)}
+.sum.all .v{color:var(--text)}
 
 /* ---------- card + table ---------- */
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg)}
 .card .chead{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:13px 16px 10px}
 .chead .title{font-size:14.5px;font-weight:700;white-space:nowrap;flex:none}
 .chead .tools{margin-left:auto;display:flex;align-items:center;gap:8px}
-.ttools{display:flex;align-items:center;gap:8px;padding:0 16px 13px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
+/* the rule under the head is the one the toolbar row used to draw; the row
+   went when EXPORT CSV moved up beside the title, the line it put between the
+   card's head and its table did not need to */
+.card .chead{border-bottom:1px solid var(--line-soft)}
 .tbtn{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;
   letter-spacing:.04em;background:transparent;border:1px solid var(--line);color:var(--muted)}
 .tbtn:hover{color:var(--text);border-color:var(--line-hi);background:var(--hover)}
@@ -474,13 +484,14 @@ select:focus{border-color:var(--line-hi);background-color:var(--hover)}
 table{width:100%;min-width:820px}
 thead th{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
   padding:9px 14px;border-bottom:1px solid var(--line-soft);text-align:center;white-space:nowrap}
-/* every column sorts: an alarm table is read by "newest", "worst" or "which
-   device", and which of those matters changes with the question being asked */
-thead th.so{cursor:pointer;user-select:none}
-thead th.so:hover{color:var(--text)}
-thead th .ar{margin-left:5px;font-size:8px;color:var(--faint)}
-thead th.on{color:var(--text)}
-thead th.on .ar{color:var(--green)}
+/* THE COLUMNS NO LONGER SORT. Every heading was click-to-sort, with a triangle
+   on the active one, so the log could be read by "worst" or "which device" as
+   well as by "newest". It went with the day headings below: the log is now
+   read down the clock, newest first, and a day only stays under its heading
+   while the rows stay in time order. Severity and device are still narrowed in the bar
+   above, which answers "worst" and "which device" without reordering anything.
+   The triangle and the click went together - a heading that still reordered
+   the table with no mark saying so would be worse than either. */
 /* the header the table keeps before data arrives - stated, but plainly not a
    reading, so nobody mistakes the shape for content */
 thead th.ph{color:var(--faint);font-weight:600}
@@ -504,12 +515,25 @@ tbody td.dim{color:var(--faint);font-weight:600}
    does not own its own edges. Only bottom borders are ever set here, so nothing
    doubles up and the table looks exactly as it did. */
 table{border-collapse:separate;border-spacing:0}
+/* ONE HEADING PER DAY - "Mon · 27 Jul", and how many alarms that day holds.
+   The day is the unit an operator talks about ("what came in yesterday"), so
+   it is the one that gets a heading. The count is the whole day's under the
+   current filters, not the page's - a day that runs over a page break repeats
+   its heading at the top of the next page with the same number.
+
+   A heading is not a reading, so it does not lift under the pointer, and the
+   row popover skips it (it is one cell, which that script already passes over). */
+tbody tr.dh td{padding:16px 14px 7px;text-align:left;border-bottom:1px solid var(--line);
+  font-family:var(--mono);white-space:nowrap}
+tbody tr.dh:first-child td{padding-top:11px}
+.dh .d{font-size:12px;font-weight:800;color:var(--brand);letter-spacing:.01em}
+.dh .n{margin-left:10px;font-size:10.5px;font-weight:600;color:var(--muted)}
 tbody tr{transition:background-color .12s ease,box-shadow .12s ease}
-tbody tr:hover{background:var(--row-hover);position:relative;z-index:1;
+tbody tr:not(.dh):hover{background:var(--row-hover);position:relative;z-index:1;
   box-shadow:inset 0 0 0 1px var(--line-hi),0 10px 22px -12px var(--shadow),0 2px 6px -4px var(--shadow)}
 /* the readings come up to full strength with it; a dash stays a dash, because a
    cell with nothing in it has nothing to bring forward */
-tbody tr:hover td:not(.nil){color:var(--text)}
+tbody tr:not(.dh):hover td:not(.nil){color:var(--text)}
 .empty-note{display:flex;align-items:center;justify-content:center;
   color:var(--faint);font-size:12.5px;font-family:var(--mono)}
 .empty-note.tall{min-height:190px}
@@ -522,6 +546,7 @@ tbody tr:hover td:not(.nil){color:var(--text)}
 .sev.alarm{color:var(--red);background:var(--red-soft)}      .sev.alarm::before{background:var(--red)}
 .sev.warn{color:var(--amber);background:var(--amber-soft)}   .sev.warn::before{background:var(--amber)}
 .sev.event{color:var(--muted);background:var(--panel-2)}     .sev.event::before{background:var(--faint)}
+.sev.critical{color:var(--crit);background:var(--crit-soft)} .sev.critical::before{background:var(--crit)}
 .stt{font-family:var(--sans);font-size:9.5px;font-weight:800;letter-spacing:.08em}
 .stt.active{color:var(--red)}
 .stt.resolved{color:var(--green)}
@@ -625,22 +650,21 @@ tbody tr:hover td:not(.nil){color:var(--text)}
    Settings rather than being made again on each. The sign-in and the site
    overview never read it: they are the void either way.
 
-   DARK IS THE DEFAULT NOW, AND LIGHT IS THE CHOICE. It was the other way round.
-   The globe you arrive through is a night sky, and a portal that painted white
-   the instant you picked a site off it read as two products rather than one -
-   the arrival went void, void, white. So the portal opens in the room the site
-   overview handed it over in, and the switch in the header is there for anybody
-   who wants the daylit half of the palette.
+   LIGHT IS THE DEFAULT AGAIN, AND DARK IS THE CHOICE. For one revision it was
+   the other way round: the portal opened dark, so that sign-in, globe and
+   portal read as one night-sky room the whole way through. Light was asked for
+   as the state people land in, so the portal opens daylit and the switch in the
+   header is there for anybody who wants the dark half of the palette. The
+   sign-in and the globe are still the void - only the portal behind them moved.
 
-   THE DEFAULT IS ON THE TAG, NOT IN THIS SCRIPT. <html data-theme="dark"> is in
-   the markup, and all this line does is TAKE IT OFF again for somebody who
-   chose light. Written the other way round - script adds dark - the default
-   would live behind a try/catch, and a browser with storage blocked would open
-   light: the fallback would be the one theme nobody asked for. This way storage
-   can fail outright and the page is still what it says it is. */
+   THE DEFAULT IS STILL ON THE TAG, NOT IN THIS SCRIPT. <html> carries no
+   data-theme, and no data-theme IS light; all this line does is PUT dark on for
+   somebody who chose it. That leaves the try/catch on the right side: a browser
+   with storage blocked cannot read anybody's choice, so it opens in the
+   default, which is the theme the page says it is. */
 (function(){
   var KEY='enerops-theme', root=document.documentElement;
-  try{ if(localStorage.getItem(KEY)==='light') root.removeAttribute('data-theme'); }catch(e){}
+  try{ if(localStorage.getItem(KEY)==='dark') root.setAttribute('data-theme','dark'); }catch(e){}
   function say(){
     var b=document.getElementById('themebtn');
     if(!b) return;
@@ -773,17 +797,23 @@ tbody tr:hover td:not(.nil){color:var(--text)}
 
   <!-- ======================= ALARM DATA ======================= -->
   <div class="card">
-    <div class="chead">
-      <div class="title">Alarm Data</div>
-    </div>
-    <!-- No column picker here. An alarm row is eight fields that only mean
+    <!-- EXPORT CSV sits on the right of the title now. It had a row of its own
+         under the title, on the left, where it was the first thing the eye met
+         on the way from the heading into the table - a toolbar row holding one
+         button. On the right of the head it is where a card's tools are on every
+         other card in the portal, and the row it took is the table's again.
+
+         No column picker here. An alarm row is eight fields that only mean
          something together - when it arrived, when it cleared, what it was, how
          bad, on which device at which site - and hiding any of them leaves a
          record you cannot act on or cite. The bar above narrows WHICH alarms;
          nothing needs to narrow which parts of one. -->
-    <div class="ttools">
-      <button class="tbtn" type="button" onclick="exportCsv()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4.2-4.2M12 15l4.2-4.2M4.5 20h15"/></svg>EXPORT CSV</button>
+    <div class="chead">
+      <div class="title">Alarm Data</div>
+      <div class="tools">
+        <button class="tbtn" type="button" onclick="exportCsv()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4.2-4.2M12 15l4.2-4.2M4.5 20h15"/></svg>EXPORT CSV</button>
+      </div>
     </div>
     <div class="tablewrap">
       <table>
@@ -880,9 +910,9 @@ let PSEL=[];                 /* empty = every plant, as everywhere else on this 
 const FAULTS=[
   {t:'Communication Error',        sev:'alarm'},
   {t:'DC Insulation Fault',        sev:'alarm'},
-  {t:'Grid Over Voltage',          sev:'alarm'},
+  {t:'Grid Over Voltage',          sev:'critical'},
   {t:'Grid Under Frequency',       sev:'alarm'},
-  {t:'Earth Fault',                sev:'alarm'},
+  {t:'Earth Fault',                sev:'critical'},
   {t:'Output Below Expected',      sev:'warn'},
   {t:'String Current Deviation',   sev:'warn'},
   {t:'Over Temperature',           sev:'warn'},
@@ -911,7 +941,7 @@ function buildLog(n,plant,from,to){
        chosen window, so the two date fields describe the list rather than
        labelling it. */
     const rec=from+rnd()*span;
-    const open=rnd()<(f.sev==='alarm'?.45:f.sev==='warn'?.3:.05);
+    const open=rnd()<(f.sev==='alarm'||f.sev==='critical'?.45:f.sev==='warn'?.3:.05);
     /* An alarm that had not cleared by the end of the window is still OPEN at
        the end of the window. Clamping the clear time to the window edge instead
        stacked a dozen rows on the same second - a readout that looks stuck, and
@@ -982,9 +1012,8 @@ const COLDEF=[
    still ask this one function rather than each keeping its own list. */
 const shown=()=>COLDEF.slice();
 
-/* ---------- filter + sort + page state ---------- */
+/* ---------- filter + order + page state ---------- */
 let F={dev:[],sev:[],status:[]};          /* empty list = no narrowing at all */
-let SORT={k:'recv',dir:-1};                /* newest first: the default question */
 let PAGE=0, PER=100;
 
 function filtered(){
@@ -995,18 +1024,22 @@ function filtered(){
     return true;
   });
 }
-const SEVRANK={alarm:0,warn:1,event:2};
+/* Newest first, always - the one order the log has now that the headings do
+   not sort. The export asks this same function, so the file is in the order
+   the table is. */
 function sorted(rows){
-  const k=SORT.k, d=SORT.dir;
-  return rows.slice().sort(function(a,b){
-    let x,y;
-    if(k==='sev'){ x=SEVRANK[a.sev]; y=SEVRANK[b.sev]; }
-    else if(k==='recv'){ x=a.recv; y=b.recv; }
-    else if(k==='res'){ x=a.res==null?-Infinity:a.res; y=b.res==null?-Infinity:b.res; }
-    else { x=String(a[k]); y=String(b[k]); }
-    if(x<y) return -1*d; if(x>y) return 1*d; return 0;
-  });
+  return rows.slice().sort(function(a,b){ return b.recv-a.recv; });
 }
+/* The day an alarm arrived on, on the local clock the times are printed in -
+   not Math.floor(ms/86400000), which counts UTC days and would start each
+   heading at half past five in the morning here. */
+function dayKey(ms){
+  const d=new Date(ms);
+  return (d.getFullYear()*100+d.getMonth())*100+d.getDate();
+}
+const WDAY=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const dayName=ms=>{ const d=new Date(ms); return WDAY[d.getDay()]+' · '+d.getDate()+' '+MONS[d.getMonth()]; };
 
 /* ---------- the table ---------- */
 /* 08.08.2026 16:52:35 - the date first, and the clock in 24 hours. An alarm
@@ -1040,8 +1073,6 @@ const RAW={
   dev:   a=>a.dev
 };
 
-const ARROW=d=>'<span class="ar">'+(d<0?'▼':'▲')+'</span>';
-
 function renderTable(){
   const cols=shown();
   const rows=sorted(filtered());
@@ -1049,20 +1080,28 @@ function renderTable(){
   if(PAGE>=pages) PAGE=pages-1;
   const from=PAGE*PER, slice=rows.slice(from,from+PER);
 
+  /* each day's count over the whole filtered list, so a heading repeated after
+     a page break still counts the whole day */
+  const perDay={};
+  rows.forEach(function(a){ const k=dayKey(a.recv); perDay[k]=(perDay[k]||0)+1; });
+  let lastDay=null;
+  const head=function(a){
+    const k=dayKey(a.recv); if(k===lastDay) return '';
+    lastDay=k;
+    return '<tr class="dh"><td colspan="'+cols.length+'"><span class="d">'+dayName(a.recv)+'</span>'+
+           '<span class="n">'+perDay[k]+(perDay[k]===1?' alarm':' alarms')+'</span></td></tr>';
+  };
+
   /* Before a backend is wired there is nothing to name the columns with, so the
      table keeps its shape and says so, rather than collapsing to a bare box. */
   if(!rows.length&&!LOG.length){
     $('thead').innerHTML='<tr>'+cols.map(c=>'<th class="ph">'+c.t+'</th>').join('')+'</tr>';
     $('tbody').innerHTML='<tr><td colspan="'+cols.length+'"><div class="empty-note tall">No rows</div></td></tr>';
   } else {
-    $('thead').innerHTML='<tr>'+cols.map(function(c){
-      const on=SORT.k===c.k;
-      return '<th class="so'+(on?' on':'')+'" onclick="sortBy(\''+c.k+'\')" title="Sort by '+c.t+'">'+
-             c.t+(on?ARROW(SORT.dir):'')+'</th>';
-    }).join('')+'</tr>';
+    $('thead').innerHTML='<tr>'+cols.map(c=>'<th>'+c.t+'</th>').join('')+'</tr>';
     $('tbody').innerHTML=slice.length
       ? slice.map(function(a){
-          return '<tr>'+cols.map(function(c){
+          return head(a)+'<tr>'+cols.map(function(c){
             const cell=CELL[c.k](a);
             return '<td'+(cell[0]?' class="'+cell[0]+'"':'')+'>'+cell[1]+'</td>';
           }).join('')+'</tr>';
@@ -1078,30 +1117,32 @@ function renderTable(){
   renderSummary(rows);
 }
 
-window.sortBy=function(k){
-  if(SORT.k===k) SORT.dir=-SORT.dir; else { SORT.k=k; SORT.dir=(k==='recv'||k==='res')?-1:1; }
-  PAGE=0; renderTable();
-};
 window.pageBy=function(d){ PAGE=Math.max(0,PAGE+d); renderTable(); };
 $('per').addEventListener('change',function(){ PER=parseInt(this.value,10); PAGE=0; renderTable(); });
 
 /* ---------- summary ----------
    Counted off the SAME filtered rows the table is showing, so the tiles and the
    list can never disagree about how many alarms there are. */
+/* All, then the two states every alarm is in one of, then the four severities.
+   The severities count every row - active and resolved - so they add up to All
+   just as Active and Resolved do. They used to count active rows only, which
+   made sense while there was no All tile to add up to. */
 function renderSummary(rows){
-  const act=rows.filter(a=>a.status==='active');
-  const alarm=act.filter(a=>a.sev==='alarm').length;
-  const warn=act.filter(a=>a.sev==='warn').length;
-  const resolved=rows.length-act.length;
+  const act=rows.filter(a=>a.status==='active').length;
+  const of=k=>rows.filter(a=>a.sev===k).length;
+  const alarm=of('alarm'), event=of('event'), warn=of('warn'), crit=of('critical');
   /* A count and what it is counting, nothing else. The caption under each number
      was restating the tile's own label - "Needs action now" under Alarm, "Watch"
      under Warning - which is a line of type per tile that tells a reader nothing
      the heading did not. */
   $('sumbar').innerHTML=
-    tile('Active alarms',act.length,act.length?'alarm':'ok')+
+    tile('All',rows.length,'all')+
+    tile('Active',act,act?'alarm':'ok')+
+    tile('Resolved',rows.length-act,'ok')+
     tile('Alarm',alarm,alarm?'alarm':'ok')+
+    tile('Event',event,'event')+
     tile('Warning',warn,warn?'warn':'ok')+
-    tile('Resolved',resolved,'ok');
+    tile('Critical',crit,crit?'crit':'ok');
 }
 function tile(k,v,cls){
   return '<div class="sum '+cls+'"><div class="k">'+k+'</div>'+
@@ -1218,7 +1259,7 @@ function multiSelect(o){
 multiSelect({mount:'m-dev',key:'dev',any:'All devices',head:'Devices',
   options:DEVICES.map(function(d){ return {v:d,t:d}; })});
 multiSelect({mount:'m-sev',key:'sev',any:'Any severity',head:'Severity',
-  options:[{v:'alarm',t:'Alarm'},{v:'warn',t:'Warning'},{v:'event',t:'Event'}]});
+  options:[{v:'alarm',t:'Alarm'},{v:'event',t:'Event'},{v:'warn',t:'Warning'},{v:'critical',t:'Critical'}]});
 multiSelect({mount:'m-st',key:'status',any:'Any status',head:'Status',
   options:[{v:'active',t:'Active'},{v:'resolved',t:'Resolved'}]});
 

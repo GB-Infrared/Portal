@@ -48,7 +48,7 @@ no toolchain on it.
 | 2 | `plants.html` | 3,488 | **2.24 MB** | Site Control. The globe — the whole planet, falling to the fleet, landing on terrain. |
 | 3 | `home.html` | 2,352 | 130 KB | Portfolio dashboard: KPI tiles, power-vs-irradiance, energy, plant KPI. |
 | 4 | `monitoring.html` | 2,087 | 111 KB | Device rail, live power curve, gauge, history table. |
-| 5 | `alarms.html` | 1,496 | 78 KB | The alarm log, with device / severity / status filters and a window. |
+| 5 | `alarms.html` | 1,496 | 78 KB | The alarm log, newest first under a heading per day, with device / severity / status filters and a window. |
 | 6 | `analysis.html` | 2,367 | 118 KB | Multi-device parameter comparison. **One frame, four series.** |
 | 7 | `kpi.html` | 1,710 | 89 KB | One site, one metric, examined closely: actual vs simulated vs forecast. |
 | 8 | `settings.html` | 3,268 | 162 KB | Ten panes: profile, assets, system config, access management. |
@@ -76,7 +76,7 @@ pages that happen to link to each other.
    ──────────                ───────────               ─────────
    the void                  the globe                 the portal
    stars · limb      ──▶     whole planet      ──▶     tiles · charts
-   sign in                   fall to the fleet         dark by default
+   sign in                   fall to the fleet         light by default
                              land on terrain
         │                          │                        │
         └── the horizon RISES      └── one click on a        └── the room the
@@ -85,10 +85,12 @@ pages that happen to link to each other.
             approach
 ```
 
-**Nothing in this sequence changes character.** The sign-in is a void, the globe
-is a void, and since this revision the portal opens **dark** so the arrival is one
-room the whole way through. Light is still there — it is what the switch in the
-header is for — but it is a choice somebody makes, not the state they land in.
+**The sign-in is a void, the globe is a void, and the portal opens light.** For
+one revision it opened **dark**, so the arrival was one night-sky room the whole
+way through; light was asked for as the state people land in, so it is the
+default again. Dark is still there — it is what the switch in the header is for —
+and it still carries the sign-in's sky behind its glass, so somebody who wants
+the arrival unbroken is one click from it.
 
 ---
 
@@ -138,18 +140,18 @@ wearing a fault colour while producing normally.
 
 ```
 storage key ....... localStorage['enerops-theme']
-values ............ 'dark' (default) | 'light'
-markup ............ <html lang="en" data-theme="dark">
+values ............ 'light' (default) | 'dark'
+markup ............ <html lang="en">   — no data-theme is light
 applied ........... head script, before first paint
 carries ........... home · monitoring · alarms · analysis · kpi · settings
 no toggle ......... login · plants — they are the void by design
 ```
 
-**The default lives on the tag, not in the script.** `data-theme="dark"` is in the
-markup and the head script only ever *takes it off* for somebody who chose light.
-Written the other way round the default sits behind a `try/catch`, and a browser
-with storage blocked opens light — the one theme nobody asked for. This way
-storage can fail outright and the page is still what it says it is.
+**The default lives on the tag, not in the script.** The `<html>` tag carries no
+`data-theme`, which is light, and the head script only ever *puts dark on* for
+somebody who chose it. Storage can fail outright — blocked, cleared, a private
+window — and the page still opens in the default, because the `try/catch` only
+guards somebody's *choice*, never the default itself.
 
 In dark, the portal also carries the **sign-in's own sky** at about a third
 amplitude — three radial washes on `html`, so the glass panels have something to
@@ -287,7 +289,7 @@ Performance     PR % · CUF % · SPEC_YIELD kWh/kWp
 ### Storage keys
 
 ```
-enerops-theme            'dark' | 'light'         the theme choice
+enerops-theme            'light' | 'dark'         the theme choice
 enerops-plant            site id                  which site the portal is on
 enerops-operator         email                    who signed in
 enerops-analysis-views   JSON                     saved Analysis queries

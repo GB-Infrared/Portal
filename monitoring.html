@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -807,22 +807,21 @@ td.warn{color:var(--amber)}
    Settings rather than being made again on each. The sign-in and the site
    overview never read it: they are the void either way.
 
-   DARK IS THE DEFAULT NOW, AND LIGHT IS THE CHOICE. It was the other way round.
-   The globe you arrive through is a night sky, and a portal that painted white
-   the instant you picked a site off it read as two products rather than one -
-   the arrival went void, void, white. So the portal opens in the room the site
-   overview handed it over in, and the switch in the header is there for anybody
-   who wants the daylit half of the palette.
+   LIGHT IS THE DEFAULT AGAIN, AND DARK IS THE CHOICE. For one revision it was
+   the other way round: the portal opened dark, so that sign-in, globe and
+   portal read as one night-sky room the whole way through. Light was asked for
+   as the state people land in, so the portal opens daylit and the switch in the
+   header is there for anybody who wants the dark half of the palette. The
+   sign-in and the globe are still the void - only the portal behind them moved.
 
-   THE DEFAULT IS ON THE TAG, NOT IN THIS SCRIPT. <html data-theme="dark"> is in
-   the markup, and all this line does is TAKE IT OFF again for somebody who
-   chose light. Written the other way round - script adds dark - the default
-   would live behind a try/catch, and a browser with storage blocked would open
-   light: the fallback would be the one theme nobody asked for. This way storage
-   can fail outright and the page is still what it says it is. */
+   THE DEFAULT IS STILL ON THE TAG, NOT IN THIS SCRIPT. <html> carries no
+   data-theme, and no data-theme IS light; all this line does is PUT dark on for
+   somebody who chose it. That leaves the try/catch on the right side: a browser
+   with storage blocked cannot read anybody's choice, so it opens in the
+   default, which is the theme the page says it is. */
 (function(){
   var KEY='enerops-theme', root=document.documentElement;
-  try{ if(localStorage.getItem(KEY)==='light') root.removeAttribute('data-theme'); }catch(e){}
+  try{ if(localStorage.getItem(KEY)==='dark') root.setAttribute('data-theme','dark'); }catch(e){}
   function say(){
     var b=document.getElementById('themebtn');
     if(!b) return;
@@ -1087,9 +1086,13 @@ td.warn{color:var(--amber)}
            shows AND what the CSV carries. Time stamp is not optional - a reading
            without its time is not a reading. -->
       <div class="ttools">
+        <!-- FILTER, not COLUMNS. The button named the mechanism - it ticks columns
+             on and off - where the word a reader looks for is what it is for: it
+             filters what the table shows and what the CSV carries. The three-bar
+             column glyph went with the word, for a funnel. -->
         <div class="colpick" id="colpick">
           <button class="tbtn" id="colbtn" type="button" aria-expanded="false" onclick="colToggle(event)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 4.5v15M12 4.5v15M19 4.5v15"/></svg>COLUMNS</button>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6.2 7.3v6l-3.6 1.8v-7.8L4 5z"/></svg>FILTER</button>
           <div class="colpanel" id="colpanel" hidden></div>
         </div>
         <button class="tbtn" type="button" onclick="exportCsv()">
