@@ -2,7 +2,7 @@ import { request } from './client';
 import { EP } from './endpoints';
 import * as A from './adapters';
 import type {
-  Alarm, AlarmStatus, DeviceLive, TimeSeries, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric,
+  Alarm, AlarmStatus, DeviceLive, TimeSeries, KpiBucket, KpiMetric, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric,
   LoginResult, Site, SiteSummary, User,
 } from './types';
 
@@ -88,4 +88,9 @@ export async function getTimeSeries(siteId: string, q: SeriesQuery, o: Sig = {})
     query: { devices: q.devices, param: q.param, from: q.from, to: q.to, interval: q.interval, agg: q.agg },
     signal: o.signal,
   }));
+}
+
+/** granularity "day": every day of `month` in `year`. "month": every month of `year`. */
+export async function getKpi(siteId: string, q: { metric: KpiMetric; granularity: 'day' | 'month'; year: number; month?: number }, o: Sig = {}): Promise<KpiBucket[]> {
+  return A.adaptKpiBuckets(await request(EP.kpi(siteId), { query: { ...q }, signal: o.signal }));
 }

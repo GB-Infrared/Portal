@@ -43,7 +43,7 @@ export function MonthPicker({ year, month, onPick, label = 'Month & year', id, y
 
   return (
     <div className="mpick" id={id} ref={root}>
-      <span className="fl">{label}</span>
+      {label && <span className="fl">{label}</span>}
       <button className="mpick-btn" type="button" onClick={e => { e.stopPropagation(); toggle(); }}>
         <span className="mpick-lab">{yearOnly ? year : MONL[month] + ' ' + year}</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">

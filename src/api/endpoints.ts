@@ -21,4 +21,5 @@ export const EP = {
   siteAlarms: (siteId: string) => `/sites/${enc(siteId)}/alarms`,
   deviceLive: (siteId: string, deviceId: string) => `/sites/${enc(siteId)}/devices/${enc(deviceId)}/live`,
   timeseries: (siteId: string) => `/sites/${enc(siteId)}/timeseries`,
+  kpi: (siteId: string) => `/sites/${enc(siteId)}/kpi`,
 };

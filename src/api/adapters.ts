@@ -1,5 +1,5 @@
 import type {
-  DeviceLive, TimeSeries,
+  DeviceLive, TimeSeries, KpiBucket,
   Alarm, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric, LoginResult,
   Reading, Severity, Site, SiteState, SiteSummary, User,
 } from './types';
@@ -156,3 +156,8 @@ export function adaptTimeSeries(r: Raw): TimeSeries {
     series: arr(r.series).map(x => ({ deviceId: String(x.deviceId), values: numArr(x.values) })),
   };
 }
+
+export const adaptKpiBuckets = (r: unknown): KpiBucket[] =>
+  arr((r as Raw)?.buckets ?? r).map(b => ({
+    key: String(b.key), actual: num(b.actual), simulated: num(b.simulated), forecast: num(b.forecast), partial: !!b.partial,
+  }));

@@ -143,6 +143,25 @@ export interface DailyKpi {
   days: { day: number; actual: number | null; simulated: number | null }[];
 }
 
+/* ---------------- KPI page ---------------- */
+
+export type KpiMetric = 'PR' | 'CUF' | 'AVAIL' | 'YIELD' | 'ENERGY' | 'IRR';
+
+/** One bucket (a day, or a month) of one metric, three ways: ACTUAL what the
+ *  plant did (only for elapsed time), SIMULATED what the design model says it
+ *  should have done, FORECAST what it is expected to do (only ahead of now).
+ *  A bucket only part elapsed has `partial` set; its actual covers the elapsed
+ *  part and its forecast the rest. A month bucket must be the roll-up of its
+ *  days, so the daily and monthly views agree. */
+export interface KpiBucket {
+  /** day: YYYY-MM-DD, month: YYYY-MM */
+  key: string;
+  actual: number | null;
+  simulated: number | null;
+  forecast: number | null;
+  partial: boolean;
+}
+
 /* ---------------- alarms ---------------- */
 
 export type Severity = 'critical' | 'alarm' | 'warn' | 'event';
