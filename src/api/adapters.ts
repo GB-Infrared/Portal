@@ -1,4 +1,5 @@
 import type {
+  DeviceLive, TimeSeries,
   Alarm, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric, LoginResult,
   Reading, Severity, Site, SiteState, SiteSummary, User,
 } from './types';
@@ -89,6 +90,8 @@ export function adaptDevice(r: Raw): Device {
     energyTodayKwh: num(r.energyTodayKwh),
     ratedKw: num(r.ratedKw),
     lastSeenAt: str(r.lastSeenAt),
+    energyTotalKwh: num(r.energyTotalKwh),
+    model: str(r.model),
   };
 }
 export const adaptDevices = (r: unknown): Device[] => arr(r).map(adaptDevice);
@@ -134,3 +137,22 @@ export function adaptAlarm(r: Raw): Alarm {
   };
 }
 export const adaptAlarms = (r: unknown): Alarm[] => arr(r).map(adaptAlarm);
+
+export function adaptDeviceLive(r: Raw): DeviceLive {
+  const st = str(r.status);
+  const values: Record<string, number | null> = {};
+  for (const [k, v] of Object.entries(r.values ?? {})) values[k] = num(v);
+  return {
+    deviceId: String(r.deviceId ?? ''),
+    status: st === 'warn' || st === 'down' ? st : 'ok',
+    model: str(r.model), ratedKw: num(r.ratedKw), values, updatedAt: str(r.updatedAt),
+  };
+}
+
+export function adaptTimeSeries(r: Raw): TimeSeries {
+  return {
+    param: String(r.param ?? ''), unit: str(r.unit), interval: String(r.interval ?? ''),
+    times: Array.isArray(r.times) ? r.times.map(String) : [],
+    series: arr(r.series).map(x => ({ deviceId: String(x.deviceId), values: numArr(x.values) })),
+  };
+}

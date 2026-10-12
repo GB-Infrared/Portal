@@ -19,4 +19,6 @@ export const EP = {
   siteEnergyDaily: (siteId: string) => `/sites/${enc(siteId)}/energy/daily`,
   siteKpiDaily: (siteId: string) => `/sites/${enc(siteId)}/kpi/daily`,
   siteAlarms: (siteId: string) => `/sites/${enc(siteId)}/alarms`,
+  deviceLive: (siteId: string, deviceId: string) => `/sites/${enc(siteId)}/devices/${enc(deviceId)}/live`,
+  timeseries: (siteId: string) => `/sites/${enc(siteId)}/timeseries`,
 };

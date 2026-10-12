@@ -89,6 +89,30 @@ export interface Device {
   energyTodayKwh: number | null;
   ratedKw: number | null;
   lastSeenAt: Iso | null;
+  /** lifetime energy, for Monitoring's rail */
+  energyTotalKwh: number | null;
+  /** make and model, e.g. "HVERTER SI-350K-NO" */
+  model: string | null;
+}
+
+/** One device's latest readings, keyed by tag (P_AC, S_AC, I_AC1 ...). */
+export interface DeviceLive {
+  deviceId: string;
+  status: DeviceStatus;
+  model: string | null;
+  ratedKw: number | null;
+  values: Record<string, number | null>;
+  updatedAt: Iso | null;
+}
+
+/** Any tag for any set of devices over a window, on one shared time axis.
+ *  With interval "1d" and agg "max" it is one value per day: the daily peak. */
+export interface TimeSeries {
+  param: string;
+  unit: string | null;
+  interval: string;
+  times: Iso[];
+  series: { deviceId: string; values: (number | null)[] }[];
 }
 
 /* ---------------- time series ---------------- */

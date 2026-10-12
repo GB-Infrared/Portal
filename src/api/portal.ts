@@ -2,7 +2,7 @@ import { request } from './client';
 import { EP } from './endpoints';
 import * as A from './adapters';
 import type {
-  Alarm, AlarmStatus, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric,
+  Alarm, AlarmStatus, DeviceLive, TimeSeries, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric,
   LoginResult, Site, SiteSummary, User,
 } from './types';
 
@@ -65,4 +65,27 @@ export interface AlarmQuery {
 }
 export async function getAlarms(siteId: string, q: AlarmQuery = {}, o: Sig = {}): Promise<Alarm[]> {
   return A.adaptAlarms(await request(EP.siteAlarms(siteId), { query: { ...q }, signal: o.signal }));
+}
+
+export async function getDeviceLive(siteId: string, deviceId: string, o: Sig = {}): Promise<DeviceLive> {
+  return A.adaptDeviceLive(await request(EP.deviceLive(siteId, deviceId), { signal: o.signal }));
+}
+
+export interface SeriesQuery {
+  devices: string[];
+  /** a tag from the parameter catalogue: P_AC, S_AC, GHI ... */
+  param: string;
+  /** ISO times; `to` is exclusive */
+  from: string;
+  to: string;
+  /** bucket size: "5m", "15m", "1h", "1d" ... */
+  interval: string;
+  /** how a bucket is reduced: "avg" (default), "max", "last" */
+  agg?: 'avg' | 'max' | 'last';
+}
+export async function getTimeSeries(siteId: string, q: SeriesQuery, o: Sig = {}): Promise<TimeSeries> {
+  return A.adaptTimeSeries(await request(EP.timeseries(siteId), {
+    query: { devices: q.devices, param: q.param, from: q.from, to: q.to, interval: q.interval, agg: q.agg },
+    signal: o.signal,
+  }));
 }
