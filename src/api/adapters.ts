@@ -1,5 +1,5 @@
 import type {
-  DeviceLive, TimeSeries, KpiBucket, Profile, Company, RatePeriod, EnergyOffset, AlarmRecipient, Role, AccountUser,
+  DeviceLive, TimeSeries, KpiBucket, PortfolioToday, Profile, Company, RatePeriod, EnergyOffset, AlarmRecipient, Role, AccountUser,
   Alarm, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric, LoginResult,
   Reading, Severity, Site, SiteState, SiteSummary, User,
 } from './types';
@@ -57,6 +57,7 @@ export function adaptSite(r: Raw): Site {
     critCount: num(r.critCount),
     powerKw: num(r.powerKw),
     energyTodayKwh: num(r.energyTodayKwh),
+    peakKwToday: num(r.peakKwToday),
     state: st && (SITE_STATES as string[]).includes(st) ? (st as SiteState) : null,
     updatedAt: str(r.updatedAt),
   };
@@ -190,3 +191,8 @@ export const adaptUsers = (r: unknown): AccountUser[] => arr(r).map(x => ({
   id: String(x.id), first: text(x.first), last: text(x.last), email: text(x.email), phone: text(x.phone),
   roleId: str(x.roleId) || null, active: x.active !== false,
 }));
+
+export const adaptPortfolio = (r: Raw): PortfolioToday => ({
+  revenue: num(r.revenue), currency: str(r.currency), co2AvoidedKg: num(r.co2AvoidedKg),
+  times: Array.isArray(r.times) ? r.times.map(String) : [], kw: numArr(r.kw),
+});

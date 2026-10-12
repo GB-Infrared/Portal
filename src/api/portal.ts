@@ -4,7 +4,7 @@ import * as A from './adapters';
 import type {
   Alarm, AlarmStatus, DeviceLive, TimeSeries, KpiBucket, KpiMetric,
   Profile, Company, RateKind, RatePeriod, EnergyOffset, AlarmRecipient, Role, AccountUser, Severity, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric,
-  LoginResult, Site, SiteSummary, User,
+  LoginResult, PortfolioToday, Site, SiteSummary, User,
 } from './types';
 
 /* WHAT THE SCREENS CAN ASK FOR. One function per question, each a path from
@@ -41,6 +41,10 @@ export async function me(o: Sig = {}): Promise<User> {
 
 export async function getSites(o: Sig = {}): Promise<Site[]> {
   return A.adaptSites(await request(EP.sites(), { signal: o.signal }));
+}
+
+export async function getPortfolioToday(o: Sig = {}): Promise<PortfolioToday> {
+  return A.adaptPortfolio(await request(EP.portfolioToday(), { signal: o.signal }));
 }
 
 export async function getSiteSummary(siteId: string, o: Sig = {}): Promise<SiteSummary> {

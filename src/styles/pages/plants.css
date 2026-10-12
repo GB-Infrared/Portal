@@ -697,7 +697,7 @@ body.going .pg-plants .corner{opacity:0;
    this the hole would sit open and then snap shut on the final frame. Where
    @property is not understood that snap is exactly what happens, which is the
    old cut - the behaviour this replaces - and nothing worse. */
-.pg-plants @property --iris{syntax:'<percentage>';inherits:false;initial-value:150%}
+@property --iris{syntax:'<percentage>';inherits:false;initial-value:150%}
 .pg-plants .iris{position:fixed;inset:0;z-index:20;pointer-events:none;opacity:0;--iris:150%;
   background:radial-gradient(circle at var(--go-x,50%) var(--go-y,46%),
     transparent var(--iris), #04080e calc(var(--iris) + 18%))}

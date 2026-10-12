@@ -14,6 +14,7 @@ export const EP = {
 
   /* sites */
   sites: () => '/sites',
+  portfolioToday: () => '/portfolio/today',
   siteSummary: (siteId: string) => `/sites/${enc(siteId)}/summary`,
   siteDevices: (siteId: string) => `/sites/${enc(siteId)}/devices`,
   sitePowerDay: (siteId: string) => `/sites/${enc(siteId)}/power`,

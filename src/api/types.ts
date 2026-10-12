@@ -46,8 +46,20 @@ export interface Site {
   /** live readings for Site Control's card and the portfolio total */
   powerKw: number | null;
   energyTodayKwh: number | null;
+  /** the highest power reached so far today */
+  peakKwToday: number | null;
   state: SiteState | null;
   updatedAt: Iso | null;
+}
+
+/** What the whole portfolio adds up to today, for Site Control's strip. */
+export interface PortfolioToday {
+  revenue: number | null;
+  currency: string | null;
+  co2AvoidedKg: number | null;
+  /** the portfolio's summed power across today, on one time axis */
+  times: Iso[];
+  kw: (number | null)[];
 }
 
 /* ---------------- readings ---------------- */
