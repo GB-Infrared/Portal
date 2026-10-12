@@ -22,4 +22,22 @@ export const EP = {
   deviceLive: (siteId: string, deviceId: string) => `/sites/${enc(siteId)}/devices/${enc(deviceId)}/live`,
   timeseries: (siteId: string) => `/sites/${enc(siteId)}/timeseries`,
   kpi: (siteId: string) => `/sites/${enc(siteId)}/kpi`,
+
+  /* settings */
+  device: (siteId: string, deviceId: string) => `/sites/${enc(siteId)}/devices/${enc(deviceId)}`,
+  rates: (siteId: string, kind: string) => `/sites/${enc(siteId)}/rates/${enc(kind)}`,
+  rate: (siteId: string, kind: string, from: string) => `/sites/${enc(siteId)}/rates/${enc(kind)}/${enc(from)}`,
+  offsets: (siteId: string) => `/sites/${enc(siteId)}/energy-offsets`,
+  offset: (siteId: string, deviceId: string, from: string) => `/sites/${enc(siteId)}/energy-offsets/${enc(deviceId)}/${enc(from)}`,
+  profile: () => '/account/profile',
+  password: () => '/account/password',
+  company: () => '/account/company',
+  recipients: () => '/account/alarm-recipients',
+  recipient: (id: string) => `/account/alarm-recipients/${enc(id)}`,
+  roles: () => '/account/roles',
+  role: (id: string) => `/account/roles/${enc(id)}`,
+  users: () => '/account/users',
+  user: (id: string) => `/account/users/${enc(id)}`,
+  userStatus: (id: string) => `/account/users/${enc(id)}/status`,
+  userRole: (id: string) => `/account/users/${enc(id)}/role`,
 };

@@ -19,6 +19,8 @@ interface AuthValue {
   /** throws ApiError when the backend refuses */
   signIn: (email: string, password: string) => Promise<User>;
   signOut: () => Promise<void>;
+  /** the header names who is signed in, so it changes when the profile does */
+  patchUser: (u: Partial<User>) => void;
 }
 
 const Ctx = createContext<AuthValue | null>(null);
@@ -58,7 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null); setUser(null); setStatus('out');
   }, []);
 
-  const value = useMemo(() => ({ status, user, signIn, signOut }), [status, user, signIn, signOut]);
+  const patchUser = useCallback((u: Partial<User>) => setUser(p => (p ? { ...p, ...u } : p)), []);
+  const value = useMemo(() => ({ status, user, signIn, signOut, patchUser }), [status, user, signIn, signOut, patchUser]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

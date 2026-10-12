@@ -93,6 +93,10 @@ export interface Device {
   energyTotalKwh: number | null;
   /** make and model, e.g. "HVERTER SI-350K-NO" */
   model: string | null;
+  /** YYYY-MM-DD, for the Settings register */
+  commissionedOn: string | null;
+  /** taken out of service: still on the register, never offered for new records */
+  retired: boolean;
 }
 
 /** One device's latest readings, keyed by tag (P_AC, S_AC, I_AC1 ...). */
@@ -178,3 +182,38 @@ export interface Alarm {
   deviceName: string;
   category: string | null;
 }
+
+/* ---------------- settings ---------------- */
+
+export interface Profile {
+  first: string; last: string; company: string; address: string; email: string; phone: string;
+  /** how the account describes this person, e.g. "Site administrator" */
+  roleLabel: string | null;
+}
+
+export interface Company {
+  name: string;
+  address: string | null;
+  companyEmail: string | null;
+  adminEmail: string | null;
+  phone: string | null;
+  serviceActive: boolean | null;
+}
+
+/** Emission (kg CO2 per kWh) or electricity (currency per kWh): a HISTORY,
+ *  one rate per period, superseded and never edited. There is no end date -
+ *  a rate runs until the next one starts. */
+export type RateKind = 'emission' | 'electricity';
+export interface RatePeriod { from: string; rate: number; addedAt: string | null }
+
+/** A correction to one device's metered generation, versioned per device. */
+export interface EnergyOffset { deviceId: string; from: string; kwh: number; reason: string; addedAt: string | null }
+
+export interface AlarmRecipient { id: string; name: string; email: string; severities: Record<Severity, boolean> }
+
+/** A role is a name and the sites it reaches - nothing else. */
+export interface Role { id: string; name: string; siteIds: string[] }
+
+/** Suspended, never deleted: an alarm acknowledged by somebody who no longer
+ *  exists still has to say who acknowledged it. */
+export interface AccountUser { id: string; first: string; last: string; email: string; phone: string; roleId: string | null; active: boolean }

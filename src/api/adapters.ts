@@ -1,5 +1,5 @@
 import type {
-  DeviceLive, TimeSeries, KpiBucket,
+  DeviceLive, TimeSeries, KpiBucket, Profile, Company, RatePeriod, EnergyOffset, AlarmRecipient, Role, AccountUser,
   Alarm, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric, LoginResult,
   Reading, Severity, Site, SiteState, SiteSummary, User,
 } from './types';
@@ -92,6 +92,8 @@ export function adaptDevice(r: Raw): Device {
     lastSeenAt: str(r.lastSeenAt),
     energyTotalKwh: num(r.energyTotalKwh),
     model: str(r.model),
+    commissionedOn: str(r.commissionedOn),
+    retired: !!r.retired,
   };
 }
 export const adaptDevices = (r: unknown): Device[] => arr(r).map(adaptDevice);
@@ -161,3 +163,30 @@ export const adaptKpiBuckets = (r: unknown): KpiBucket[] =>
   arr((r as Raw)?.buckets ?? r).map(b => ({
     key: String(b.key), actual: num(b.actual), simulated: num(b.simulated), forecast: num(b.forecast), partial: !!b.partial,
   }));
+
+const text = (v: unknown): string => (v === null || v === undefined ? '' : String(v));
+
+export const adaptProfile = (r: Raw): Profile => ({
+  first: text(r.first), last: text(r.last), company: text(r.company), address: text(r.address),
+  email: text(r.email), phone: text(r.phone), roleLabel: str(r.roleLabel),
+});
+export const adaptCompany = (r: Raw): Company => ({
+  name: text(r.name), address: str(r.address), companyEmail: str(r.companyEmail), adminEmail: str(r.adminEmail),
+  phone: str(r.phone), serviceActive: r.serviceActive === undefined || r.serviceActive === null ? null : !!r.serviceActive,
+});
+export const adaptRates = (r: unknown): RatePeriod[] => arr(r)
+  .map(x => ({ from: String(x.from), rate: Number(x.rate), addedAt: str(x.addedAt) }))
+  .sort((a, b) => (a.from < b.from ? -1 : 1));
+export const adaptOffsets = (r: unknown): EnergyOffset[] => arr(r)
+  .map(x => ({ deviceId: String(x.deviceId), from: String(x.from), kwh: Number(x.kwh), reason: text(x.reason), addedAt: str(x.addedAt) }));
+export const adaptRecipients = (r: unknown): AlarmRecipient[] => arr(r).map(x => ({
+  id: String(x.id), name: text(x.name), email: text(x.email),
+  severities: { critical: !!x.severities?.critical, alarm: !!x.severities?.alarm, warn: !!(x.severities?.warn ?? x.severities?.warning), event: !!x.severities?.event },
+}));
+export const adaptRoles = (r: unknown): Role[] => arr(r).map(x => ({
+  id: String(x.id), name: text(x.name), siteIds: Array.isArray(x.siteIds) ? x.siteIds.map(String) : [],
+}));
+export const adaptUsers = (r: unknown): AccountUser[] => arr(r).map(x => ({
+  id: String(x.id), first: text(x.first), last: text(x.last), email: text(x.email), phone: text(x.phone),
+  roleId: str(x.roleId) || null, active: x.active !== false,
+}));

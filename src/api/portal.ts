@@ -2,7 +2,8 @@ import { request } from './client';
 import { EP } from './endpoints';
 import * as A from './adapters';
 import type {
-  Alarm, AlarmStatus, DeviceLive, TimeSeries, KpiBucket, KpiMetric, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric,
+  Alarm, AlarmStatus, DeviceLive, TimeSeries, KpiBucket, KpiMetric,
+  Profile, Company, RateKind, RatePeriod, EnergyOffset, AlarmRecipient, Role, AccountUser, Severity, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric,
   LoginResult, Site, SiteSummary, User,
 } from './types';
 
@@ -94,3 +95,59 @@ export async function getTimeSeries(siteId: string, q: SeriesQuery, o: Sig = {})
 export async function getKpi(siteId: string, q: { metric: KpiMetric; granularity: 'day' | 'month'; year: number; month?: number }, o: Sig = {}): Promise<KpiBucket[]> {
   return A.adaptKpiBuckets(await request(EP.kpi(siteId), { query: { ...q }, signal: o.signal }));
 }
+
+/* ---------------- settings ----------------
+   After a write succeeds the screen re-reads the list, so what it shows is
+   what the server holds - never a local guess at what the write did. */
+
+export async function getProfile(o: Sig = {}): Promise<Profile> { return A.adaptProfile(await request(EP.profile(), { signal: o.signal })); }
+export async function saveProfile(p: Omit<Profile, 'roleLabel'>): Promise<void> { await request(EP.profile(), { method: 'PUT', body: p }); }
+/** a refusal (e.g. the current password is wrong) carries the backend's reason in ApiError.message */
+export async function changePassword(current: string, next: string): Promise<void> {
+  await request(EP.password(), { method: 'POST', body: { current, next }, skipAuthRedirect: true });
+}
+export async function getCompany(o: Sig = {}): Promise<Company> { return A.adaptCompany(await request(EP.company(), { signal: o.signal })); }
+
+export async function renameDevice(siteId: string, deviceId: string, name: string): Promise<void> {
+  await request(EP.device(siteId, deviceId), { method: 'PATCH', body: { name } });
+}
+
+export async function getRates(siteId: string, kind: RateKind, o: Sig = {}): Promise<RatePeriod[]> {
+  return A.adaptRates(await request(EP.rates(siteId, kind), { signal: o.signal }));
+}
+export async function addRate(siteId: string, kind: RateKind, from: string, rate: number): Promise<void> {
+  await request(EP.rates(siteId, kind), { method: 'POST', body: { from, rate } });
+}
+export async function removeRate(siteId: string, kind: RateKind, from: string): Promise<void> {
+  await request(EP.rate(siteId, kind, from), { method: 'DELETE' });
+}
+
+export async function getOffsets(siteId: string, o: Sig = {}): Promise<EnergyOffset[]> {
+  return A.adaptOffsets(await request(EP.offsets(siteId), { signal: o.signal }));
+}
+export async function addOffset(siteId: string, x: { deviceId: string; from: string; kwh: number; reason: string }): Promise<void> {
+  await request(EP.offsets(siteId), { method: 'POST', body: x });
+}
+export async function removeOffset(siteId: string, deviceId: string, from: string): Promise<void> {
+  await request(EP.offset(siteId, deviceId, from), { method: 'DELETE' });
+}
+
+export async function getRecipients(o: Sig = {}): Promise<AlarmRecipient[]> { return A.adaptRecipients(await request(EP.recipients(), { signal: o.signal })); }
+export async function saveRecipient(id: string | null, x: { name: string; email: string; severities: Record<Severity, boolean> }): Promise<void> {
+  await request(id ? EP.recipient(id) : EP.recipients(), { method: id ? 'PUT' : 'POST', body: x });
+}
+export async function removeRecipient(id: string): Promise<void> { await request(EP.recipient(id), { method: 'DELETE' }); }
+
+export async function getRoles(o: Sig = {}): Promise<Role[]> { return A.adaptRoles(await request(EP.roles(), { signal: o.signal })); }
+export async function saveRole(id: string | null, x: { name: string; siteIds: string[] }): Promise<void> {
+  await request(id ? EP.role(id) : EP.roles(), { method: id ? 'PUT' : 'POST', body: x });
+}
+export async function removeRole(id: string): Promise<void> { await request(EP.role(id), { method: 'DELETE' }); }
+
+export async function getUsers(o: Sig = {}): Promise<AccountUser[]> { return A.adaptUsers(await request(EP.users(), { signal: o.signal })); }
+/** details only - a role is never set here, only on Access Control */
+export async function saveUser(id: string | null, x: { first: string; last: string; email: string; phone: string }): Promise<void> {
+  await request(id ? EP.user(id) : EP.users(), { method: id ? 'PUT' : 'POST', body: x });
+}
+export async function setUserActive(id: string, active: boolean): Promise<void> { await request(EP.userStatus(id), { method: 'PUT', body: { active } }); }
+export async function setUserRole(id: string, roleId: string | null): Promise<void> { await request(EP.userRole(id), { method: 'PUT', body: { roleId } }); }
