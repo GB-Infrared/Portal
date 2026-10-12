@@ -10,6 +10,7 @@ export const EP = {
   login: () => '/auth/login',
   logout: () => '/auth/logout',
   me: () => '/auth/me',
+  passwordReset: () => '/auth/password-reset',
 
   /* sites */
   sites: () => '/sites',

@@ -26,6 +26,13 @@ export async function logout(): Promise<void> {
   await request(EP.logout(), { method: 'POST', skipAuthRedirect: true });
 }
 
+/** The sign-in screen's LOST PASSKEY. The backend decides how the new passkey
+ *  is confirmed (an emailed link or code) before it takes effect; the screen
+ *  only asks and reports what the backend says. */
+export async function requestPasswordReset(email: string, newPassword: string): Promise<void> {
+  await request(EP.passwordReset(), { method: 'POST', body: { email, newPassword }, skipAuthRedirect: true });
+}
+
 export async function me(o: Sig = {}): Promise<User> {
   return A.adaptUser(await request(EP.me(), { signal: o.signal, skipAuthRedirect: true }));
 }
