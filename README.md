@@ -525,7 +525,7 @@ Recorded so they are not re-discovered.
 ```
 remote ....... github.com/GB-Infrared/Portal-UI
 branch ....... design-mockup
-nested ....... design-testing/ is its own git repository,
+nested ....... design-mockup/ is its own git repository,
                separate from the tree that contains it
 ```
 
