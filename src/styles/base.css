@@ -1,0 +1,59 @@
+/* What every page shares and none of them owns: the resets, the document's
+   ground, and the dark theme's sky. Ported from the mockups, where each page
+   repeated these word for word. */
+*{margin:0;padding:0;box-sizing:border-box}
+html{scrollbar-color:var(--line-hi) transparent}
+html,body,#root{min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.45;
+     -webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{height:8px;width:8px}
+::-webkit-scrollbar-thumb{background:var(--line-hi);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+button{font-family:inherit;cursor:pointer}
+a{color:inherit;text-decoration:none}
+
+/* THE FIELD THE GLASS STANDS ON. In dark the cards are glass (74% near-black),
+   and glass over a flat black ground composites to one unlit slab. This is the
+   sign-in's own sky at about a third of its strength - enough for the panels to
+   lift off, not enough to read as data. On html, not body, so it paints the
+   whole canvas and does not scroll away under a long table. Light is untouched. */
+html[data-theme="dark"]{
+  background:
+    radial-gradient(circle 46vmax at 80% -8%,
+      rgba(255,216,146,.085) 0%, rgba(240,178,73,.032) 32%, transparent 64%),
+    radial-gradient(ellipse 155% 125% at 80% -8%,
+      rgba(126,158,214,.115) 0%, rgba(90,120,180,.05) 46%, transparent 80%),
+    radial-gradient(ellipse 130% 105% at 50% 62%,
+      rgba(2,6,14,.34) 0%, rgba(0,1,5,.5) 100%),
+    var(--bg);
+}
+html[data-theme="dark"] body{background:transparent}
+/* the sign-in and Site Control are the void in either theme: they paint their
+   own sky, so the document under them must not show through as daylight */
+html.void,html.void body{background:#070c14}
+
+@media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+
+/* toasts - the mockups' T(): one line, bottom right, gone after 2.6 s */
+.toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:100}
+.toast{background:var(--elev);border:1px solid var(--line);border-left:3px solid var(--green);
+  border-radius:9px;padding:10px 14px;font-size:12.5px;color:var(--text);
+  box-shadow:0 12px 30px -8px var(--shadow)}
+.toast.err{border-left-color:var(--red)}
+
+/* ---------- a panel whose data is not here ----------
+   Two states the mockups never needed, because their data was a constant:
+   still asking, and the asking failed. Both keep the panel's shape - a card
+   that collapses while it loads makes the page jump twice. A failure says
+   WHICH thing failed and why, in the sign-in ledger's words (NO ROUTE, TIMED
+   OUT, REFUSED...), and offers the way back in one click. Never a zero, never
+   a plausible placeholder: nothing measured is not zero measured. */
+.dstate{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:5px;min-height:150px;padding:20px 18px;text-align:center;font-family:var(--sans)}
+.dstate .t{font-size:13px;font-weight:700;color:var(--text)}
+.dstate .s{font-size:11.5px;color:var(--muted);max-width:320px;line-height:1.4}
+.dstate .k{font-family:var(--mono);font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--red)}
+.dstate.wait .t{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--faint)}
+.dstate button{margin-top:8px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);
+  background:transparent;color:var(--text);font-size:11.5px;font-weight:700}
+.dstate button:hover{border-color:var(--line-hi);background:var(--hover)}

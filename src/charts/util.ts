@@ -1,0 +1,67 @@
+/* Small pieces every chart in the portal uses. */
+
+/** The power axis is cut to the day's own peak rather than a fixed ceiling, so
+ *  the curve fills the plot - with headroom, at most five bands. */
+export function niceMax(peak: number): { max: number; step: number } {
+  const p = Math.max(1, peak) * 1.08;
+  const steps = [10, 20, 25, 50, 100, 150, 200, 250, 500, 1000, 2000, 2500, 5000, 10000];
+  for (const s of steps) {
+    const n = Math.ceil(p / s);
+    if (n <= 5) return { max: s * n, step: s };
+  }
+  const s = Math.pow(10, Math.ceil(Math.log10(p / 5)));
+  return { max: Math.ceil(p / s) * s, step: s };
+}
+
+/** `bands` equal steps of a round size that clear `max` - for axes whose
+ *  number of gridlines is fixed by the design (four on the energy chart). */
+export function niceSteps(max: number, bands: number): { max: number; step: number } {
+  const raw = Math.max(max, 1e-9) * 1.05 / bands;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw) ?? 10 * mag;
+  return { max: step * bands, step };
+}
+
+/** A GAP IS A GAP. A line breaks where a bucket has no value rather than being
+ *  drawn straight across it: a device that stopped reporting does not get a
+ *  line across the hours it was silent. Returns one subpath per run. */
+export function linePath(xs: number[], ys: (number | null)[], fy: (v: number) => number): string {
+  let d = '', pen = false;
+  for (let i = 0; i < xs.length; i++) {
+    const v = ys[i];
+    if (v === null || v === undefined || !Number.isFinite(v)) { pen = false; continue; }
+    d += (pen ? 'L' : 'M') + xs[i].toFixed(1) + ' ' + fy(v).toFixed(1) + ' ';
+    pen = true;
+  }
+  return d.trim();
+}
+
+/** The fill under a line, one closed shape per run of readings - so the fill
+ *  breaks where the line does. */
+export function areaPath(xs: number[], ys: (number | null)[], fy: (v: number) => number, floorY: number): string {
+  let d = '', run: number[] = [];
+  const flush = () => {
+    if (run.length > 1) {
+      d += 'M' + xs[run[0]].toFixed(1) + ' ' + floorY.toFixed(1) + ' ';
+      for (const i of run) d += 'L' + xs[i].toFixed(1) + ' ' + fy(ys[i] as number).toFixed(1) + ' ';
+      d += 'L' + xs[run[run.length - 1]].toFixed(1) + ' ' + floorY.toFixed(1) + ' Z ';
+    }
+    run = [];
+  };
+  for (let i = 0; i < xs.length; i++) {
+    const v = ys[i];
+    if (v === null || v === undefined || !Number.isFinite(v)) flush(); else run.push(i);
+  }
+  flush();
+  return d.trim();
+}
+
+/** hours since local midnight of the day the time falls on */
+export function hourOfDay(d: Date): number {
+  return d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600;
+}
+
+export const lastIndexWithValue = (ys: (number | null)[]): number => {
+  for (let i = ys.length - 1; i >= 0; i--) if (ys[i] !== null && Number.isFinite(ys[i] as number)) return i;
+  return -1;
+};

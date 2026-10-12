@@ -1,0 +1,115 @@
+/* The portal's tokens, as Home declares them. Each page also carries its own
+   copy on its wrapper (.pg-*), so a page whose mockup tuned a value keeps it;
+   these are what anything drawn outside a page reads - toasts, the row
+   popover, anything hung on <body>. Colours are never literals in a rule:
+   a repaint is a token change. */
+:root{
+  /* ---- LIGHT · UTILITY BLUE (default) · enterprise solar-portal palette ---- */
+  --bg:#f1f4f8;            /* page background            */
+  --panel:#ffffff;         /* card surface               */
+  --panel-2:#f5f8fb;       /* nested surface / inputs    */
+  --line:#dde4ec;          /* card borders               */
+  --line-soft:#e9eef4;     /* gridlines, dividers        */
+  --line-hi:#b5c2d1;       /* hover / active borders     */
+  --text:#152234;          /* primary text               */
+  --muted:#5a6b7f;         /* secondary text             */
+  --faint:#8494a6;         /* tertiary text              */
+  --dim:#aab6c4;           /* dead readouts (offline)    */
+  --elev:#ffffff;          /* tooltips, toasts           */
+  --sel:#e8f0fb;           /* selected card surface      */
+  --hover:rgba(11,99,206,.07);
+  --hover-soft:rgba(11,99,206,.045);
+  --grid-v:rgba(21,34,52,.05);
+  --shadow:rgba(19,38,63,.16);
+  --scrim:rgba(13,29,48,.42);
+  --on-accent:#ffffff;     /* text on a filled accent    */
+  /* header bar — same surface family as the cards */
+  --topbar:var(--panel);
+  --topbar-fg:var(--text);
+  --topbar-fg-2:var(--muted);
+  --topbar-tab:var(--muted);
+  --topbar-hover:var(--hover);
+  --topbar-active:var(--green-soft);
+  --green:#12a150;         /* producing / healthy        */
+  --green-rgb:18,161,80;   /* same green, for rgba() glows */
+  --green-soft:rgba(18,161,80,.12);
+  --green-deep:#0b7a3c;
+  --blue:#1a73c8;          /* series 2                   */
+  --blue-soft:rgba(26,115,200,.12);
+  --red:#d92d20;           /* offline / alarms           */
+  --red-soft:rgba(217,45,32,.1);
+  --amber:#dc7a06;         /* yield / deviations         */
+  --amber-soft:rgba(220,122,6,.12);
+  --brand:#a87b0f;         /* wordmark · gold            */
+  --brand-soft:rgba(168,123,15,.12);
+  --brand-line:rgba(168,123,15,.28);
+  --mono:ui-monospace,'SF Mono','Cascadia Code','Roboto Mono',Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
+  --serif:Georgia,'Times New Roman',serif;
+  --r-lg:14px; --r-md:10px; --r-sm:8px;
+  /* One hue per inverter, spaced around the wheel and clear of the alarm red.
+     Tokens rather than literals in the script, because a colour that carries
+     on white does not carry on navy - the dark theme redefines these and the
+     chart follows without knowing a theme exists. */
+  --s1:#12a150; --s2:#1a73c8; --s3:#dc7a06; --s4:#8b5cf6;
+  --s5:#e11d74; --s6:#0e9aa7; --s7:#b45309; --s8:#4f46e5;
+  --s9:#0f766e; --s10:#a16207; --s11:#be185d; --s12:#0284c7;
+}html[data-theme="dark"]{
+  /* THE BROWSER'S OWN WIDGETS HAVE TO BE TOLD. Radios, tick boxes, the native
+     date popup and the scrollbars are drawn by the UA, not by anything here,
+     and left alone they stay in their light costume - four white discs in a
+     navy menu, and a calendar that opens as a white sheet. One declaration
+     hands the whole set over, which is the only way to reach the parts of a
+     control this stylesheet cannot select. */
+  color-scheme:dark;
+  accent-color:#3ad998;
+  --bg:#070c14;            /* the void itself            */
+  --panel:rgba(9,16,28,.74);   /* the same glass the overview stands on */
+  --panel-2:rgba(9,16,28,.62);
+  --line:rgba(150,180,220,.16);
+  --line-soft:rgba(150,180,220,.10);
+  --line-hi:rgba(140,175,215,.30);
+  --text:#e9f1fb;          /* white  - fixed facts, identity */
+  --muted:#8ba0bb;
+  --faint:#7d92ad;
+  --dim:#5d6e83;           /* dead readouts, and they read dead on black */
+  /* OPAQUE, and the one token here that is. The cards are glass because they
+     sit still and the void behind them is meant to show; a dropdown, a tooltip
+     or a toast is drawn OVER something a reader is trying to read, and at 96%
+     the number underneath was still legible through the menu. A floating layer
+     that lets its background through is not a layer. */
+  --elev:#0d1624;
+  --sel:rgba(127,178,238,.14);
+  --hover:rgba(150,180,220,.07);
+  --hover-soft:rgba(150,180,220,.045);
+  --row-hover:rgba(150,180,220,.09);
+  --shadow:rgba(0,0,0,.62);
+  --scrim:rgba(3,7,13,.70);
+  --grid-v:rgba(150,180,220,.07);
+  /* text ON a filled accent. White on emerald is unreadable at this weight, and
+     the accents are light here - so the ink goes dark instead. */
+  --on-accent:#07121b;
+  --green:#3ad998;         /* emerald - live */
+  --green-rgb:58,217,152;
+  --green-soft:rgba(58,217,152,.14);
+  --green-deep:#3ad998;
+  --blue:#7fb2ee;
+  --blue-soft:rgba(127,178,238,.16);
+  --red:#ff6b5e;
+  --red-soft:rgba(255,107,94,.14);
+  --crit:#ff9d94;
+  --amber:#f0b74a;
+  --amber-soft:rgba(240,183,74,.15);
+  --brand:#f0b74a;         /* gold - the wordmark, and what the day earns */
+  --brand-soft:rgba(240,183,74,.14);
+  --brand-line:rgba(240,183,74,.34);
+  /* The series hues, lifted. A mid-tone picked to carry on white sinks into
+     navy - #12a150 against #070c14 is a line you have to hunt for - so every
+     one of these is the same hue at the brightness this ground needs. The
+     charts read them as tokens and never learn a theme exists. */
+  --s1:#3ad998; --s2:#7fb2ee; --s3:#f0b74a; --s4:#b39cff;
+  --s5:#ff8ac0; --s6:#4fd3dd; --s7:#e9a03c; --s8:#9a92ff;
+  --s9:#4fd0bd; --s10:#e3c05a; --s11:#ff8ac0; --s12:#5cc0f5;
+  --k1:#6aa8ff; --k2:#f7b955; --k3:#3ad998; --k4:#ff8ac0;
+  --k5:#a99bff; --k6:#4fd3dd;
+}

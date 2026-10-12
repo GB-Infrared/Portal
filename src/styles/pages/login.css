@@ -1,0 +1,553 @@
+/* Ported from the design-mockup branch, login.html.
+   Every rule is scoped to .pg-login so pages cannot restyle each other in the
+   single-page app; the resets and the dark sky behind the glass live once in
+   base.css. Otherwise the stylesheet - comments included - is the mockup's. */
+.pg-login{
+  /* ---- LIGHT · UTILITY BLUE (default) · enterprise solar-portal palette ---- */
+  --bg:#f1f4f8;            /* page background            */
+  --panel:#ffffff;         /* card surface               */
+  --panel-2:#f5f8fb;       /* nested surface / inputs    */
+  --line:#dde4ec;          /* card borders               */
+  --line-soft:#e9eef4;     /* gridlines, dividers        */
+  --line-hi:#b5c2d1;       /* hover / active borders     */
+  --text:#152234;          /* primary text               */
+  --muted:#5a6b7f;         /* secondary text             */
+  --faint:#8494a6;         /* tertiary text              */
+  --dim:#aab6c4;           /* dead readouts (offline)    */
+  --elev:#ffffff;          /* tooltips, toasts           */
+  --sel:#e8f0fb;           /* selected card surface      */
+  --hover:rgba(11,99,206,.07);
+  --hover-soft:rgba(11,99,206,.045);
+  /* the row under the pointer, and only that row */
+  --row-hover:rgba(11,99,206,.10);
+  --shadow:rgba(19,38,63,.16);
+  --on-accent:#ffffff;     /* text on a filled accent    */
+  /* header bar — same surface family as the cards */
+  --topbar:var(--panel);
+  --topbar-fg:var(--text);
+  --topbar-fg-2:var(--muted);
+  --topbar-tab:var(--muted);
+  --topbar-hover:var(--hover);
+  --topbar-active:var(--green-soft);
+  --green:#12a150;         /* producing / healthy        */
+  --green-rgb:18,161,80;   /* same green, for rgba() glows */
+  --green-soft:rgba(18,161,80,.12);
+  --green-deep:#0b7a3c;
+  --blue:#1a73c8;
+  --blue-soft:rgba(26,115,200,.12);
+  --red:#d92d20;           /* offline / alarms           */
+  --red-soft:rgba(217,45,32,.1);
+  --amber:#dc7a06;         /* yield / deviations         */
+  --amber-soft:rgba(220,122,6,.12);
+  --brand:#a87b0f;         /* wordmark · gold            */
+  --mono:ui-monospace,'SF Mono','Cascadia Code','Roboto Mono',Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
+  --serif:Georgia,'Times New Roman',serif;
+  --r-lg:14px; --r-md:10px; --r-sm:8px;
+}
+/* ============================ THE VOID ============================
+   The front door stands in the same room the site overview does. That was
+   always the intent - "same void, same stars, same aurora, same corner
+   brackets", in the overview's own words - and for a while this page was a
+   white one instead, which made signing in and arriving two different rooms
+   with a door between them.
+
+   NOT ONE RULE BELOW THIS BLOCK CHANGED. The portal's light tokens are kept
+   exactly where they were and this overrides the VALUES, so every rule on the
+   page - the boot log, the fields, the eye, the refusal line - goes dark by
+   reading the same token names it always read. A page re-skinned by rewriting
+   two hundred declarations is a page with two hundred chances to miss one.
+
+   The colours mean here what they mean on the overview: WHITE a fixed fact,
+   EMERALD live, GOLD what has been banked. ---------------------------- */
+.pg-login{
+  --bg:#070c14;            /* the void itself            */
+  --panel:rgba(9,16,28,.74);   /* the same glass the overview stands on */
+  --panel-2:rgba(9,16,28,.62);
+  --line:rgba(150,180,220,.16);
+  --line-soft:rgba(150,180,220,.10);
+  --line-hi:rgba(140,175,215,.30);
+  --text:#e9f1fb;          /* white  - fixed facts, identity */
+  --muted:#8ba0bb;
+  --faint:#7d92ad;
+  --dim:#5d6e83;           /* dead readouts, and they read dead on black */
+  --elev:rgba(9,16,28,.88);
+  --shadow:rgba(0,0,0,.62);
+  --green:#3ad998;         /* emerald - live */
+  --green-rgb:58,217,152;
+  --green-soft:rgba(58,217,152,.12);
+  --green-deep:#3ad998;
+  --blue:#7fb2ee;
+  --red:#ff6b5e;
+  --amber:#f0b74a;
+  --brand:#f0b74a;         /* gold - the wordmark, and what the day earns */
+}
+/* ---- DARK · same hues on navy. Only the base tokens are redefined; the
+   header/brand tokens above reference them, so they follow automatically. ---- */
+/* [global - see base.css] * */
+.pg-login{scrollbar-color:var(--line-hi) transparent}
+.pg-login{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.45;
+     -webkit-font-smoothing:antialiased}
+/* [global - see base.css] ::-webkit-scrollbar */
+/* [global - see base.css] ::-webkit-scrollbar-thumb */
+/* [global - see base.css] ::-webkit-scrollbar-track */
+/* [global - see base.css] button */
+/* [global - see base.css] a */
+
+/* =====================================================================
+   SIGN IN — Fleet Control's login, in this portal's colours.
+
+   Fleet Control boots before it asks anything: a black field, a log typing
+   itself out a line at a time, and only then OPERATOR / PASSKEY /
+   AUTHENTICATE in letterspaced monospace. That is the screen, and this is the
+   same screen — the earlier split-panel version was a conventional marketing
+   login wearing a few of its parts.
+
+   What is NOT copied is the palette. Fleet Control's --signal #6adcb6 and
+   --solar #eec888 become this portal's green and gold, so the two read as one
+   product family rather than one repainted as the other. Its type stack
+   (Michroma / JetBrains Mono, from Google Fonts) becomes the portal's own
+   --mono, because these mockups open straight off disk and have never needed
+   a network.
+
+   Every colour below is a TOKEN, and the tokens are now the portal's LIGHT
+   ones. The void, the stars and the aurora have gone with the dark theme they
+   belonged to - they were night, and the screen this door opens onto is a
+   sunlit Earth. What is behind the panel instead is the same solar wash the
+   site overview uses: warm from above, cool below. The front door and the app
+   behind it still look like one product; the product simply moved into
+   daylight.
+
+   This used to be a second dark palette invented beside the portal's —
+   near-black surfaces, cooler greys, and the LIGHT green #12a150 on the focus
+   ring and the button, which was the one hue on the page that could not have
+   come from the app it opens.
+
+   The boot log is honest about what it is booting. Fleet Control counts up its
+   broker uplink and its firmware vault; this counts up the three pages behind
+   the sign-in. Not one line reports a plant: no site has been asked about yet,
+   and a front door that opened with a megawatt figure would be inventing the
+   very thing the portal exists to measure.
+   ===================================================================== */
+.pg-login,.pg-login{height:100%}
+/* ---------- the field ----------
+   The overview's own background, brought over unchanged in shape: a warm wash
+   where the sun is, a wide cold one carrying the rest of the sky, and the deep
+   field under both. There it is driven every frame by the subsolar point the
+   terminator is drawn from. Here it is held at one hour of the day, by the
+   three custom properties below - and the LIMB drawn across the foot of the
+   screen is lit from the same --sun-x, so the wash overhead and the horizon
+   under it are lit by one sun rather than by two that happen to agree.
+
+   Note there is only one body background rule on this page, and this is it.
+   There were briefly two, and the second silently won; a page with two
+   backgrounds has one background and one piece of dead code. */
+.pg-login{ --sun-x:78%; --sun-y:10%; --day:.62 }
+.pg-login{background:
+    radial-gradient(circle 38vmax at var(--sun-x) var(--sun-y),
+      rgba(255,216,146,calc(.26*var(--day))) 0%,
+      rgba(240,178,73,calc(.09*var(--day))) 30%, transparent 62%),
+    radial-gradient(ellipse 150% 130% at var(--sun-x) var(--sun-y),
+      rgba(126,158,214,calc(.30*var(--day))) 0%,
+      rgba(90,120,180,calc(.14*var(--day))) 45%, transparent 78%),
+    radial-gradient(ellipse 120% 96% at 50% 48%,
+      rgba(4,10,24,calc(.92*(1 - var(--day)))) 0%,
+      rgba(0,1,5,calc(1 - var(--day))) 100%),
+    #070c14;
+  color:var(--muted);font-family:var(--mono);overflow:hidden}
+
+/* ---------- and the stars are the real ones ----------
+   The same 8,920 stars out of the HYG catalogue the overview draws, placed by
+   right ascension and declination against sidereal time and coloured from their
+   B-V index - so the constellations over this screen are the ones that are
+   actually overhead, and they are the ones still overhead on the next screen.
+
+   What is NOT brought over is the lensing. There, every star is bent around the
+   planet it is being seen past; here there is no planet, so they stand where
+   they stand. */
+.pg-login #sky{position:fixed;inset:0;z-index:0;display:block;pointer-events:none}
+
+/* ---------- and the ground the fleet is on ----------
+   THE FRONT DOOR OPENS INTO THE SAME ROOM IT LEADS TO. Signing in used to be a
+   form on an empty star field, and the screen it handed you to was a sunlit
+   Earth seen from orbit - so the door and the room behind it were lit by
+   different suns, and arriving felt like changing buildings rather than walking
+   through.
+
+   This is that Earth, from further out and one moment earlier: the limb across
+   the foot of the screen, its atmosphere catching the same light the wash
+   overhead is coming from, the terminator running off to the left into night.
+   It is a HORIZON, not a globe - nothing on it is a site, nothing on it can be
+   clicked, and no figure is printed over it. The globe with the fleet on it is
+   what you get once you are through the door; this is the edge of it, from the
+   step outside.
+
+   Its own layer, above the stars because a planet occludes what is behind it,
+   and below the vignette and the grain because those close down the whole
+   frame - the picture included. */
+.pg-login #limb{position:fixed;inset:0;z-index:1;display:block;pointer-events:none}
+
+/* ---------- ambient ----------
+   Both of these were re-tuned for a white page and are back over black, which
+   is what they were drawn for: the vignette closes the corners down into the
+   void instead of warming them, and the ruling is light ink again. A dark
+   scanline on a dark field is not subtle, it is absent. */
+.pg-login .vignette{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 45%, transparent 54%, rgba(0,2,8,.72) 100%)}
+.pg-login .grain{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.035;
+  background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(150,180,220,.9) 2px 3px)}
+
+/* framing marks: they say "instrument" in two strokes and cost nothing */
+.pg-login .corner{position:fixed;width:26px;height:26px;z-index:3;pointer-events:none}
+.pg-login .corner.tl{top:16px;left:16px;border-top:1px solid rgba(var(--green-rgb),.42);border-left:1px solid rgba(var(--green-rgb),.42)}
+.pg-login .corner.br{bottom:16px;right:16px;border-bottom:1px solid rgba(var(--green-rgb),.42);border-right:1px solid rgba(var(--green-rgb),.42)}
+
+/* ---------- boot ---------- */
+/* the panel is lifted off dead centre, because the bottom of the frame is not
+   empty any more - the limb is there, and a card sitting on the horizon reads
+   as resting on it. The bottom padding is a floor, so a short window closes the
+   gap rather than pushing the sign-in off the top. */
+.pg-login #boot{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
+  padding:24px 24px max(24px,13vh)}
+/* ---------- ONE PANEL, AND IT IS THE OVERVIEW'S OWN ----------
+   The sign-in used to stand bare on the field: type on a background, with
+   nothing bounding it. That is why it read as plain - not because anything was
+   missing from it, but because nothing on the screen said where it ENDED. The
+   overview solves the same problem with one material: glass, a hairline, a deep
+   shadow, and everything that belongs together standing on one sheet of it. So
+   this is that sheet, with the same blur, the same border and the same corner
+   radius the rail and the site card use forty pages away. Brand, form and boot
+   log are one object now, on one surface, in front of one picture. */
+.pg-login .stack{display:flex;flex-direction:column;
+  padding:24px 30px 26px;border-radius:16px;
+  background:var(--panel);border:1px solid var(--line);
+  box-shadow:0 34px 92px rgba(0,0,0,.66);
+  -webkit-backdrop-filter:blur(18px) saturate(120%);
+  backdrop-filter:blur(18px) saturate(120%)}
+
+/* ---------- THE MARK IS BACK, AND IT IS SMALL ----------
+   It was taken off this screen with the argument that the brand is on every
+   page behind the door, so the door need not say it twice. That argument was
+   right about the BANNER it removed - a wordmark in 17px letterspaced gold over
+   a rule, pushing the sign-in into the lower half of the screen - and wrong
+   about the mark itself. A sign-in box floating on a photograph of Earth with
+   no name on it is not restrained, it is unidentified: it is the one screen a
+   person reaches before they have any other way of knowing what they are
+   signing into.
+
+   So it returns at the size it has in the portal's own header - the same mark,
+   the same serif wordmark, the same letterspaced caption under it - and it
+   heads the panel rather than the screen. It names the box. It does not
+   announce the product. */
+.pg-login .brand{display:flex;align-items:center;gap:12px;
+  padding-bottom:18px;border-bottom:1px solid var(--line-soft)}
+.pg-login .brand img{height:32px;width:auto;display:block;flex:none}
+.pg-login .brand .word{display:block;font-family:var(--serif);font-weight:700;font-size:17px;
+  color:var(--brand);letter-spacing:.2px;line-height:1.05}
+.pg-login .brand .sub{display:block;margin-top:4px;font-size:9px;letter-spacing:.28em;
+  color:var(--faint);text-transform:uppercase}
+/* the log is a footnote to the form now, so it steps back: quieter type, and
+   separated by a rule rather than by the weight it used to carry */
+.pg-login .stack #bootlog{margin-top:18px;padding-top:18px;border-top:1px solid var(--line-soft)}
+/* the log sets the scale for the whole screen — the box below is sized off it,
+   so these two numbers are the only ones to touch to make the page read bigger */
+/* THE LOG'S HEIGHT IS RESERVED, not discovered. Inside a bordered panel a log
+   that types itself out one line at a time is a border that jumps four times on
+   arrival - the boot theatre paid for in the one thing on the screen that
+   should be still. Four lines of room are set aside from the first frame and
+   the lines land into it. */
+.pg-login #bootlog{font-family:var(--mono);font-size:13.5px;line-height:1.9;color:var(--faint);
+  min-width:520px;min-height:calc(4 * 1.9em);white-space:pre;margin:0}
+.pg-login #bootlog .bt{color:var(--brand);letter-spacing:.34em;font-size:17.5px;font-weight:700}
+.pg-login #bootlog .sub{color:var(--faint);letter-spacing:.16em}
+.pg-login #bootlog .rule{color:var(--line)}
+.pg-login #bootlog b{color:var(--green);font-weight:500}
+.pg-login #bootlog .warm{color:var(--brand)}
+@media (max-width:620px){ .pg-login #bootlog{min-width:0;font-size:12.5px;white-space:pre-wrap} }
+
+/* =====================================================================
+   OPENING — what the panel becomes once the operator is through.
+
+   THIS REPLACED TWO MORE LINES OF LOG. Granting access used to type '[ auth ]
+   access granted' and '> SELECT A SITE' into the boot log and then navigate.
+   Both were the machine narrating: the first restated what pressing
+   AUTHENTICATE had just done, and the second announced a screen that was about
+   to arrive anyway. Neither said the one thing a reader wants in that gap —
+   how long this is going to take.
+
+   So the log stops and a LOADING STATE takes the panel. It keeps the terminal's
+   voice, because the screen has not changed character; what changes is that it
+   is now reporting progress rather than history. The operator address stays on
+   screen — it is the fact that was just established, and it is the one thing
+   worth confirming before the portal opens.
+
+   THE PANEL DOES NOT RESIZE. The log reserved four lines of room from the first
+   frame so the border would not jump while it typed; this stands in the same
+   space for the same reason. Signing in should not make the box breathe. */
+.pg-login .load{min-width:520px;min-height:calc(4 * 1.9em);font-family:var(--mono);
+  display:flex;flex-direction:column;justify-content:center;gap:11px;
+  margin-top:18px;padding-top:18px;border-top:1px solid var(--line-soft)}
+/* A CLASS THAT SETS display BEATS THE hidden ATTRIBUTE. `hidden` is only a UA
+   rule - [hidden]{display:none} - so `display:flex` above outranks it and the
+   panel stood on screen from the first frame, under the boot log, showing a
+   dash and the word CONNECTING before anybody had signed in. Anything given a
+   display here has to say what hidden means for it. */
+.pg-login .load[hidden]{display:none}
+.pg-login .load .lop{font-size:12.5px;letter-spacing:.14em;color:var(--green)}
+
+/* ===================== THE LEDGER =====================
+   WHAT REPLACED THE SINGLE WORD, AND WHY.
+
+   The loading state said one word at a time - CONNECTING, then LOADING SITES,
+   and so on - beside a count and a bar. It answered "how far" and nothing else.
+   It could not say what had already finished, what was still to come, or what
+   any of it had produced, and a word that is replaced leaves no trace: by the
+   time the portal opened, the reader had watched four things happen and could
+   name none of them.
+
+   So all four steps are on screen at once, from the first frame, in the boot
+   log's own grammar - a timestamp, a lowercase subsystem name, leader dots, and
+   the outcome in the right-hand column. The log above types four lines bringing
+   the pages up; this types four more bringing the session up. One machine, one
+   voice, one column of outcomes to run an eye down.
+
+   THE TIMES ARE MEASURED, not written down. Each row prints the elapsed time
+   its own step actually took, off the same clock the bar is drawn from. A boot
+   log with invented timings is set dressing; these are the real numbers, which
+   is also why they are not round.
+
+   THE PANEL STILL DOES NOT BREATHE. Every row exists before the first step
+   begins - pending ones are dim and blank - so the box is its final height from
+   the frame it appears in, and nothing below it moves as the run goes on. That
+   was the rule the single-word version was keeping; a ledger keeps it by
+   reserving its rows rather than by having only one. */
+.pg-login .load .lsteps{display:flex;flex-direction:column;gap:1px;font-size:12.5px;line-height:1.62}
+.pg-login .load .lstep{display:flex;align-items:baseline;gap:9px;min-width:0}
+/* the clock column is fixed-width and tabular, so four timings form a column
+   rather than four numbers that happen to be near each other */
+.pg-login .load .lstep .lt{flex:none;width:8.5ch;color:var(--faint);
+  font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1}
+.pg-login .load .lstep .ln{flex:none;color:var(--muted);letter-spacing:.02em}
+/* THE LEADER IS A BORDER, NOT A RUN OF FULL STOPS. The boot log's dots are
+   baked into fixed strings, which is fine for a line that never changes width;
+   these rows carry names and outcomes of different lengths and have to reflow,
+   and a string of dots cannot. Same reading, one declaration. */
+.pg-login .load .lstep .ld{flex:1 1 auto;min-width:14px;align-self:stretch;
+  border-bottom:1px dotted var(--line-hi);opacity:.5;margin-bottom:.34em}
+.pg-login .load .lstep .lv{flex:none;color:var(--green);font-weight:500;letter-spacing:.06em}
+
+/* WAITING: dim, and genuinely blank. A pending step that showed a dash or a
+   zero would be reporting a result it does not have. */
+.pg-login .load .lstep.wait .ln{color:var(--dim)}
+.pg-login .load .lstep.wait .ld{opacity:.22}
+/* RUNNING: the one row in the brand colour, with a block cursor where its
+   outcome will be printed - the terminal's own way of saying "this line is
+   still being written". */
+.pg-login .load .lstep.run .ln{color:var(--brand)}
+.pg-login .load .lstep.run .lt{color:var(--brand);opacity:.75}
+.pg-login .load .lstep.run .lv{color:var(--brand)}
+.pg-login .load .lstep.run .lv::after{content:'\258C';animation:cur 1s steps(1) infinite}
+@keyframes cur{0%,49%{opacity:1}50%,100%{opacity:0}}
+/* DONE: the name settles back to the reading colour and the outcome is the only
+   thing carrying weight, which is what makes the right-hand column scannable */
+.pg-login .load .lstep.done .lt{color:var(--faint)}
+
+/* SLOW: still running, but past the time it should have taken.
+
+   THIS IS THE STATE EVERY LOADING SCREEN IS MISSING. A bar that stops moving
+   and a bar that is about to move again look identical, so the reader is left
+   deciding for themselves whether the thing is broken - and the usual answer,
+   after four or five seconds of a frozen stripe, is to reload and start over.
+   A row that says SLOW has answered it: the step is still running, it is late,
+   and nothing has failed yet. The clock beside it keeps counting, which is the
+   proof.
+
+   It is amber and not red, because amber on this portal means deviation and red
+   means fault, and late is a deviation. */
+.pg-login .load .lstep.slow .ln{color:var(--amber)}
+.pg-login .load .lstep.slow .lt{color:var(--amber);opacity:1}
+.pg-login .load .lstep.slow .lv{color:var(--amber);letter-spacing:.1em}
+
+/* FAILED: the run stopped here, and this row is why.
+
+   The whole argument for naming the steps was that a named step tells you WHICH
+   one hung. That was a promise the panel could not keep - there was no failure
+   state, so a step that died would have left the bar sitting at 48% saying
+   nothing at all. The reason is printed in the outcome column, in the place
+   every other row prints its result, so the eye finds it where it already knows
+   to look.
+
+   The rows below stay dim and BLANK. They were not attempted, and a dash or a
+   zero would be reporting a result they do not have. */
+.pg-login .load .lstep.fail .ln{color:var(--red)}
+.pg-login .load .lstep.fail .lt{color:var(--red);opacity:.85}
+.pg-login .load .lstep.fail .lv{color:var(--red);letter-spacing:.08em}
+
+/* ---------- the bar and the count, on one line ----------
+   They are one readout - the count is the bar's value in figures - so they sit
+   on one row rather than stacked, and the row is the last thing in the panel
+   because it is the summary of the four lines above it. */
+.pg-login .load .lfoot{display:flex;align-items:center;gap:14px;margin-top:3px}
+.pg-login .load .lbar{position:relative;flex:1 1 auto;height:6px;border-radius:6px;
+  background:var(--line-soft);overflow:hidden}
+/* Determinate, not a barber's pole. An indeterminate stripe says "something is
+   happening" and nothing else; this is a short, known sequence of steps, so the
+   bar can say how much of it is left - which is the only question being asked. */
+/* NO CSS TRANSITION ON THE FILL. It used to travel .3s into each new width
+   while the number beside it counted on its own clock, and two readouts of the
+   same fact drifting apart is worse than either alone - the eye goes straight
+   to the disagreement. Both are driven off ONE animation frame loop (see
+   openPortal), so the fill IS the number, drawn wide instead of in figures. */
+.pg-login .load .lbar i{display:block;height:100%;width:0;border-radius:6px;
+  background:linear-gradient(90deg,var(--brand),var(--green))}
+/* a stopped bar is not a paused bar. The fill holds the width it reached and
+   goes red, so the distance travelled is still readable - it says where it got
+   to, which is the same thing the failed row says in words. */
+.pg-login .load .lbar.bad i{background:var(--red)}
+/* THE STEP BOUNDARIES ARE NOTCHED INTO THE BAR, at the percentages the steps
+   actually end on. It was a plain rule, and a plain rule hides the shape of the
+   work: the four steps are not equal - connecting is quick and loading the
+   sites is the long one - and the bar was drawing them as one smooth run.
+   Notched, the reader can see a stage close as the fill crosses it, and can see
+   before it starts that the second stage is twice the first.
+
+   Cut in the PAGE's colour rather than drawn in a line colour, so the notch
+   reads as a gap in the bar rather than as a fifth thing on it. */
+.pg-login .load .lbar u{position:absolute;top:-1px;bottom:-1px;width:2px;
+  background:var(--panel);transform:translateX(-1px)}
+/* THE PERCENTAGE, AND IT IS THE LARGEST THING IN THE PANEL. The bar alone was
+   the whole answer once, and a 6px rule is a poor way to state a number:
+   reading it means estimating a fraction of a width, so "roughly two thirds" is
+   the most it can ever say. The count says 67.
+
+   TABULAR FIGURES, AND THE DIGITS RESERVE THEIR WIDTH. A proportional 1 is
+   about half the width of a 0, so a counter climbing 8, 9, 10 shifts what is
+   beside it on almost every frame - the jitter is more visible than the count
+   itself. tabular-nums makes every digit the same width, and the 3ch box holds
+   the room the third digit will need from the first frame, so the % never
+   moves. */
+.pg-login .load .lpct{flex:none;display:flex;align-items:baseline;gap:2px;color:var(--text)}
+.pg-login .load .lpct b{display:inline-block;min-width:3ch;text-align:right;
+  font-size:24px;font-weight:700;line-height:1;letter-spacing:.01em;
+  font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1}
+.pg-login .load .lpct i{font-style:normal;font-size:12.5px;font-weight:600;
+  letter-spacing:.1em;color:var(--faint)}
+.pg-login .load .lpct.bad b{color:var(--red)}
+/* RETRY, and it appears only when there is something to retry. It borrows the
+   AUTHENTICATE button's shape and takes the fault colour, because it is the
+   answer to the red row above it and not a second way to sign in. */
+.pg-login .load .lgo.retry{padding:7px 14px;font-size:11.5px;letter-spacing:.18em;flex:none;
+  background:rgba(217,45,32,.10);border-color:var(--red);color:var(--red)}
+.pg-login .load .lgo.retry:hover:not(:disabled){background:rgba(217,45,32,.18);
+  box-shadow:0 0 20px rgba(217,45,32,.20)}
+/* the live region carries the step name for a screen reader. It is not
+   displayed, because the ledger says the same thing to everybody else - but it
+   cannot be display:none, or the announcement goes with it. */
+.pg-login .load .vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+@media (max-width:620px){
+  .pg-login .load{min-width:0}
+  .pg-login .load .lpct b{font-size:20px}
+  .pg-login .load .lsteps{font-size:11.5px}
+  .pg-login .load .lstep .lt{width:8ch}
+}
+@media (prefers-reduced-motion:reduce){ .pg-login .load .lstep.run .lv::after{animation:none} }
+
+.pg-login .skip{position:fixed;bottom:26px;left:0;right:0;text-align:center;z-index:11;
+  font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--dim)}
+
+/* ---------- the login box ----------
+   Fleet Control's exact shape: a label column at a fixed width, the field
+   beside it, and the action under both — aligned to the FIELDS, not to the
+   labels, so the button sits where the answers are rather than where the
+   questions were. */
+.pg-login .lbox{display:none;margin-top:26px}
+.pg-login .lbox.on{display:block}
+/* ---------- THE FORM ARRIVES THE WAY THE LOG DID ----------
+   The boot lines come in one at a time, on a fixed beat: monitoring, alarms,
+   analysis, kpi, awaiting operator. The form used to ignore all of that and
+   fade in as a single block the moment the log finished, so the page booted in
+   two different rhythms, one after the other - a machine counting itself up,
+   and then a card appearing.
+
+   It is one rhythm now. The log counts up the pages and the sign-in carries
+   straight on from it on the same beat: operator, passkey, and last of all the
+   button - so the final thing to land is the thing you press. Nothing new is
+   being said. The same arrival is finally told in one voice. */
+.pg-login .lbox .step{opacity:0;transform:translateY(7px);
+  transition:opacity .34s ease-out,transform .34s cubic-bezier(.2,.7,.3,1)}
+.pg-login .lbox .step.in{opacity:1;transform:none}
+.pg-login .lrow{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.pg-login .lrow label{font-size:11.5px;letter-spacing:.28em;color:var(--faint);width:130px;flex:none;text-transform:uppercase}
+/* THE FIELD TAKES THE ROOM THE PANEL HAS. It was a fixed 305px, which was the
+   right width on a bare field and the wrong one inside a box: the panel is as
+   wide as the boot log under it, so a fixed field left a column of nothing down
+   the right of every row and made the form look like it had been dropped into
+   somebody else's container. It stretches now, and the log sets the width. */
+.pg-login .lfield{position:relative;display:flex;flex:1 1 auto;min-width:0}
+.pg-login .lbox input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;color:var(--text);
+  font-family:var(--mono);font-size:14.5px;padding:10px 13px;width:100%;outline:none;letter-spacing:.08em;
+  transition:border-color .2s,box-shadow .2s}
+.pg-login .lbox input::placeholder{color:var(--dim);letter-spacing:.04em}
+.pg-login .lbox input:focus{border-color:var(--green);box-shadow:0 0 14px rgba(var(--green-rgb),.20)}
+.pg-login .lbox input.bad{border-color:var(--red);box-shadow:0 0 14px rgba(255,107,107,.18)}
+
+/* ---------- one reveal, and it is the eye ----------
+   Edge and IE draw their OWN eye inside every password field. It sat beside
+   ours and gave the field two controls for one job — and the two do not share
+   state, so the field could show plain text while our button still offered to
+   show it. Theirs goes; ours is the eye. */
+.pg-login .lfield input::-ms-reveal,
+.pg-login .lfield input::-ms-clear{display:none;width:0;height:0}
+.pg-login .lfield.pw input{padding-right:40px}
+/* the icon IS the control, so the label it cannot draw is carried in title and
+   aria-label — and both name what the CLICK will do rather than what the field
+   is doing, because a crossed-out eye is read both ways by different people */
+.pg-login .reveal{position:absolute;right:3px;top:50%;transform:translateY(-50%);
+  display:inline-flex;align-items:center;justify-content:center;
+  width:32px;height:32px;border-radius:4px;border:none;background:transparent;color:var(--faint)}
+.pg-login .reveal:hover{color:var(--text)}
+.pg-login .reveal:focus-visible{outline:1px solid var(--green);outline-offset:1px}
+
+.pg-login .lact{display:flex;align-items:center;gap:14px;margin-left:142px;margin-top:15px;flex-wrap:wrap}
+.pg-login .lgo{background:rgba(var(--green-rgb),.10);border:1px solid var(--green);border-radius:6px;color:var(--green);
+  font-family:var(--mono);font-size:12.5px;letter-spacing:.2em;padding:10px 20px;
+  display:inline-flex;align-items:center;gap:8px;transition:box-shadow .25s,background-color .25s}
+.pg-login .lgo:hover:not(:disabled){background:rgba(var(--green-rgb),.18);box-shadow:0 0 20px rgba(var(--green-rgb),.22)}
+.pg-login .lgo:disabled{opacity:.5;cursor:default}
+.pg-login .lalt{background:none;border:none;color:var(--faint);font-family:var(--mono);font-size:11.5px;letter-spacing:.2em}
+.pg-login .lalt:hover{color:var(--blue)}
+.pg-login .spin{width:11px;height:11px;border-radius:50%;flex:none;
+  border:1.6px solid rgba(var(--green-rgb),.28);border-top-color:var(--green);animation:sp .6s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* the refusal and the warning share one slot under the fields — never a bubble
+   over the field, which covers the thing it is complaining about */
+.pg-login .lerr{color:var(--red);font-size:12px;letter-spacing:.16em;margin-left:142px;margin-top:10px;
+  min-height:16px;text-transform:uppercase}
+/* Caps Lock is the commonest reason a correct passkey is refused, and the field
+   cannot show it back to you to check. Warned while it is true and taken down
+   the moment it is not — a warning that outlives its condition teaches people
+   to ignore the next one. */
+.pg-login .lcaps{display:none;color:var(--amber);font-size:12px;letter-spacing:.16em;margin-left:142px;margin-top:7px}
+.pg-login .lcaps.on{display:block}
+.pg-login .lhint{color:var(--dim);font-size:11.5px;letter-spacing:.14em;margin-left:142px;margin-top:8px}
+
+@media (prefers-reduced-motion:reduce){
+  /* the sequence still HAPPENS - the script simply stops staggering it - so
+     nothing here has to be re-ordered, only stripped of its motion */
+  .pg-login .lbox .step{opacity:1;transform:none;transition:none}
+}
+@media (max-width:620px){
+  /* the limb is drawn shallower on a narrow window by the script; the panel
+     simply stops being generous with its own edges */
+  .pg-login #boot{padding:18px 16px max(18px,9vh)}
+  .pg-login .stack{padding:18px 18px 20px;border-radius:13px;width:min(100%,360px)}
+  .pg-login .brand img{height:27px}
+  .pg-login .brand .word{font-size:15.5px}
+  .pg-login .lrow{flex-direction:column;align-items:flex-start;gap:5px}
+  .pg-login .lrow label{width:auto}
+  .pg-login .lfield{width:100%}
+  .pg-login .lact,.pg-login .lerr,.pg-login .lcaps,.pg-login .lhint{margin-left:0}
+  .pg-login .lbox{width:min(100%,340px)}
+}
