@@ -181,17 +181,11 @@ function peakAt(){
   return h<=5.5 ? 0 : Math.min(h,12);      /* 0 = nothing has happened yet today */
 }
 function peakOf(p){ return p.peak==null||!isFinite(p.peak) ? 0 : p.peak; }
-/* the tariff Home already costs energy at, so the two screens cannot quote
-   different money for the same kilowatt-hours */
-const TARIFF=2.84;
-
-/* CARBON, at the same grid factor Home reports it at and the one Settings ships
-   as the current emission rate - three screens quoting three factors for the
-   same kilowatt-hours is how a savings figure stops being citable.
-
-   The fleet's, not a site's: this strip is the portfolio, so it answers what
-   ALL the sites avoided today. */
-const CO2=0.71;
+/* NO TARIFF AND NO GRID FACTOR HERE. The mockup costed energy at a fixed 2.84
+   and carbon at a fixed 0.71 so that it could print a revenue and a CO2 figure
+   with no backend. Both are the backend's now (the portfolio call), worked out
+   from the rates on Settings - the same numbers Home is given - so this screen
+   cannot quote different money or carbon for the same kilowatt-hours. */
 const fmtC=kg=> kg>=1000 ? (kg/1000).toFixed(kg>=10000?0:1)+' t'
               : num(kg)+' kg';
 const inr=v=> v>=1e7 ? '₹'+(v/1e7).toFixed(2)+' Cr'
