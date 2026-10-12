@@ -18,7 +18,7 @@ export interface Opt { v: string; t: ReactNode; extra?: ReactNode }
 
 const OPEN_EVENT = 'enerops:pick-open';
 
-function useOpen(): [boolean, (on: boolean) => void] {
+export function usePanelOpen(): [boolean, (on: boolean) => void] {
   const id = useId();
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -60,7 +60,7 @@ interface SingleProps {
 }
 
 export function SingleSelect({ value, options, onChange, head, variant = 'col', className, title, dim, id }: SingleProps) {
-  const [open, setOpen] = useOpen();
+  const [open, setOpen] = usePanelOpen();
   const c = cls(variant);
   const cur = options.find(o => o.v === value);
   const name = useId();
@@ -99,7 +99,7 @@ interface MultiProps {
 }
 
 export function MultiSelect({ value, options, onChange, head, any, variant = 'col', className, title }: MultiProps) {
-  const [open, setOpen] = useOpen();
+  const [open, setOpen] = usePanelOpen();
   const c = cls(variant);
   const order = (list: string[]) => options.map(o => o.v).filter(v => list.includes(v));
   const label = !value.length ? any
