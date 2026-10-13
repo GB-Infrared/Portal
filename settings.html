@@ -279,6 +279,9 @@ a{color:inherit;text-decoration:none}
 .grp.shut .chev{transform:rotate(180deg)}
 .grpitems{display:flex;flex-direction:column;gap:1px;padding:2px 0 4px 12px}
 .grp.shut .grpitems{display:none}
+/* a section this person's account does not reach is not drawn at all - see
+   "who is signed in" in the script */
+.grp[hidden],.item[hidden]{display:none}
 
 .item{display:block;padding:7px 12px;border-radius:8px;font-size:12.5px;font-weight:500;
   color:var(--muted);width:100%;border:none;background:transparent;text-align:left;font-family:inherit}
@@ -821,10 +824,12 @@ body.locked{overflow:hidden}
       <span class="t">Settings</span>
     </div>
 
-    <!-- Every group is open on arrival. A reader who has come to Settings to find
-         one thing should be able to see all eleven names at once; collapsing is
-         for after they know the shape, not before. -->
-    <div class="grp" id="g-profile">
+    <!-- Every group is SHUT on arrival, the one holding the open screen included:
+         the sidebar opens as four section names, and a section opens when its
+         name is clicked. It used to open with all ten screens showing; the four
+         names are the shorter list to read, and the screen on the right already
+         says where the reader is - the page heading names the group. -->
+    <div class="grp shut" id="g-profile">
       <button class="grpbtn" onclick="toggleGrp('g-profile')">
         <svg class="gi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
              stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="8" r="3.4"/>
@@ -840,7 +845,7 @@ body.locked{overflow:hidden}
       </div>
     </div>
 
-    <div class="grp" id="g-asset">
+    <div class="grp shut" id="g-asset">
       <button class="grpbtn" onclick="toggleGrp('g-asset')">
         <svg class="gi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
              stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="13.5" width="7" height="7" rx="1.4"/>
@@ -855,7 +860,7 @@ body.locked{overflow:hidden}
       </div>
     </div>
 
-    <div class="grp" id="g-system">
+    <div class="grp shut" id="g-system">
       <button class="grpbtn" onclick="toggleGrp('g-system')">
         <svg class="gi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
              stroke-linecap="round" stroke-linejoin="round">
@@ -872,7 +877,7 @@ body.locked{overflow:hidden}
       </div>
     </div>
 
-    <div class="grp" id="g-access">
+    <div class="grp shut" id="g-access">
       <button class="grpbtn" onclick="toggleGrp('g-access')">
         <svg class="gi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
              stroke-linecap="round" stroke-linejoin="round">
@@ -1838,13 +1843,59 @@ document.addEventListener('keydown',function(e){
   a.classList.remove('open'); $('acctbtn').setAttribute('aria-expanded','false'); $('acctbtn').focus();
 });
 
+/* ---------- who is signed in ----------
+   Settings has two readers. The CUSTOMER ADMIN - the account the web admin
+   panel creates - sees all of it. A USER the customer admin creates sees only
+   their own profile and the device register, and the register read-only:
+   the company record, rates, alarm recipients, roles and users are the
+   admin's, and a section a reader cannot use is a section they should not
+   have to read past.
+
+   Hidden, not deleted. Every pane's script still draws into its own table when
+   the page loads, and a pane that is not there would stop the script at the
+   first one. Nothing can open a hidden pane either: the list of screens below
+   is built from the visible items only, so a link to #access-user lands on the
+   profile instead.
+
+   The mockup has no sign-in to ask who this is, so ?as=user shows the user's
+   version - a review switch, like ?fail on the sign-in page. Without it the
+   page is the customer admin's, exactly as it was. */
+const AS_USER=new URLSearchParams(location.search).get('as')==='user';
+const USER_PANES=['user-profile','customer-devices'];
+/* the sites the signed-in account reaches; null is all of them */
+const REACH=AS_USER ? ['Sangria'] : null;
+if(AS_USER){
+  [].slice.call(document.querySelectorAll('.item')).forEach(function(it){
+    if(USER_PANES.indexOf(it.dataset.p)<0) it.hidden=true;
+  });
+  /* a group with nothing left in it goes too - a heading over an empty list
+     reads as a section that failed to load */
+  [].slice.call(document.querySelectorAll('.grp')).forEach(function(g){
+    if(!g.querySelector('.item:not([hidden])')) g.hidden=true;
+  });
+
+  /* The person is one the admin created: Priya Nair, who holds the
+     Sangria-only role on Access Control. Everywhere the page names who is
+     signed in says her name, so the header and the card never disagree. */
+  const ME={first:'Priya',last:'Nair',email:'priya.nair@enerops.example',phone:'+91 98190 22417'};
+  const card=$('p-user-profile');
+  const put=function(k,v){ card.querySelector('.f[data-k="'+k+'"] .v').textContent=v; };
+  put('first',ME.first); put('last',ME.last); put('email',ME.email); put('phone',ME.phone);
+  card.querySelector('.who .big').textContent=ME.first.charAt(0);
+  card.querySelector('.who .nm').textContent=ME.first+' '+ME.last;
+  card.querySelector('.who .ro').textContent='User · Sangria only';
+  $('acctbtn').textContent=ME.first.charAt(0);
+  document.querySelector('.acctwho .nm').textContent=ME.first+' '+ME.last;
+  document.querySelector('.acctwho .em').textContent=ME.email;
+}
+
 /* ---------- groups ---------- */
 window.toggleGrp=function(id){ $(id).classList.toggle('shut'); };
 
 /* ---------- panels ----------
    The hash carries the screen, so a link to one section of Settings lands on that
    section rather than on whichever one happens to be first. */
-const items=[].slice.call(document.querySelectorAll('.item'));
+const items=[].slice.call(document.querySelectorAll('.item')).filter(function(x){ return !x.hidden; });
 function show(name,push){
   const it=items.filter(function(x){return x.dataset.p===name;})[0] || items[0];
   items.forEach(function(x){ x.classList.toggle('on', x===it); });
@@ -1853,13 +1904,17 @@ function show(name,push){
   });
   $('pagehead').textContent = it.dataset.g;
   document.title = 'ENEROPS OS · ' + it.textContent.trim();
-  /* a group cannot hold the current screen and be shut at the same time */
-  const grp = it.closest('.grp'); if(grp) grp.classList.remove('shut');
+  /* Arriving leaves every group shut (see the note on the sidebar). After
+     that, a screen reached by a link opens its group, so the highlighted
+     item is never hidden inside a shut one. */
+  const grp = it.closest('.grp'); if(grp && arrived) grp.classList.remove('shut');
   if(push && location.hash.slice(1)!==it.dataset.p) history.replaceState(null,'','#'+it.dataset.p);
 }
 items.forEach(function(it){ it.addEventListener('click',function(){ show(it.dataset.p,true); }); });
 window.addEventListener('hashchange',function(){ show(location.hash.slice(1),false); });
+let arrived=false;
 show(location.hash.slice(1)||'user-profile',false);
+arrived=true;
 
 /* ---------- editing the profile ----------
    EDIT swaps each printed value for an input where the value already sat, and the
@@ -2304,7 +2359,10 @@ function dvSite(){
   let v=null; try{ v=localStorage.getItem('enerops-plant'); }catch(e){}
   /* falling back to a name typed in here would print an empty table for a site
      that is not in the register, and an empty table reads as a fault */
-  return DEV.some(function(d){return d.pl===v;}) ? v : DEV[0].pl;
+  /* an account that reaches only some sites is never shown another site's
+     register, whatever the last site picked in this browser was */
+  const ok=function(p){ return DEV.some(function(d){return d.pl===p;}) && (!REACH || REACH.indexOf(p)>=0); };
+  return ok(v) ? v : (REACH ? REACH[0] : DEV[0].pl);
 }
 
 function dvRows(){
@@ -2334,10 +2392,12 @@ function dvRowHtml(d){
     +'<td>'+(d.live
         ? '<span class="pill live"><span class="dot"></span>Live</span>'
         : '<span class="pill gone"><span class="dot"></span>Retired</span>')+'</td>'
-    +'<td><div class="rowacts">'
+    /* a user reads the register; renaming is the admin's, so the pencil and
+       the column it stands in are not drawn for them at all */
+    +(AS_USER ? '' : '<td><div class="rowacts">'
     +'<button class="rowbtn" type="button" title="Rename this device"'
     +' aria-label="Rename '+esc(d.nm)+'" onclick="openRn(\''+d.id+'\')">'+I_PEN+'</button>'
-    +'</div></td></tr>';
+    +'</div></td>')+'</tr>';
 }
 
 window.dvDraw=function(reset){
@@ -2350,11 +2410,11 @@ window.dvDraw=function(reset){
 
   $('dv-head').innerHTML='<tr>'+DVCOL.map(function(c){
     return '<th>'+esc(c.t)+'</th>';
-  }).join('')+'<th></th></tr>';
+  }).join('')+(AS_USER ? '' : '<th></th>')+'</tr>';
 
   $('dv-body').innerHTML = slice.length
     ? slice.map(dvRowHtml).join('')
-    : '<tr><td colspan="6"><div class="empty-note">No devices on this site yet</div></td></tr>';
+    : '<tr><td colspan="'+(AS_USER?5:6)+'"><div class="empty-note">No devices on this site yet</div></td></tr>';
 
   $('dv-site').textContent = dvSite();
   const gone=rows.filter(function(d){return !d.live;}).length;

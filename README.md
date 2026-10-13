@@ -439,6 +439,14 @@ System Configuration   emission-rate · electricity-rate · energy-offset · ala
 Access Management      access-role · access-user · access-ctl
 ```
 
+**Two readers.** The customer admin sees all ten panes. A user the customer
+admin creates sees only **User Profile** and **Customer Devices**, and the
+device register read-only. Everything else is hidden, and a link to a hidden
+pane lands on User Profile. Preview it with `settings.html?as=user`.
+
+**Sections start closed.** For both readers the sidebar opens as section names
+only; a section opens when its name is clicked.
+
 The device table **does not sort.** Every column was click-to-sort with a triangle
 on the active one. The triangle was the visible half; taking only it away would
 leave a table that reorders itself when a header is clicked and never says so —
@@ -471,6 +479,12 @@ login.html?fail    stops the run at 'loading sites' — first attempt only.
 login.html?slow    makes that same step overrun until the real SLOW detector
                    trips. The detector is real; the flag only gives it
                    something slow to detect.
+
+settings.html?as=user
+                   Settings as a user the customer admin created, instead of
+                   the customer admin: only User Profile and Customer Devices
+                   (read-only, no rename), signed in as Priya Nair, Sangria
+                   only. Without it the page is the customer admin's.
 
 any key            skips the boot log. Somebody who has seen it once should
                    not have to sit through it again.
