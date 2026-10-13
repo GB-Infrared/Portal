@@ -22,7 +22,7 @@ const reading = (r: Raw | undefined | null): Reading => ({
 });
 
 export function adaptUser(r: Raw): User {
-  return { id: String(r.id ?? r.email ?? ''), name: String(r.name ?? ''), email: String(r.email ?? ''), role: str(r.role) };
+  return { id: String(r.id ?? r.email ?? ''), name: String(r.name ?? ''), email: String(r.email ?? ''), role: str(r.role), accountType: r.accountType === 'admin' ? 'admin' : 'user' };
 }
 
 export function adaptLogin(r: Raw): LoginResult {

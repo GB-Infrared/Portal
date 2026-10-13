@@ -1,10 +1,13 @@
 export type Iso = string;
 
+export type AccountType = 'admin' | 'user';
+
 export interface User {
   id: string;
   name: string;
   email: string;
   role?: string | null;
+  accountType: AccountType;
 }
 
 export interface LoginResult {

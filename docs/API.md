@@ -39,9 +39,9 @@ Set `VITE_AUTH_MODE` to match the backend:
 
 | Call | Sends | Returns |
 |---|---|---|
-| `POST /auth/login` | `{ email, password }` | `{ token, user: { id, name, email, role } }` |
+| `POST /auth/login` | `{ email, password }` | `{ token, user: { id, name, email, role, accountType } }` |
 | `POST /auth/logout` | – | anything |
-| `GET /auth/me` | – | `{ id, name, email, role }` (the signed-in user) |
+| `GET /auth/me` | – | `{ id, name, email, role, accountType }` (the signed-in user) |
 | `POST /auth/password-reset` | `{ email, newPassword }` | anything |
 
 Notes:
@@ -50,6 +50,10 @@ Notes:
   REFUSED and takes the user back to the form.
 - `GET /auth/me` is called when the portal opens, to check the saved session is
   still valid.
+- `accountType` is `"admin"` for the customer admin (the account the web admin
+  panel creates) and `"user"` for a user the customer admin creates. Anything
+  else, or a missing value, is treated as `"user"`. The portal never shows admin
+  screens by mistake. See "Who sees what" under Settings.
 - Password reset: the portal only sends the request. The backend should confirm
   it (emailed link or code) before the new password works. The screen tells the
   user to check their email.
@@ -318,6 +322,25 @@ If a device does not report a tag, return `null` values for it (not zeros).
 
 
 ## Settings
+
+### Who sees what
+
+| Account | Settings screens |
+|---|---|
+| Customer admin (`accountType: "admin"`) | All ten: User Profile, Company Profile, Customer Devices, Emission Rate, Electricity Rate, Energy Offset, Alarms config, Role, User, Access Control |
+| User (`accountType: "user"`) | User Profile and Customer Devices only. Devices are read-only (no rename). |
+
+For a user, the portal does not call any of the admin-only calls below. The
+backend must still refuse them (`403`), because hiding a screen is not
+security:
+
+- `GET /account/company`
+- `PATCH /sites/{siteId}/devices/{deviceId}` (rename)
+- everything under `/sites/{siteId}/rates/...` and `/sites/{siteId}/energy-offsets...`
+- everything under `/account/alarm-recipients`, `/account/roles` and `/account/users`
+
+A user can still read and edit their own profile and change their own password.
+`GET /sites` should return only the sites the user's role reaches.
 
 ### Profile and company
 

@@ -63,6 +63,24 @@ To point the portal at existing backend routes:
 The screens do not need to change.
 
 
+## Two kinds of account
+
+This portal is the customer admin panel. The web admin panel (designed later)
+creates the customer admin, and the customer admin creates users.
+
+| Account | Settings |
+|---|---|
+| Customer admin | All ten screens |
+| User | User Profile and Customer Devices only. Devices are read-only. |
+
+Every other page is the same for both. The backend says which one is signed in
+with `accountType` (`"admin"` or `"user"`) on `/auth/me` and on login. If it is
+missing, the portal treats the person as a user. The backend must still refuse
+admin calls from a user. See "Who sees what" in [docs/API.md](docs/API.md).
+
+In the Settings sidebar every section starts closed, for both accounts.
+
+
 ## Where things are
 
 ```

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as api from '../api/portal';
 import type { PortfolioToday, Site } from '../api/types';
@@ -51,7 +51,7 @@ export default function SiteControl() {
     portfolio.current = { hours, kw, cap: Math.max(cap, ...kw.map(v => v ?? 0), 1), revenue: p.revenue, co2: p.co2AvoidedKg };
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = root.current;
     if (!located.length || !el) return;
     plants.current = located.map(toGlobe);

@@ -12,7 +12,7 @@ const TYPE: Record<string, string> = { INV: 'Inverter', MFM: 'MFM', WMS: 'Weathe
 const typeOf = (d: Device) => TYPE[d.kind] ?? d.kind;
 const byName = (a: Device, b: Device) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
 
-export function DevicesPane({ on, site }: { on: boolean; site: Site }) {
+export function DevicesPane({ on, site, readOnly = false }: { on: boolean; site: Site; readOnly?: boolean }) {
   const toast = useToast();
   const dv = useApi(s => api.getSiteDevices(site.id, { signal: s }), [site.id]);
   const [per, setPer] = useState('25');
@@ -25,6 +25,7 @@ export function DevicesPane({ on, site }: { on: boolean; site: Site }) {
   const n = +per, pages = Math.max(1, Math.ceil(rows.length / n)), page = Math.min(pg, pages - 1);
   const from = page * n, slice = rows.slice(from, from + n);
   const gone = rows.filter(d => d.retired).length;
+  const cols = readOnly ? 5 : 6;
 
   const save = async () => {
     if (!rn) return;
@@ -48,10 +49,10 @@ export function DevicesPane({ on, site }: { on: boolean; site: Site }) {
       </div>
       <div className="tablewrap">
         <table>
-          <thead><tr><th>Device</th><th>Id</th><th>Type</th><th>Commissioned</th><th>Status</th><th /></tr></thead>
+          <thead><tr><th>Device</th><th>Id</th><th>Type</th><th>Commissioned</th><th>Status</th>{!readOnly && <th />}</tr></thead>
           <tbody>
-            {!dv.data ? <tr><td colSpan={6}><DataGate loading={dv.loading} error={dv.error} what="devices" onRetry={dv.reload} /></td></tr>
-              : !slice.length ? <tr><td colSpan={6}><div className="empty-note">No devices on this site yet</div></td></tr>
+            {!dv.data ? <tr><td colSpan={cols}><DataGate loading={dv.loading} error={dv.error} what="devices" onRetry={dv.reload} /></td></tr>
+              : !slice.length ? <tr><td colSpan={cols}><div className="empty-note">No devices on this site yet</div></td></tr>
               : slice.map(d => (
                 <tr key={d.id} className={d.retired ? 'gone' : undefined}>
                   <td className="nm">{d.name}</td>
@@ -59,7 +60,7 @@ export function DevicesPane({ on, site }: { on: boolean; site: Site }) {
                   <td>{typeOf(d)}</td>
                   <td className="mono">{fmtDate(d.commissionedOn)}</td>
                   <td><Pill live={!d.retired} yes="Live" no="Retired" /></td>
-                  <td><div className="rowacts"><Rowbtn title={'Rename ' + d.name} onClick={() => { setRn(d); setName(d.name); setErr(''); }}>{I_PEN}</Rowbtn></div></td>
+                  {!readOnly && <td><div className="rowacts"><Rowbtn title={'Rename ' + d.name} onClick={() => { setRn(d); setName(d.name); setErr(''); }}>{I_PEN}</Rowbtn></div></td>}
                 </tr>
               ))}
           </tbody>
@@ -75,7 +76,7 @@ export function DevicesPane({ on, site }: { on: boolean; site: Site }) {
         <button className="pgbtn" type="button" disabled={page >= pages - 1} onClick={() => setPg(page + 1)}>&rsaquo;</button>
       </div>
 
-      {rn && (
+      {rn && !readOnly && (
         <Modal title="Rename device" onClose={() => setRn(null)} onSubmit={save}
                foot={<><button className="btn" type="button" onClick={() => setRn(null)}>Cancel</button>
                        <button className="btn primary" type="submit" disabled={busy}>Save name</button></>}>
