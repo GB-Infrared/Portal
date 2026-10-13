@@ -1,25 +1,11 @@
 import { useRef, useState, type JSX, type MouseEvent } from 'react';
 import { pad } from '../lib/format';
 
-/* ANALYSIS · ONE FRAME, EVERY PLOTTED DEVICE OVERLAID IN IT.
-
-   Y1 is read down the left gutter and Y2 down the right, and a line says which
-   of the two it belongs to by its STROKE - solid reads left, dashed reads
-   right. The axis titles and the legend chips carry the same mark, because the
-   axis a line is measured against is the one thing a two-scale plot cannot
-   show by itself. Every curve shares one baseline and one set of gridlines, so
-   the gap between two of them is read off directly.
-
-   The right gutter only exists when there is a second scale to print in it. */
-
 export interface ARow { t: number; v1: Record<string, number | null>; v2: Record<string, number | null> }
 export interface ALine { id: string; name: string; which: 1 | 2; color: string; tag: string; unit: string }
 
 const ML = 58, MT = 16, MB = 40;
 
-/** Four intervals of a round step. The baseline is zero when the data reaches
- *  for it, and dropped when the reading is a narrow band far above it - grid
- *  frequency on a 0-50 axis is a dead flat line at the top. */
 export function niceScale(mn: number, mx: number): [number, number] {
   if (!Number.isFinite(mn) || !Number.isFinite(mx)) return [0, 1];
   if (mn === 0 && mx === 0) return [0, 1];
@@ -33,19 +19,15 @@ export function niceScale(mn: number, mx: number): [number, number] {
 }
 
 export const fmtNum = (v: number) => Math.abs(v) >= 1000 ? v.toFixed(0) : Math.abs(v) >= 100 ? v.toFixed(1) : v.toFixed(2);
-/* zero is written "0": an axis printing 0.00 claims a precision it does not have */
 const axNum = (v: number) => Math.abs(v) < 1e-9 ? '0'
   : Math.abs(v) >= 1000 ? v.toLocaleString('en-US', { maximumFractionDigits: 0 })
   : Math.abs(v) >= 10 ? v.toFixed(0) : v.toFixed(Math.abs(v) >= 1 ? 1 : 2);
 
-/** 2026-08-13 06:05:00 - sortable, 24-hour */
 export const stampMs = (ms: number) => {
   const d = new Date(ms);
   return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
 };
 
-/* Ticks land on ROUND times - a ladder of intervals a clock actually has,
-   aligned to local midnight so a day boundary is always one of them. */
 const TSTEPS = [6e4, 12e4, 3e5, 6e5, 9e5, 18e5, 36e5, 72e5, 108e5, 216e5, 432e5, 864e5, 1728e5, 6048e5, 12096e5];
 function timeTicks(from: number, to: number, maxN: number) {
   const span = to - from;
@@ -66,11 +48,11 @@ const xLabel = (ms: number, step: number) => {
 interface Props {
   from: number; to: number;
   rows: ARow[];
-  lines: ALine[];          /* what is drawn: plotted, reported and not switched off */
-  hasY2: boolean;          /* a second parameter is chosen */
+  lines: ALine[];
+  hasY2: boolean;
   y1Label: string; y2Label: string;
   width: number; height: number;
-  note: string | null;     /* empty is a state: the frame is drawn with this over it */
+  note: string | null;
 }
 
 export function AnalysisChart({ from, to, rows, lines, hasY2, y1Label, y2Label, width: W, height: H, note }: Props) {
@@ -118,8 +100,6 @@ export function AnalysisChart({ from, to, rows, lines, hasY2, y1Label, y2Label, 
     </g>
   );
 
-  /* a gap is a GAP: the path breaks rather than bridging the silence, and the
-     fill breaks with it, one closed shape per run of readings */
   const defs: JSX.Element[] = [], areas: JSX.Element[] = [], paths: JSX.Element[] = [];
   for (const l of lines) {
     const e = l.which === 1 ? e1 : e2; if (!e) continue;
@@ -153,7 +133,6 @@ export function AnalysisChart({ from, to, rows, lines, hasY2, y1Label, y2Label, 
                      strokeDasharray={l.which === 2 ? '6 4' : undefined} />);
   }
 
-  /* hover: snap to a sampled instant - the value between two samples was never measured */
   const onMove = (e: MouseEvent) => {
     const svg = svgRef.current, wrap = wrapRef.current; if (!svg || !wrap || !rows.length || !lines.length) return;
     const r = svg.getBoundingClientRect();
@@ -193,7 +172,6 @@ export function AnalysisChart({ from, to, rows, lines, hasY2, y1Label, y2Label, 
         <defs id="gdefs">{defs}</defs>
         <g id="axes">
           {axes}
-          {/* the window, spelled out under the axis - the bar above can be scrolled off */}
           <text className="axt" x={W / 2} y={H - 1} textAnchor="middle" style={{ letterSpacing: '.08em' }}>{stampMs(from) + '  →  ' + stampMs(to)}</text>
           {e1 && title(y1Label, 'Y1', 14, false)}
           {e2 && title(y2Label, 'Y2', W - 13, true)}

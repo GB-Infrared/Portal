@@ -1,9 +1,6 @@
 import type { CSSProperties } from 'react';
 import { ApiError } from '../api/client';
 
-/* What a panel shows while its data is still coming, or when it could not
-   come. Styles in base.css (.dstate). */
-
 export function Waiting({ what = 'Loading', style }: { what?: string; style?: CSSProperties }) {
   return <div className="dstate wait" style={style}><span className="t">{what}…</span></div>;
 }
@@ -22,7 +19,12 @@ export function Failed({ error, what, onRetry, style }: {
   );
 }
 
-/** Loading, failed, or nothing - for panels that render their own content once data is here. */
+export function NoSite({ loading, error, onRetry }: { loading: boolean; error: Error | null; onRetry: () => void }) {
+  if (error) return <Failed error={error} what="your sites" onRetry={onRetry} />;
+  if (loading) return <Waiting what="Loading sites" />;
+  return <div className="dstate"><span className="t">No sites</span><span className="s">This account has no sites to show.</span></div>;
+}
+
 export function DataGate({ loading, error, what, onRetry, style }: {
   loading: boolean; error: Error | null; what: string; onRetry?: () => void; style?: CSSProperties;
 }) {

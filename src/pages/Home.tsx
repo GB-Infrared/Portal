@@ -6,7 +6,7 @@ import { PowerChart } from '../charts/PowerChart';
 import { MonthBars } from '../charts/MonthBars';
 import { niceSteps } from '../charts/util';
 import { DateInput } from '../components/DateInput';
-import { DataGate, Failed, Waiting } from '../components/DataState';
+import { DataGate, NoSite } from '../components/DataState';
 import { MonthPicker } from '../components/MonthPicker';
 import { MultiSelect, SingleSelect } from '../components/Select';
 import { TopBar, refreshMs, type Refresh } from '../components/TopBar';
@@ -14,13 +14,6 @@ import { useToast } from '../components/Toasts';
 import { useApi } from '../hooks/useApi';
 import { DASH, dayMonYear, dt24, fx, isoDay, time12, toDate } from '../lib/format';
 import '../styles/pages/home.css';
-
-/* HOME - the site at a glance: eight readings across the top, the fleet down
-   the left, the day's power against the sun, and the month below it.
-
-   Ported from design-mockup/home.html. Everything the mockup modelled - the
-   curves, the weather, the fleet's state, the alarms - now comes from the
-   backend through src/api/portal.ts; what is left here is how it is drawn. */
 
 const SERIES = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(--s5)', 'var(--s6)',
   'var(--s7)', 'var(--s8)', 'var(--s9)', 'var(--s10)', 'var(--s11)', 'var(--s12)'];
@@ -30,10 +23,6 @@ const SEVRANK: Record<Severity, number> = { critical: 0, alarm: 1, warn: 2, even
 const DEVLBL = { ok: 'RUNNING', warn: 'LOW OUTPUT', down: 'OFFLINE' } as const;
 const METRICS: { v: HomeKpiMetric; t: string }[] = [{ v: 'CUF', t: 'CUF' }, { v: 'PR', t: 'PR' }, { v: 'Availability', t: 'Availability' }];
 
-/* ------------------------------------------------------------------ */
-/* KPI strip                                                           */
-/* ------------------------------------------------------------------ */
-
 const ClockGlyph = () => (
   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"
        strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Last updated">
@@ -41,9 +30,6 @@ const ClockGlyph = () => (
   </svg>
 );
 
-/* LAST UPDATED, on every card but the peak: a figure on a live page says
-   nothing about how old it is. The peak is left out - it already carries a
-   time, and that is the time of the peak, not of the read. */
 function Stamp({ at }: { at: string | null }) {
   const d = toDate(at);
   return (
@@ -87,8 +73,6 @@ function KpiStrip({ siteId, refresh }: { siteId: string; refresh: number }) {
   const pct = pw != null && cap ? pw / cap * 100 : null;
   const peakAt = toDate(k.peakPowerKw.at);
 
-  /* Compared at the SAME HOUR of yesterday, not against yesterday's whole day -
-     at noon a full day would always look like a collapse. */
   let delta: { t: string; c: string } = { t: DASH, c: 'flat' };
   const y = k.energyYesterdaySameTimeKwh, e = k.energyTodayKwh.value;
   if (y != null && y > 0 && e != null) {
@@ -112,8 +96,6 @@ function KpiStrip({ siteId, refresh }: { siteId: string; refresh: number }) {
       </Kpi>
       <Kpi label="Energy today" value={fx(k.energyTodayKwh.value, 2)} unit="kWh" reading={k.energyTodayKwh}
            icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5" /><path d="M3 9.5h18M8 3v3M16 3v3" /></svg>}>
-        {/* a number on its own says nothing about whether the day is going
-            well; against yesterday at the same hour, it does */}
         <div className="sub"><span className={'delta ' + delta.c}>{delta.t}</span> vs yesterday</div>
       </Kpi>
       <Kpi label="Plant energy" value={fx(k.plantEnergyKwh.value, 2)} unit="kWh" reading={k.plantEnergyKwh}
@@ -129,14 +111,6 @@ function KpiStrip({ siteId, refresh }: { siteId: string; refresh: number }) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* alarms                                                              */
-/* ------------------------------------------------------------------ */
-
-/* The rail box states the counts at all times. Hiding a count behind a hover
-   is the one thing an alarm surface must not do. The headline counts FAULTS:
-   an event is a log entry, and counting it would put a number on a site with
-   nothing wrong. */
 function AlarmBox({ alarms, onOpen }: { alarms: Alarm[] | null; onOpen: () => void }) {
   const c = (k: Severity) => (alarms ?? []).filter(a => a.severity === k).length;
   const cr = c('critical'), a = c('alarm'), w = c('warn'), e = c('event');
@@ -191,7 +165,6 @@ function AlarmPanel({ alarms, error, loading, reload, siteName, maxHeight }: {
       </div>
     ));
   } else if (!sev.length) {
-    /* nothing filtered and nothing to show: the one empty state that is good news */
     body = <div className="anone ok">{ICO_OK}<span className="t">All clear</span><span className="s">Nothing is open on {siteName} right now.</span></div>;
   } else {
     const n = all.length;
@@ -217,10 +190,6 @@ function AlarmPanel({ alarms, error, loading, reload, siteName, maxHeight }: {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* fleet                                                               */
-/* ------------------------------------------------------------------ */
-
 function FleetCard({ d, color, sel, mute, cap, onClick }: {
   d: Device; color: string; sel: boolean; mute: boolean; cap: number | null; onClick: () => void;
 }) {
@@ -243,10 +212,6 @@ function FleetCard({ d, color, sel, mute, cap, onClick }: {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* the page                                                            */
-/* ------------------------------------------------------------------ */
-
 type Size = { w: number; h: number };
 
 export default function Home() {
@@ -256,7 +221,6 @@ export default function Home() {
   const every = refreshMs(refresh);
   const siteId = site?.id ?? null;
 
-  /* -------- data -------- */
   const today = isoDay(new Date());
   const [day, setDay] = useState(today);
   const now = new Date();
@@ -270,11 +234,10 @@ export default function Home() {
   const energy = useApi(siteId ? sig => api.getDailyEnergy(siteId, enYM.y, enYM.m + 1, { signal: sig }) : null, [siteId, enYM.y, enYM.m]);
   const kpi = useApi(siteId ? sig => api.getDailyKpi(siteId, metric, kpYM.y, kpYM.m + 1, { signal: sig }) : null, [siteId, metric, kpYM.y, kpYM.m]);
 
-  /* -------- fleet selection drives the power chart -------- */
   const inverters = useMemo(() => (devices.data ?? []).filter(d => d.kind === 'INV'), [devices.data]);
   const [pwSel, setPwSel] = useState<string[]>([]);
   const [pwOff, setPwOff] = useState<Record<string, boolean>>({});
-  useEffect(() => { setPwSel([]); setPwOff({}); }, [siteId]);   /* a selection on the old site means nothing here */
+  useEffect(() => { setPwSel([]); setPwOff({}); }, [siteId]);
   const colorOf = useCallback((id: string) => {
     const i = inverters.findIndex(d => d.id === id);
     const d = inverters[i];
@@ -284,7 +247,7 @@ export default function Home() {
   const devFocus = (id: string) => {
     const next = pwSel.includes(id) ? pwSel.filter(x => x !== id) : [...pwSel, id];
     const order = inverters.map(d => d.id);
-    next.sort((a, b) => order.indexOf(a) - order.indexOf(b));      /* fleet order, not click order */
+    next.sort((a, b) => order.indexOf(a) - order.indexOf(b));
     setPwSel(next);
     setPwOff(o => ({ power: o.power, irradiance: o.irradiance }));
     toast(!next.length ? 'Plant total' : next.length === 1 ? next[0] + ' vs irradiance' : next.length + ' inverters vs irradiance');
@@ -293,8 +256,6 @@ export default function Home() {
   const pwToggle = (k: string) => setPwOff(o => ({ ...o, [k]: !o[k] }));
   const [cufOff, setCufOff] = useState<Record<string, boolean>>({});
 
-  /* -------- the alarms panel: opens on the rail box, closes 150 ms after the
-     pointer leaves both, so the gap between them can be crossed -------- */
   const [apOpen, setApOpen] = useState(false);
   const closeT = useRef(0);
   const openAlarms = () => { clearTimeout(closeT.current); setApOpen(true); };
@@ -311,11 +272,6 @@ export default function Home() {
     return () => { document.removeEventListener('mouseover', over); document.removeEventListener('keydown', key); };
   }, [apOpen]);
 
-  /* -------- the page is fitted to the viewport, not to its own width --------
-     Both chart rows are sized from the height left below the KPI strip, split
-     between them: the day curve takes the larger share, capped, and the month
-     charts give way first. Heights are HELD while the alarms panel is open -
-     the panel takes width from the chart, never its height. */
   const gmRef = useRef<HTMLDivElement>(null), mcRef = useRef<HTMLElement>(null), pageRef = useRef<HTMLDivElement>(null);
   const pwCard = useRef<HTMLDivElement>(null), enCard = useRef<HTMLDivElement>(null), cufCard = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLElement>(null);
@@ -346,7 +302,6 @@ export default function Home() {
     const next = { pw: { w: wOf(pc), h: line }, en: { w: wOf(ec), h: month }, cuf: { w: wOf(cc), h: month } };
     const same = (a: Size, b: Size) => a.w === b.w && a.h === b.h;
     if (!same(next.pw, cur.pw) || !same(next.en, cur.en) || !same(next.cuf, cur.cuf)) setSz(next);
-    /* the rail must never make the page taller than the content beside it */
     const rail = railRef.current;
     if (rail) {
       const kids = [...mc.children] as HTMLElement[];
@@ -365,19 +320,15 @@ export default function Home() {
     return () => { ro.disconnect(); window.removeEventListener('resize', refit); cancelAnimationFrame(raf); };
   }, [fit]);
   useEffect(() => {
-    /* cap the panel to the chart card's height, so opening never stretches the row */
     if (apOpen && pwCard.current) setApMax(pwCard.current.offsetHeight);
   }, [apOpen]);
 
-  /* -------- no site yet -------- */
   if (!site) {
     return (
       <div className="pg-home">
         <TopBar refresh={refresh} onRefresh={setRefresh} />
         <div className="page"><div className="card">
-          {siteErr ? <Failed error={siteErr} what="your sites" onRetry={reloadSites} />
-            : siteLoading ? <Waiting what="Loading sites" />
-            : <div className="dstate"><span className="t">No sites</span><span className="s">This account has no sites to show.</span></div>}
+          <NoSite loading={siteLoading} error={siteErr} onRetry={reloadSites} />
         </div></div>
       </div>
     );
@@ -391,7 +342,6 @@ export default function Home() {
     </span>
   );
 
-  /* energy axis: four bands, rounded; KPI: five bands */
   const enVals = energy.data ? daysArr(energy.data.days.map(d => [d.day, d.kwh]), enYM) : null;
   const enScale = niceSteps(Math.max(1, ...(enVals ?? []).map(v => v ?? 0)), 4);
   const kpAct = kpi.data ? daysArr(kpi.data.days.map(d => [d.day, d.actual]), kpYM) : null;
@@ -414,10 +364,7 @@ export default function Home() {
 
         <div className="shell">
           <aside className="rail" ref={railRef}>
-            {/* Alarms stay STATED at all times - the counts are never hidden.
-                Only the list is on hover. */}
             <AlarmBox alarms={alarms.data} onOpen={openAlarms} />
-            {/* the fleet is the chart's selector; the cards label themselves */}
             <div className="fleetstrip" id="fleet">
               {devices.data ? inverters.map(d => (
                 <FleetCard key={d.id} d={d} color={colorOf(d.id)} sel={pwSel.includes(d.id)}
@@ -510,7 +457,6 @@ export default function Home() {
 
 const colGap = (el: HTMLElement) => parseFloat(getComputedStyle(el).rowGap) || 14;
 
-/** a month's values by day, index 0 = the 1st, null where the backend has none */
 function daysArr(pairs: [number, number | null][], ym: { y: number; m: number }): (number | null)[] {
   const n = new Date(ym.y, ym.m + 1, 0).getDate();
   const out: (number | null)[] = Array(n).fill(null);

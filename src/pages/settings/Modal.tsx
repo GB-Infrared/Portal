@@ -1,9 +1,5 @@
 import { useEffect, useRef, type FormEvent, type ReactNode } from 'react';
 
-/* ONE WAY OUT, FOR EVERY DIALOG: the x, the backdrop and Escape, said once.
-   The body is locked while a dialog is up, and focus goes to the first field
-   (or the element marked data-autofocus) on the frame that draws it. */
-
 const X = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>;
 
 export function Modal({ title, onClose, onSubmit, children, foot }: {
@@ -40,7 +36,6 @@ export function Modal({ title, onClose, onSubmit, children, foot }: {
   );
 }
 
-/** a labelled field with its complaint under it - never in a summary at the top */
 export function Fld({ label, htmlFor, err, hint, children, id }: {
   label: ReactNode; htmlFor?: string; err?: string; hint?: ReactNode; children: ReactNode; id?: string;
 }) {
@@ -55,7 +50,6 @@ export function Fld({ label, htmlFor, err, hint, children, id }: {
 }
 
 export type Errs = Record<string, string>;
-/** collect every complaint; the first field with one gets the focus */
 export function check(rules: [string, string | false | null | undefined][]): Errs {
   const e: Errs = {};
   for (const [k, msg] of rules) if (msg && !e[k]) e[k] = msg;

@@ -6,10 +6,6 @@
 <title>ENEROPS OS</title>
 <link rel="icon" type="image/png" href="/logo/favicon.png">
 <script>
-/* THE THEME, SET BEFORE THE FIRST PAINT. Light is the default and it lives on
-   the tag: <html> above carries no data-theme. This only puts dark ON for
-   somebody who chose it, so storage can fail outright and the page still
-   opens in the default. See src/lib/theme.ts for the switch. */
 try{ if(localStorage.getItem('enerops-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); }catch(e){}
 </script>
 </head>

@@ -4,8 +4,6 @@ import { AuthProvider, useAuth } from './auth/AuthContext';
 import { SiteProvider } from './auth/SiteContext';
 import { ToastProvider } from './components/Toasts';
 
-/* Each screen is its own chunk: Site Control alone carries the globe's
-   textures, and nobody signing in to read an alarm should wait for them. */
 const Login = lazy(() => import('./pages/Login'));
 const SiteControl = lazy(() => import('./pages/SiteControl'));
 const Home = lazy(() => import('./pages/Home'));
@@ -15,9 +13,6 @@ const Analysis = lazy(() => import('./pages/Analysis'));
 const Kpi = lazy(() => import('./pages/Kpi'));
 const Settings = lazy(() => import('./pages/Settings'));
 
-/* Every screen but the sign-in needs a session. While the session is being
-   checked nothing is drawn - not the sign-in, which would flash for somebody
-   already signed in, and not the page, which would flash for somebody not. */
 function RequireAuth({ children }: { children: ReactNode }) {
   const { status } = useAuth();
   const loc = useLocation();

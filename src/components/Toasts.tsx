@@ -1,7 +1,5 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 
-/* The mockups' T(msg): one line, bottom right, gone after 2.6 s. */
-
 type Toast = { id: number; msg: string; err?: boolean };
 const Ctx = createContext<(msg: string, err?: boolean) => void>(() => {});
 

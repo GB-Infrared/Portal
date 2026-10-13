@@ -1,14 +1,5 @@
 import { useEffect, useRef, type RefObject } from 'react';
 
-/* THE ROW, IN FULL. Hover a row and the whole of it is lifted out beside the
-   pointer, so a table wider than the screen does not have to be read in two
-   swipes. Labels are taken from the table's OWN header each time it opens -
-   including a two-deck device/variable header, where a column is named by both
-   decks - so a table that re-renders its columns can never mislabel a value.
-
-   Rendered inside the page (not on <body>) so the page's stylesheet, which is
-   scoped to its wrapper, still reaches it. */
-
 function headerLabels(table: HTMLTableElement): string[] {
   const head = table.tHead; if (!head) return [];
   const grid: string[][] = [];
@@ -44,7 +35,7 @@ export function RowPopover({ tableRef }: { tableRef: RefObject<HTMLTableElement 
     const hide = () => { el.classList.remove('on'); row = null; };
     const fill = (tr: HTMLTableRowElement) => {
       const cells = Array.from(tr.cells);
-      if (cells.length < 2) return false;             /* the "nothing here" row */
+      if (cells.length < 2) return false;
       const labels = headerLabels(table);
       let body = '';
       cells.forEach((td, i) => {

@@ -1,21 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { MON, MONL } from '../lib/format';
 
-/* YEAR FIRST, THEN MONTH.
-
-   Opening on a grid of years asks the coarse question first and the fine one
-   second, which is the order the answer is actually known in. Picking a year
-   moves to that year's months; the head then names it and steps back. The
-   charts this drives are whole-month series, so a day grid would ask a
-   question neither can answer. */
-
 interface Props {
   year: number;
-  month: number;            /* 0-11 */
+  month: number;
   onPick: (year: number, month: number) => void;
   label?: string;
   id?: string;
-  /** KPI's monthly view picks a year only */
   yearOnly?: boolean;
 }
 
@@ -71,7 +62,6 @@ export function MonthPicker({ year, month, onPick, label = 'Month & year', id, y
             </>
           ) : (
             <>
-              {/* the head becomes the way back, so the year is never a dead end */}
               <div className="mpick-head">
                 <button type="button" aria-label="Choose another year"
                         onClick={() => { setYpage(Math.floor(vy / YSPAN) * YSPAN); setStep('year'); }}>&lsaquo;</button>

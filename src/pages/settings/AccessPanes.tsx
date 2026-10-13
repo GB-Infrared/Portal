@@ -12,10 +12,6 @@ import { EMAIL, I_BACK, I_BIN, I_BOX, I_PEN, I_PLUS, Pill, Rowbtn, useAsk, why }
 const SEVS: { k: Severity; t: string }[] = [{ k: 'critical', t: 'Critical' }, { k: 'alarm', t: 'Alarm' }, { k: 'warn', t: 'Warning' }, { k: 'event', t: 'Event' }];
 const userName = (u: { first: string; last: string }) => (u.first + ' ' + u.last).trim();
 
-/* ---------- ALARMS CONFIG ----------
-   Who hears about an alarm, and which of the portal's four levels reach them.
-   Not per site: an alarm reaches a person, and a person does not stop existing
-   when Site Control is pointed somewhere else. */
 export function AlarmsConfigPane({ on, users }: { on: boolean; users: AccountUser[] | null }) {
   const toast = useToast(), ask = useAsk();
   const rc = useApi(s => api.getRecipients({ signal: s }), []);
@@ -33,8 +29,6 @@ export function AlarmsConfigPane({ on, users }: { on: boolean; users: AccountUse
     setWho(r === 'new' ? '' : r.name); setMail(r === 'new' ? '' : r.email);
     setSev(r === 'new' ? { critical: false, alarm: false, warn: false, event: false } : { ...r.severities });
   };
-  /* ONLY USERS NOT ALREADY ON THE LIST ARE OFFERED - and the row being edited
-     does not count as taken */
   const taken = list.filter(r => r !== editing).map(r => r.email.toLowerCase());
   const userOpts = (users ?? []).filter(u => !taken.includes(u.email.toLowerCase())).map(u => ({ v: u.id, t: userName(u), s: u.email }));
 
@@ -44,7 +38,6 @@ export function AlarmsConfigPane({ on, users }: { on: boolean; users: AccountUse
       ['al-who', !w && 'A name is required.'],
       ['al-mail', !m ? 'An email address is required.' : !EMAIL.test(m) ? 'That does not look like an email address.'
         : list.some(x => x !== editing && x.email.toLowerCase() === m.toLowerCase()) && 'That address is already on the list.'],
-      /* a recipient sent nothing is a row that looks like coverage and is not */
       ['al-critical', !SEVS.some(s => sev[s.k]) && 'Pick at least one — a recipient sent nothing is not a recipient.'],
     ]);
     setErrs(e); if (Object.keys(e).length) return;
@@ -69,7 +62,6 @@ export function AlarmsConfigPane({ on, users }: { on: boolean; users: AccountUse
       <div className="chead">
         <div className="title">Alarms config</div>
         <div className="tools">
-          {/* the count that matters is whether anyone is sent the worst level */}
           <span className="count">{rc.data ? list.length + ' recipient' + (list.length === 1 ? '' : 's') + ' · ' + (crit ? crit + ' sent criticals' : 'nobody is sent criticals') : ''}</span>
           <button className="tbtn" type="button" disabled={!rc.data} onClick={() => open('new')}>{I_PLUS}ADD RECIPIENT</button>
         </div>
@@ -105,8 +97,6 @@ export function AlarmsConfigPane({ on, users }: { on: boolean; users: AccountUse
         <Modal title={editing ? 'Edit recipient' : 'Add recipient'} onClose={() => setEdit(null)} onSubmit={save}
                foot={<><button className="btn" type="button" onClick={() => setEdit(null)}>Cancel</button>
                        <button className="btn primary" type="submit" disabled={busy}>{editing ? 'Save changes' : 'Add recipient'}</button></>}>
-          {/* PICK A PERSON, or type somebody who is not one - the site office
-              mailbox never signs in. Offered only while adding. */}
           {!editing && (
             <Fld label="From your users" htmlFor="al-user">
               <SsSelect id="al-user" label="Users not yet on this list" any="Type below, or pick a user" empty="Every user on this account is already being told"
@@ -133,16 +123,12 @@ export function AlarmsConfigPane({ on, users }: { on: boolean; users: AccountUse
   );
 }
 
-/* a role that reaches everywhere is said in one chip rather than three */
 function SiteChips({ ids, sites }: { ids: string[]; sites: Site[] }) {
   if (!ids.length) return <span className="chip">No sites</span>;
   if (sites.length && sites.every(s => ids.includes(s.id))) return <span className="chip all">All sites</span>;
   return <div className="chips">{ids.map(id => <span className="chip" key={id}>{sites.find(s => s.id === id)?.name ?? id}</span>)}</div>;
 }
 
-/* ---------- ROLE ----------
-   A role is a name and the sites it reaches. A role somebody holds cannot be
-   removed: "no role" is a decision for Access Control, not a side effect here. */
 export function RolePane({ on, roles, users, sites }: { on: boolean; roles: ApiState<Role[]>; users: AccountUser[] | null; sites: Site[] }) {
   const toast = useToast(), ask = useAsk();
   const list = roles.data ?? [];
@@ -226,10 +212,6 @@ export function RolePane({ on, roles, users, sites }: { on: boolean; roles: ApiS
   );
 }
 
-/* ---------- USER ----------
-   The people who can sign in. No DELETE: a person is suspended and keeps their
-   name on everything they did. The role is NOT set here - Access Control is the
-   one place a role is given; editing a user leaves their role as it was. */
 export function UserPane({ on, users, roles }: { on: boolean; users: ApiState<AccountUser[]>; roles: Role[] }) {
   const toast = useToast(), ask = useAsk();
   const list = users.data ?? [];
@@ -322,9 +304,6 @@ export function UserPane({ on, users, roles }: { on: boolean; users: ApiState<Ac
   );
 }
 
-/* ---------- ACCESS CONTROL ----------
-   Every user, every role, one table. The role is changed in the cell where it
-   is read, and the sites it grants are printed beside it. */
 export function AccessCtlPane({ on, users, roles, sites }: { on: boolean; users: ApiState<AccountUser[]>; roles: Role[]; sites: Site[] }) {
   const toast = useToast();
   const list = users.data ?? [];
@@ -333,7 +312,6 @@ export function AccessCtlPane({ on, users, roles, sites }: { on: boolean; users:
     try { await api.setUserRole(u.id, roleId || null); users.reload(); toast(r ? userName(u) + ' → ' + r.name : userName(u) + ' has no role'); }
     catch (x) { toast('Could not change the role: ' + why(x), true); }
   };
-  /* the number worth surfacing is how many people can reach nothing */
   const none = list.filter(u => u.active && !roles.some(r => r.id === u.roleId)).length;
   const opts = [{ v: '', t: 'No role', none: true }, ...roles.map(r => ({ v: r.id, t: r.name }))];
   return (

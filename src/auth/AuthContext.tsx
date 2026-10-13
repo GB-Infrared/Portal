@@ -3,23 +3,15 @@ import { getToken, setToken, UNAUTHORIZED_EVENT } from '../api/client';
 import { AUTH_MODE } from '../api/config';
 import * as api from '../api/portal';
 import type { User } from '../api/types';
-
-/* WHO IS SIGNED IN.
-
-   On load the session is checked with the backend (GET me) rather than
-   trusted from storage: a token the server has since revoked must not open the
-   portal. Any 401 from any screen ends the session and sends the reader back to
-   the sign-in. */
+import { ignoreErrors } from '../lib/ignoreErrors';
 
 type Status = 'checking' | 'in' | 'out';
 
 interface AuthValue {
   status: Status;
   user: User | null;
-  /** throws ApiError when the backend refuses */
   signIn: (email: string, password: string) => Promise<User>;
   signOut: () => Promise<void>;
-  /** the header names who is signed in, so it changes when the profile does */
   patchUser: (u: Partial<User>) => void;
 }
 
@@ -30,7 +22,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    /* bearer mode with no token: nothing to check, the answer is "out" */
     if (AUTH_MODE === 'bearer' && !getToken()) { setStatus('out'); return; }
     const ctl = new AbortController();
     api.me({ signal: ctl.signal }).then(
@@ -51,12 +42,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (AUTH_MODE === 'bearer') setToken(r.token ?? null);
     setUser(r.user);
     setStatus('in');
-    try { localStorage.setItem('enerops-operator', r.user.email); } catch { /* optional */ }
+    ignoreErrors(() => localStorage.setItem('enerops-operator', r.user.email));
     return r.user;
   }, []);
 
   const signOut = useCallback(async () => {
-    try { await api.logout(); } catch { /* the session ends here either way */ }
+    await api.logout().catch(() => undefined);
     setToken(null); setUser(null); setStatus('out');
   }, []);
 

@@ -1,96 +1,57 @@
-/* Ported from the design-mockup branch, settings.html.
-   Every rule is scoped to .pg-settings so pages cannot restyle each other in the
-   single-page app; the resets and the dark sky behind the glass live once in
-   base.css. Otherwise the stylesheet - comments included - is the mockup's. */
 .pg-settings{
-  /* ---- LIGHT · UTILITY BLUE (default) · enterprise solar-portal palette ---- */
-  --bg:#f1f4f8;            /* page background            */
-  --panel:#ffffff;         /* card surface               */
-  --panel-2:#f5f8fb;       /* nested surface / inputs    */
-  --line:#dde4ec;          /* card borders               */
-  --line-soft:#e9eef4;     /* gridlines, dividers        */
-  --line-hi:#b5c2d1;       /* hover / active borders     */
-  --text:#152234;          /* primary text               */
-  --muted:#5a6b7f;         /* secondary text             */
-  --faint:#8494a6;         /* tertiary text              */
-  --dim:#aab6c4;           /* dead readouts (offline)    */
-  --elev:#ffffff;          /* tooltips, toasts           */
-  --sel:#e8f0fb;           /* selected card surface      */
+  --bg:#f1f4f8;
+  --panel:#ffffff;
+  --panel-2:#f5f8fb;
+  --line:#dde4ec;
+  --line-soft:#e9eef4;
+  --line-hi:#b5c2d1;
+  --text:#152234;
+  --muted:#5a6b7f;
+  --faint:#8494a6;
+  --dim:#aab6c4;
+  --elev:#ffffff;
+  --sel:#e8f0fb;
   --hover:rgba(11,99,206,.07);
   --hover-soft:rgba(11,99,206,.045);
-  /* the row under the pointer, and only that row */
   --row-hover:rgba(11,99,206,.10);
   --shadow:rgba(19,38,63,.16);
-  --on-accent:#ffffff;     /* text on a filled accent    */
-  /* header bar — same surface family as the cards */
+  --on-accent:#ffffff;
   --topbar:var(--panel);
   --topbar-fg:var(--text);
   --topbar-fg-2:var(--muted);
   --topbar-tab:var(--muted);
   --topbar-hover:var(--hover);
   --topbar-active:var(--green-soft);
-  --green:#12a150;         /* producing / healthy        */
-  --green-rgb:18,161,80;   /* same green, for rgba() glows */
+  --green:#12a150;
+  --green-rgb:18,161,80;
   --green-soft:rgba(18,161,80,.12);
   --green-deep:#0b7a3c;
   --blue:#1a73c8;
   --blue-soft:rgba(26,115,200,.12);
-  --red:#d92d20;           /* offline / alarms           */
-  --crit:#8c1109;          /* critical — above alarm     */
+  --red:#d92d20;
+  --crit:#8c1109;
   --red-soft:rgba(217,45,32,.1);
-  --amber:#dc7a06;         /* yield / deviations         */
+  --amber:#dc7a06;
   --amber-soft:rgba(220,122,6,.12);
-  --brand:#a87b0f;         /* wordmark · gold            */
+  --brand:#a87b0f;
   --mono:ui-monospace,'SF Mono','Cascadia Code','Roboto Mono',Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
   --serif:Georgia,'Times New Roman',serif;
   --r-lg:14px; --r-md:10px; --r-sm:8px;
 }
-/* ---- DARK · the front door's palette, on every page behind it.
-
-   THIS IS THE SIGN-IN'S SKY, not a second design. login.html and the site
-   overview have always stood in the void; the portal stopped at the door and
-   turned white. Somebody who signs in at night now keeps the room they signed
-   in from, and these are that screen's own token values, copied rather than
-   re-picked - two dark palettes that drift apart is exactly the failure the
-   single :root above was written to avoid.
-
-   NOT ONE RULE BELOW THIS BLOCK CHANGES. Only the VALUES are redefined, so
-   every rule on the page - the cards, the tables, the charts, the dialogs -
-   goes dark by reading the same token names it already read. A page re-skinned
-   by rewriting two hundred declarations is a page with two hundred chances to
-   miss one.
-
-   The header tokens are not here because they do not need to be: --topbar and
-   its family are declared as var(--panel), var(--text) and so on, so they
-   follow whatever these say.
-
-   The colours mean here what they mean on the overview: WHITE a fixed fact,
-   EMERALD live, GOLD what has been banked. ---------------------------------- */
 html[data-theme="dark"] .pg-settings{
-  /* THE BROWSER'S OWN WIDGETS HAVE TO BE TOLD. Radios, tick boxes, the native
-     date popup and the scrollbars are drawn by the UA, not by anything here,
-     and left alone they stay in their light costume - four white discs in a
-     navy menu, and a calendar that opens as a white sheet. One declaration
-     hands the whole set over, which is the only way to reach the parts of a
-     control this stylesheet cannot select. */
   color-scheme:dark;
   accent-color:#3ad998;
-  --bg:#070c14;            /* the void itself            */
-  --panel:rgba(9,16,28,.74);   /* the same glass the overview stands on */
+  --bg:#070c14;
+  --panel:rgba(9,16,28,.74);
   --panel-2:rgba(9,16,28,.62);
   --line:rgba(150,180,220,.16);
   --line-soft:rgba(150,180,220,.10);
   --line-hi:rgba(140,175,215,.30);
-  --text:#e9f1fb;          /* white  - fixed facts, identity */
+  --text:#e9f1fb;
   --muted:#8ba0bb;
   --faint:#7d92ad;
-  --dim:#5d6e83;           /* dead readouts, and they read dead on black */
-  /* OPAQUE, and the one token here that is. The cards are glass because they
-     sit still and the void behind them is meant to show; a dropdown, a tooltip
-     or a toast is drawn OVER something a reader is trying to read, and at 96%
-     the number underneath was still legible through the menu. A floating layer
-     that lets its background through is not a layer. */
+  --dim:#5d6e83;
   --elev:#0d1624;
   --sel:rgba(127,178,238,.14);
   --hover:rgba(150,180,220,.07);
@@ -99,10 +60,8 @@ html[data-theme="dark"] .pg-settings{
   --shadow:rgba(0,0,0,.62);
   --scrim:rgba(3,7,13,.70);
   --grid-v:rgba(150,180,220,.07);
-  /* text ON a filled accent. White on emerald is unreadable at this weight, and
-     the accents are light here - so the ink goes dark instead. */
   --on-accent:#07121b;
-  --green:#3ad998;         /* emerald - live */
+  --green:#3ad998;
   --green-rgb:58,217,152;
   --green-soft:rgba(58,217,152,.14);
   --green-deep:#3ad998;
@@ -113,97 +72,36 @@ html[data-theme="dark"] .pg-settings{
   --crit:#ff9d94;
   --amber:#f0b74a;
   --amber-soft:rgba(240,183,74,.15);
-  --brand:#f0b74a;         /* gold - the wordmark, and what the day earns */
+  --brand:#f0b74a;
   --brand-soft:rgba(240,183,74,.14);
   --brand-line:rgba(240,183,74,.34);
-  /* The series hues, lifted. A mid-tone picked to carry on white sinks into
-     navy - #12a150 against #070c14 is a line you have to hunt for - so every
-     one of these is the same hue at the brightness this ground needs. The
-     charts read them as tokens and never learn a theme exists. */
   --s1:#3ad998; --s2:#7fb2ee; --s3:#f0b74a; --s4:#b39cff;
   --s5:#ff8ac0; --s6:#4fd3dd; --s7:#e9a03c; --s8:#9a92ff;
   --s9:#4fd0bd; --s10:#e3c05a; --s11:#ff8ac0; --s12:#5cc0f5;
   --k1:#6aa8ff; --k2:#f7b955; --k3:#3ad998; --k4:#ff8ac0;
   --k5:#a99bff; --k6:#4fd3dd;
 }
-/* The one control that is not a reading: it belongs with the clock and the
-   avatar, at the right of the bar, because it is about the SCREEN rather than
-   about the plant. */
 .pg-settings .themebtn{width:30px;height:30px;display:grid;place-items:center;flex:none;
   border-radius:8px;border:1px solid var(--line);background:var(--panel-2);
   color:var(--topbar-fg-2,var(--muted));transition:background .12s,border-color .12s,color .12s}
 .pg-settings .themebtn:hover{border-color:var(--line-hi);background:var(--topbar-hover,var(--hover));
   color:var(--topbar-fg,var(--text))}
 .pg-settings .themebtn svg{display:block}
-/* the icon shows WHAT YOU WILL GET, not what you are in: a moon on the light
-   page is an offer, a moon on the dark page is a label for a state the whole
-   screen is already stating */
 .pg-settings .themebtn .moon{display:none}
 html[data-theme="dark"] .pg-settings .themebtn .moon{display:block}
 html[data-theme="dark"] .pg-settings .themebtn .sun{display:none}
-/* [global - see base.css] * */
-/* [global - see base.css] html */
-/* [global - see base.css] body */
 
-/* ===================== THE FIELD THE GLASS STANDS ON =====================
-   DARK WAS A FLAT BLACK SLAB, and it should not have been.
-
-   The dark tokens were copied from the sign-in exactly, which was right, but
-   only half of what makes that screen work came across. Over there --panel is
-   rgba(9,16,28,.74) - GLASS - and behind it is a lit sky: a warm wash where the
-   sun is, a wide cold one carrying the rest, a star field and the limb of the
-   Earth. The panel reads as a surface because there is something behind it for
-   it to be in front of.
-
-   Here the same glass was laid on #070c14 and nothing else. 74% of near-black
-   over near-black composites to near-black: card and page came out within a
-   couple of values of each other, every border did the whole job of separating
-   them, and the screen read as one unlit sheet with type on it. The tokens were
-   never the problem - the room was empty.
-
-   So this is the sign-in's own sky, at working strength. Same three washes, same
-   places, same hues; roughly a third of the amplitude, because that screen is a
-   held moment with one panel on it and this one is a working surface covered in
-   tables. Enough to give the glass something to lift off, not enough to be read
-   as data. No stars and no limb: those are the front door's, and a horizon
-   behind a KPI table would be scenery.
-
-   ON html, NOT ON body. The root element's background paints the whole canvas
-   and does not scroll away when a long table does - a wash on body either ends
-   where the content ends or has to be pinned with background-attachment:fixed,
-   which repaints the gradient on every scroll frame. body is handed back to
-   transparent for the same reason: two backgrounds is one background and one
-   piece of dead code.
-
-   LIGHT IS UNTOUCHED. It is a daylit palette on a solid ground and it separates
-   its cards with white against grey, which needs no help from behind. */
 html[data-theme="dark"] .pg-settings{
   background:
-    /* the sun, off the top right corner */
     radial-gradient(circle 46vmax at 80% -8%,
       rgba(255,216,146,.085) 0%, rgba(240,178,73,.032) 32%, transparent 64%),
-    /* the cold half of the same sky, wide enough to reach the far corner */
     radial-gradient(ellipse 155% 125% at 80% -8%,
       rgba(126,158,214,.115) 0%, rgba(90,120,180,.05) 46%, transparent 80%),
-    /* and the void closing back in under both, so the foot of a long page is
-       the deep end rather than a gradient that simply stops */
     radial-gradient(ellipse 130% 105% at 50% 62%,
       rgba(2,6,14,.34) 0%, rgba(0,1,5,.5) 100%),
     var(--bg);
 }
-/* [global - see base.css] html[data-theme="dark"] body */
-/* [global - see base.css] ::-webkit-scrollbar */
-/* [global - see base.css] ::-webkit-scrollbar-thumb */
-/* [global - see base.css] ::-webkit-scrollbar-track */
-/* [global - see base.css] button */
-/* [global - see base.css] a */
 
-/* ---------- top bar ----------
-   The five reading pages carry tabs, a clock and a refresh control. Settings
-   carries none of them: nothing on this screen is a live reading, so a pulsing
-   dot and a "5 min" refresh would be the chrome claiming something the page does
-   not do. The mark goes back to the portal, which is the only navigation this
-   screen owes the reader. */
 .pg-settings .topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:20px;
   height:58px;padding:0 22px;border-bottom:1px solid var(--line);
   background:var(--topbar);color:var(--topbar-fg)}
@@ -221,10 +119,6 @@ html[data-theme="dark"] .pg-settings{
   background:transparent;border:1px solid transparent;color:var(--muted)}
 .pg-settings .iconbtn:hover{color:var(--text);background:var(--hover);border-color:var(--line)}
 
-/* ---------- account menu ----------
-   The avatar was a dead circle on every page: it named the signed-in user and
-   offered nothing. It is the only place Settings and Sign Out can live without
-   spending a tab on either. */
 .pg-settings .acct{position:relative;display:flex}
 .pg-settings .avatar{width:30px;height:30px;border-radius:50%;background:var(--panel-2);
   display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--text);
@@ -247,13 +141,9 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings .acctitem.out:hover{background:var(--red-soft);color:var(--red)}
 .pg-settings .acctitem.out:hover svg{color:var(--red)}
 
-/* ---------- shell ---------- */
 .pg-settings .shell{display:grid;grid-template-columns:250px 1fr;align-items:start;
   min-height:calc(100vh - 58px)}
 
-/* ---------- sidebar ----------
-   Groups, not a flat list of eleven. Eleven links in a column is a wall a reader
-   has to scan every time; four headings is a question they can answer first. */
 .pg-settings .side{position:sticky;top:58px;align-self:start;height:calc(100vh - 58px);overflow-y:auto;
   border-right:1px solid var(--line);background:var(--panel);padding:0 0 24px}
 .pg-settings .sidehead{display:flex;align-items:center;justify-content:center;gap:10px;
@@ -267,8 +157,6 @@ html[data-theme="dark"] .pg-settings{
   font-size:13px;font-weight:600;text-align:left}
 .pg-settings .grpbtn:hover{background:var(--hover)}
 .pg-settings .grpbtn svg.gi{flex:none;color:var(--green)}
-/* the chevron points at what the click will do: down when the group is shut and
-   about to open, up when it is open and about to close */
 .pg-settings .grpbtn .chev{margin-left:auto;flex:none;color:var(--faint);transition:transform .16s ease}
 .pg-settings .grp.shut .chev{transform:rotate(180deg)}
 .pg-settings .grpitems{display:flex;flex-direction:column;gap:1px;padding:2px 0 4px 12px}
@@ -277,15 +165,9 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings .item{display:block;padding:7px 12px;border-radius:8px;font-size:12.5px;font-weight:500;
   color:var(--muted);width:100%;border:none;background:transparent;text-align:left;font-family:inherit}
 .pg-settings .item:hover{color:var(--text);background:var(--hover)}
-/* Weight and a rule down the edge carry it; the wash only agrees with them. And
-   the wash is the SAME green the active tab wears on all five reading pages —
-   Settings spent its accent on blue for a while, which made one screen of the
-   portal look like a different product. Blue in this portal is a data series
-   (simulated CUF), never chrome. */
 .pg-settings .item.on{color:var(--text);font-weight:700;background:var(--green-soft);
   box-shadow:inset 2px 0 0 var(--green)}
 
-/* ---------- main ---------- */
 .pg-settings .main{padding:22px clamp(16px,2vw,30px) 40px;min-width:0}
 .pg-settings .pagehead{font-size:20px;font-weight:600;letter-spacing:-.01em;margin-bottom:16px}
 .pg-settings .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg)}
@@ -300,7 +182,6 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings .panel{display:none}
 .pg-settings .panel.on{display:block}
 
-/* ---------- the profile ---------- */
 .pg-settings .who{display:flex;align-items:center;gap:18px;padding:24px 20px 22px}
 .pg-settings .who .big{width:78px;height:78px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);
   display:flex;align-items:center;justify-content:center;
@@ -308,10 +189,6 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings .who .nm{font-size:20px;font-weight:700;letter-spacing:-.01em}
 .pg-settings .who .ro{font-size:12px;color:var(--muted);margin-top:2px}
 
-/* Two columns, filled in reading order. The legacy screen ran Email and Contact
-   down the left while the right column sat empty from Address onward, which put
-   a hole in the middle of the card and made the pairing look meaningful when it
-   was only what the grid did when it ran out. */
 .pg-settings .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 32px;
   padding:4px 20px 24px}
 @media (max-width:760px){ .pg-settings .fields{grid-template-columns:1fr} }
@@ -327,24 +204,6 @@ html[data-theme="dark"] .pg-settings{
   font-size:12.5px;font-weight:600;color:var(--green-deep);padding:2px 0}
 .pg-settings .linkbtn:hover{text-decoration:underline}
 
-/* ---------- the device register ----------
-   The legacy screen was select-then-act: tick a checkbox, travel to a button in
-   the far top-right, and be told by a browser alert that you had not ticked
-   anything. Three faults in one gesture — the action sits a screen-width away
-   from the row it acts on, the alert interrupts to report a state the interface
-   should never have allowed, and the button looks ready when it is not.
-
-   So the actions live ON the row. There is nothing to select, nowhere to travel,
-   and no state in which a button can be pressed and refuse. The checkbox column
-   and the top-right pair are gone with the alert that needed them. */
-/* The site is chosen once, in the orbit on Site Control, and every page reads
-   that one choice. So this card states it and does not offer a second way to set
-   it: a picker here would be a second answer to a settled question, and two
-   controls for one fact is how they end up disagreeing.
-
-   The pin sits ON the card rather than in the page header, because this is the
-   only plant-scoped screen in Settings — a header pin would also be claiming the
-   ten account-level sections that have nothing to do with a site. */
 .pg-settings .sitepin{display:inline-flex;align-items:center;gap:6px;color:var(--text)}
 .pg-settings .sitepin svg{color:var(--green);flex:none}
 .pg-settings .sitepin .n{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.02em}
@@ -354,33 +213,6 @@ html[data-theme="dark"] .pg-settings{
   padding:0 28px 0 11px;font-size:13px;font-family:inherit;outline:none}
 .pg-settings select:hover,.pg-settings select:focus{border-color:var(--line-hi);background-color:var(--hover)}
 
-/* ---------- one-of-many ----------
-   The rule above styles the box. It cannot touch what happens when the box is
-   opened: a native <select> hands its list to the operating system, and the list
-   comes back a grey system menu in a system font, sized and drawn by Windows,
-   matching nothing else on the screen and beyond the reach of every token in
-   this file.
-
-   THIS IS MONITORING'S PICKER, NOT A SECOND ONE. Monitoring already answers
-   "exactly one of these" - a bordered button carrying the current value, and a
-   panel of RADIO rows under it that closes on the pick. Every rule below is
-   that control's, copied by name: .mbtn, .mlab, .colpanel, .mpanel, .colhead,
-   .colrow. A reader who has used the device-type picker has used this one.
-
-   The radio is the reason it is radios and not ticks: exactly one of these is
-   true at a time, and the control should say so BEFORE it is used rather than
-   after, when the tick appears on one row and not the others.
-
-   TWO THINGS DIFFER, and both are forced by where these open rather than by
-   how they look. Monitoring's panel is absolutely positioned inside its
-   trigger's wrapper, which works in a toolbar; here they open inside a dialog
-   that scrolls its own body and inside a table that scrolls sideways, and both
-   of those clip anything positioned within them. So the panel is placed in
-   viewport coordinates instead. And the open state is read from aria-expanded
-   rather than from a wrapper's .open class, so the trigger needs no wrapper.
-
-   The rows-per-page pager keeps the native box, because Monitoring's pager is
-   the same native box. Matching Monitoring means leaving that one alone. */
 .pg-settings .mbtn{display:flex;align-items:center;width:100%;min-width:150px;height:34px;
   padding:0 28px 0 11px;border-radius:var(--r-sm);border:1px solid var(--line);
   color:var(--text);font-family:inherit;font-size:13px;font-weight:600;text-align:left;
@@ -388,21 +220,13 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings .mbtn:hover,.pg-settings .mbtn[aria-expanded=true]{border-color:var(--line-hi);background-color:var(--hover)}
 .pg-settings .mbtn:focus-visible{outline:none;border-color:var(--line-hi);box-shadow:0 0 0 3px var(--hover-soft)}
 .pg-settings .mbtn .mlab{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* "nothing chosen" is a state and not a value, so it is said in the muted voice
-   every filter bar on this portal already says it in */
 .pg-settings .mbtn .mlab.any{color:var(--muted);font-weight:600}
 .pg-settings .fld.bad .mbtn{border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
-/* in a table the same control sits in a 30px cell and sizes to its own text */
 .pg-settings .mbtn.mini{width:auto;min-width:158px;height:30px;font-size:12.5px;
   padding:0 26px 0 9px;background-position:right 9px center}
-/* .mini was drawn for a role cell in a table, where 158px is the room a role
-   name needs. The footer holds a two- or three-digit count and nothing else, so
-   it states its own width rather than reserving a column of air beside it. */
 .pg-settings .mbtn.mini.perbtn{min-width:70px;font-family:var(--mono);font-size:12px;
   justify-content:space-between}
 
-/* ONE panel, lent to whichever button is open - two of these cannot be open at
-   once, so a panel per control would only be a second thing to keep in step. */
 .pg-settings .colpanel{position:fixed;z-index:200;display:none;flex-direction:column;
   background:var(--elev);border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:0 18px 44px -16px var(--shadow);padding:8px;overflow-y:auto}
@@ -415,13 +239,8 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings .colrow:hover{background:var(--hover)}
 .pg-settings .colrow input{width:14px;height:14px;min-width:0;accent-color:var(--green);flex:none}
 .pg-settings .mpanel{min-width:212px}
-/* the row the keyboard is on, which is not the row that is chosen: the radio
-   says what is true, this says where you are, and they part company the moment
-   an arrow key is pressed */
 .pg-settings .colrow.here{background:var(--row-hover)}
 .pg-settings .colrow .t{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* the faint half is a finding aid - it is what tells INV07 from MET02 while you
-   are still looking for one - so the button does not repeat it afterwards */
 .pg-settings .colrow .s{flex:none;font-size:11px;font-weight:600;color:var(--faint)}
 .pg-settings .colrow.none .t{color:var(--muted)}
 .pg-settings .colnone{padding:9px;font-size:12px;color:var(--faint)}
@@ -430,38 +249,26 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings table{width:100%;min-width:820px;border-collapse:separate;border-spacing:0}
 .pg-settings thead th{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
   padding:9px 14px;border-bottom:1px solid var(--line-soft);text-align:left;white-space:nowrap}
-/* THE SORT-HEADER RULES ARE GONE with the sorting - .so, .on and .ar had no
-   markup left to reach. A style for a control that no longer exists is a
-   control that comes back the first time somebody adds the class by hand. */
 .pg-settings tbody td{padding:9px 14px;font-size:12.5px;border-bottom:1px solid var(--line-soft);
   color:var(--muted);white-space:nowrap}
-/* the name is the one column a person chose, so it is the one in the reading
-   face; the id is a machine key and stays in the mono column where keys live */
 .pg-settings tbody td.nm{font-weight:700;color:var(--text)}
 .pg-settings tbody td.mono{font-family:var(--mono);font-weight:600}
-/* the dash that means "no end yet" is not a value, so it does not come up to
-   full strength with the readings when the row is hovered */
 .pg-settings tbody td.dim{color:var(--dim)}
 .pg-settings tbody tr{transition:background-color .12s ease,box-shadow .12s ease}
 .pg-settings tbody tr:hover{background:var(--row-hover);position:relative;z-index:1;
   box-shadow:inset 0 0 0 1px var(--line-hi),0 10px 22px -12px var(--shadow),0 2px 6px -4px var(--shadow)}
 .pg-settings tbody tr:hover td:not(.dim){color:var(--text)}
-/* A retired device is still in the register — it has to be, because every kWh
-   and every alarm it ever raised is filed under its id. It is dimmed and named,
-   not deleted. */
 .pg-settings tbody tr.gone td{color:var(--dim)}
 .pg-settings tbody tr.gone td.nm{color:var(--muted)}
 .pg-settings .empty-note{display:flex;align-items:center;justify-content:center;min-height:170px;
   color:var(--faint);font-size:12.5px}
 
-/* the actions, on the row they act on */
 .pg-settings .rowacts{display:flex;align-items:center;justify-content:flex-end;gap:4px}
 .pg-settings .rowbtn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
   border-radius:7px;border:1px solid transparent;background:transparent;color:var(--faint)}
 .pg-settings .rowbtn:hover{color:var(--text);border-color:var(--line);background:var(--panel-2)}
 .pg-settings .rowbtn.warn:hover{color:var(--red);border-color:var(--red-soft);background:var(--red-soft)}
 
-/* ---------- pager ---------- */
 .pg-settings .tfoot{display:flex;align-items:center;gap:14px;padding:11px 20px;font-size:12px;
   color:var(--muted);flex-wrap:wrap;border-top:1px solid var(--line-soft)}
 .pg-settings .tfoot select{height:30px;min-width:0;font-size:12px;padding:0 26px 0 9px}
@@ -472,7 +279,6 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings .pgbtn:hover:not(:disabled){color:var(--text);border-color:var(--line-hi)}
 .pg-settings .pgbtn:disabled{opacity:.35;cursor:default}
 
-/* a dialog that names what it is about, so a single text box is never orphaned */
 .pg-settings .mwho{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:var(--r-sm);
   background:var(--panel-2);border:1px solid var(--line-soft)}
 .pg-settings .mwho .r{display:flex;gap:8px;font-size:12px}
@@ -484,30 +290,15 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings .btn.danger:hover{filter:brightness(.93)}
 .pg-settings .pill.gone{color:var(--faint);background:var(--panel-2)}
 
-/* ---------- access management ----------
-   The sites a role reaches, drawn as chips rather than run together in a
-   sentence. Three site names separated by commas read as one string and get
-   skimmed as one; three chips get counted. */
 .pg-settings .chips{display:flex;flex-wrap:wrap;gap:5px}
 .pg-settings .chip{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;
   color:var(--muted);background:var(--panel-2);border:1px solid var(--line)}
 .pg-settings .chip.all{color:var(--green-deep);background:var(--green-soft);border-color:transparent}
-/* the role is changed where it is read, so the cell holds the control itself
-   rather than sending the reader to a dialog to do one thing */
 .pg-settings tbody td.pad{padding-top:6px;padding-bottom:6px}
 .pg-settings #p-access-role table{min-width:660px}
 .pg-settings #p-access-user table{min-width:820px}
 .pg-settings #p-access-ctl table{min-width:700px}
 
-/* ---------- who hears about an alarm ----------
-   FOUR levels, and they are the portal's own four, ranked as it ranks them:
-   critical outranks alarm, and an event is a log entry rather than a fault. The
-   legacy screen's fourth column was "status", which nothing in this portal raises;
-   critical, which it raises constantly, was the one missing.
-
-   Subscribed is a filled dot in that level's colour; not subscribed is the same dot
-   hollow. Filled against hollow survives a squint down a column, which a tick
-   against an empty cell does not. */
 .pg-settings .subdot{display:inline-block;width:10px;height:10px;border-radius:50%}
 .pg-settings .subdot.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line-hi)}
 .pg-settings .subdot.on.critical{background:var(--crit)}
@@ -516,8 +307,6 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings .subdot.on.event{background:var(--faint)}
 .pg-settings thead th.sev-h{text-align:center}
 .pg-settings tbody td.sev-c{text-align:center}
-/* the head of a level's column carries that level's colour, so the dots below it
-   are read against a label rather than a legend somewhere else */
 .pg-settings thead th.sev-h.critical{color:var(--crit)}
 .pg-settings thead th.sev-h.alarm{color:var(--red)}
 .pg-settings thead th.sev-h.warn{color:var(--amber)}
@@ -526,46 +315,19 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings .subbox{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;cursor:pointer}
 .pg-settings .subbox input{width:15px;height:15px;accent-color:var(--green);flex:none}
 
-/* the reason is the one column on this screen that is prose, so it is the one
-   allowed out of the single-line grid and the one given room to be long */
 .pg-settings tbody td.why{white-space:normal;min-width:230px;font-size:12px}
 .pg-settings #p-energy-offset table{min-width:980px}
 
-/* ---------- the company, which is read-only ----------
-   No EDIT and no password row. The company record is what the account was
-   provisioned as and what invoices and reports are issued against — it is not the
-   signed-in person's to rewrite from a settings screen. And a password belongs to
-   a person, never to an organisation, so the row that changes one has no business
-   on this card. The card says so once, quietly, so it reads as a decision rather
-   than a screen somebody forgot to finish.
-
-   No avatar either: the circle beside a name means a person, and reusing it for a
-   company would say something about this record that is not true. */
 .pg-settings .who.co{padding-bottom:18px}
 .pg-settings .cfoot .n{font-size:11.5px;color:var(--faint);line-height:1.45}
 
-/* The one company-level fact that is a STATE rather than a value, so it is
-   coloured the way this portal colours every other state instead of being printed
-   as a word in the same grey as an address. */
 .pg-settings .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;
   font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
 .pg-settings .pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
 .pg-settings .pill.live{color:var(--green-deep);background:var(--green-soft)}
-/* the other answer the backend can give — drawn now so it is not invented later */
 .pg-settings .pill.held{color:var(--red);background:var(--red-soft)}
-/* The unit belongs in the column header. A bare "Rate" is how kg CO2/kWh gets
-   entered as grams and every savings figure downstream comes out a thousand
-   times too big. */
 .pg-settings thead th .u{font-weight:600;letter-spacing:.03em;text-transform:none;color:var(--faint)}
 
-/* ---------- the profile, in edit ----------
-   The same card in both states. EDIT swaps each printed value for an input where
-   the value already sat, so nothing moves: a form that re-flows on EDIT makes the
-   reader find all six values again before they can change one of them.
-
-   And nothing is optimistic. The printed values change when Save is pressed, not
-   while the reader types, so an abandoned edit leaves the profile as it was
-   found. */
 .pg-settings .f .in{display:none}
 .pg-settings .card.editing .f .v{display:none}
 .pg-settings .card.editing .f .in{display:block}
@@ -573,26 +335,18 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings .in input{width:100%;padding:8px 11px;border-radius:var(--r-sm);border:1px solid var(--line);
   background:var(--panel-2);color:var(--text);font-family:inherit;font-size:13px}
 .pg-settings .in input:hover{border-color:var(--line-hi)}
-/* Controls answer in NEUTRAL — the rule the rest of the portal states on its
-   dropdowns. Green here means producing/healthy, and a caret sitting in a box is
-   neither; a green ring would compete with every reading that uses the colour to
-   mean something. Green is kept for SELECTED state (the menu item), not focus. */
 .pg-settings .in input:focus{outline:none;border-color:var(--line-hi);background-color:var(--hover);
   box-shadow:0 0 0 3px var(--hover-soft)}
-/* the note sits under the field it qualifies, never in a legend nobody reads —
-   and the error takes its place rather than pushing it down the card */
 .pg-settings .in .hint{font-size:11.5px;color:var(--faint);margin-top:4px;line-height:1.4}
 .pg-settings .in .err{display:none;font-size:11.5px;font-weight:600;color:var(--red);margin-top:4px;line-height:1.4}
 .pg-settings .f.bad .in input{border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
 .pg-settings .f.bad .in .err{display:block}
 .pg-settings .f.bad .in .hint{display:none}
 
-/* the mode is named, not just implied by the boxes */
 .pg-settings .editing-tag{display:none;font-size:8.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;
   color:var(--green-deep);background:var(--green-soft);padding:3px 8px;border-radius:5px}
 .pg-settings .card.editing .editing-tag{display:inline-block}
 
-/* the two answers a form owes: commit, or put it back the way it was */
 .pg-settings .editbar{display:none;align-items:center;gap:10px;flex-wrap:wrap;
   padding:15px 20px;border-top:1px solid var(--line-soft)}
 .pg-settings .card.editing .editbar{display:flex}
@@ -606,11 +360,6 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings .btn.primary{background:var(--green);border-color:var(--green);color:var(--on-accent)}
 .pg-settings .btn.primary:hover{background:var(--green-deep);border-color:var(--green-deep)}
 
-/* ---------- changing the password ----------
-   A dialog rather than a seventh field. It needs the old secret and the new one
-   twice, and none of that belongs in a card whose job is to print what is true.
-   The rules are on screen BEFORE they are broken: a password box that only says
-   what was wrong afterwards makes the reader guess twice. */
 body.locked{overflow:hidden}
 .pg-settings .scrim{position:fixed;inset:0;z-index:120;background:rgba(19,38,63,.42);
   display:none;align-items:center;justify-content:center;padding:20px}
@@ -629,10 +378,6 @@ body.locked{overflow:hidden}
 .pg-settings .mfoot .sp{margin-left:auto}
 .pg-settings .lab{display:block;font-size:12.5px;font-weight:700;margin-bottom:5px}
 
-/* reveal is per field: seeing the one you are typing should not put the other
-   two on screen for whoever is standing behind you */
-/* every field in every dialog, then the password ones take the extra right-hand
-   room their reveal button needs — declared in this order so that override lands */
 .pg-settings .fld input:not([type=checkbox]){width:100%;padding:8px 11px;border-radius:var(--r-sm);
   border:1px solid var(--line);background:var(--panel-2);color:var(--text);
   font-family:inherit;font-size:13px}
@@ -642,8 +387,6 @@ body.locked{overflow:hidden}
 .pg-settings .fld.bad input:not([type=checkbox]){border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
 .pg-settings .fld input::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.55}
 .pg-settings .fld input:hover::-webkit-calendar-picker-indicator{opacity:1}
-/* two fields that are read as one answer sit on one line: the date a rate takes
-   effect and the rate itself are not two separate questions */
 .pg-settings .mrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media (max-width:470px){ .pg-settings .mrow{grid-template-columns:1fr} }
 
@@ -666,8 +409,6 @@ body.locked{overflow:hidden}
 .pg-settings .fld .hint{font-size:11.5px;color:var(--faint);margin-top:5px;line-height:1.45}
 .pg-settings .fld.bad .hint{display:none}
 
-/* one place for the answers this screen cannot work out for itself — a backend
-   that says the current password is wrong lands here too */
 .pg-settings .mband{display:none;align-items:flex-start;gap:8px;padding:9px 11px;border-radius:8px;
   background:var(--red-soft);color:var(--red);font-size:12px;font-weight:600;line-height:1.45}
 .pg-settings .mband.on{display:flex}
@@ -680,10 +421,6 @@ body.locked{overflow:hidden}
 .pg-settings .rule.ok .dot{display:none}
 .pg-settings .rule.ok .tick{display:block}
 
-/* ---------- a screen that is not designed yet ----------
-   Named rather than hidden. A menu item that opens an empty card reads as
-   broken; one that says what it will hold reads as a plan, and the sidebar can
-   be reviewed as a whole before any of it is drawn. */
 .pg-settings .todo{display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:44px 24px 48px;max-width:520px}
 .pg-settings .todo .badge{font-size:8.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;
   color:var(--faint);background:var(--panel-2);border:1px solid var(--line);padding:3px 8px;border-radius:5px}
@@ -696,9 +433,6 @@ body.locked{overflow:hidden}
   animation:tin .18s ease-out}
 @keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-/* Under 900px the rail stops being a rail: it unsticks, gives up its height and
-   sits above the content as a block, because a 250px column on a phone leaves
-   the panel too narrow to read the thing the rail was for. */
 @media (max-width:900px){
   .pg-settings .shell{grid-template-columns:1fr}
   .pg-settings .side{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}

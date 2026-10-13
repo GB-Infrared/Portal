@@ -1,9 +1,5 @@
 import { SingleSelect } from './Select';
 
-/* Rows per page, the range, and the arrows - the same footer on every table.
-   The list opens UPWARD (the page's .psel styles): dropped downward from a
-   page footer it would open into the window edge. */
-
 const PER_OPTS = ['25', '50', '75', '100', '150', '200'].map(v => ({ v, t: v }));
 
 export function TableFooter({ per, onPer, from, shown, total, onPage }: {

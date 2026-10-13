@@ -7,12 +7,6 @@ import { useApi } from '../../hooks/useApi';
 import { check, Fld, Modal, type Errs } from './Modal';
 import { EMAIL, Pill, why } from './common';
 
-/* ---------- USER PROFILE ----------
-   EDIT swaps each printed value for an input where the value sat, and the two
-   answers a form owes - commit, or put it back - appear under the fields.
-   Nothing on screen changes while the reader types: the values are written on
-   Save, so an abandoned edit leaves the profile as it was found. */
-
 const FIELDS: { k: keyof Omit<Profile, 'roleLabel'>; label: string; type: string; ac: string; hint?: string }[] = [
   { k: 'first', label: 'First name', type: 'text', ac: 'given-name' },
   { k: 'last', label: 'Last name', type: 'text', ac: 'family-name' },
@@ -31,8 +25,6 @@ const EYE = (
 const DOT = <svg className="dot" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><circle cx="12" cy="12" r="3.4" /></svg>;
 const TICK = <svg className="tick" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6.5 9.4 17.5 4 12.2" /></svg>;
 
-/* reveal is per field: seeing the one you are typing should not put the other
-   two on screen for whoever is standing behind you */
 function PwField({ id, label, value, onChange, err, ac, children }: {
   id: string; label: string; value: string; onChange: (v: string) => void; err?: string; ac: string; children?: ReactNode;
 }) {
@@ -50,9 +42,6 @@ function PwField({ id, label, value, onChange, err, ac, children }: {
   );
 }
 
-/* The rules are on screen before they are broken, and they tick as they are met.
-   What this screen CANNOT check is whether the current password is right - only
-   the backend knows, and its answer lands in the band at the top. */
 function PasswordDialog({ onClose }: { onClose: () => void }) {
   const toast = useToast();
   const [cur, setCur] = useState(''), [nw, setNw] = useState(''), [cf, setCf] = useState('');
@@ -104,7 +93,6 @@ export function UserProfilePane({ on, onSaved }: { on: boolean; onSaved: (name: 
   const start = () => { if (!d) return; setVals(Object.fromEntries(FIELDS.map(f => [f.k, d[f.k]]))); setErrs({}); setEditing(true); requestAnimationFrame(() => { const el = document.getElementById('in-first') as HTMLInputElement | null; el?.focus(); el?.select(); }); };
   const save = async () => {
     const v = Object.fromEntries(FIELDS.map(f => [f.k, (vals[f.k] ?? '').trim()]));
-    /* required is only what the account cannot work without */
     const e = check([
       ['in-first', !v.first && 'A first name is required.'],
       ['in-last', !v.last && 'A last name is required.'],
@@ -139,7 +127,6 @@ export function UserProfilePane({ on, onSaved }: { on: boolean; onSaved: (name: 
               {FIELDS.map(f => (
                 <div className={'f' + (errs['in-' + f.k] ? ' bad' : '')} key={f.k} data-k={f.k}>
                   <label className="k" htmlFor={'in-' + f.k}>{f.label}</label>
-                  {/* an em-dash, never a plausible-looking placeholder */}
                   <div className={'v' + (d[f.k] ? '' : ' none')}>{d[f.k] || '—'}</div>
                   <div className="in">
                     <input id={'in-' + f.k} type={f.type} autoComplete={f.ac} spellCheck={false} value={vals[f.k] ?? ''}
@@ -168,9 +155,6 @@ export function UserProfilePane({ on, onSaved }: { on: boolean; onSaved: (name: 
   );
 }
 
-/* ---------- COMPANY PROFILE ----------
-   The company's name leads the card, not the signed-in person's. Set when the
-   account is provisioned; nothing here is editable from the portal. */
 export function CompanyPane({ on }: { on: boolean }) {
   const c = useApi(s => api.getCompany({ signal: s }), []);
   const d = c.data;

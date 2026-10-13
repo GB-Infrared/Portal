@@ -1,11 +1,5 @@
 import { STAR_B64 } from '../../assets/starCatalog';
 
-/* THE FRONT DOOR'S TWO CANVASES, ported from design-mockup/login.html as they
-   were drawn there: the sky (a static star field painted once into a buffer,
-   with the few dozen named stars twinkling over it at 20 fps) and the limb (the
-   edge of the Earth across the foot, which rises as the opening sequence runs -
-   the wait IS the approach). Both return a teardown. Star data: HYG v4.0. */
-
 const D2R = Math.PI / 180;
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -20,8 +14,6 @@ const ciBin = (ci: number) => ci < 0.00 ? 0 : ci < 0.20 ? 1 : ci < 0.42 ? 2 : ci
 export interface Star { lng: number; lat: number; mag: number; r: number; a: number; cb: number; ph: number }
 
 let cache: Star[] | null = null;
-/** the catalogue decoded once per load: magnitude compressed hard for the screen,
- *  or Sirius would be a dinner plate next to a field of invisible sixes */
 export function stars(): Star[] {
   if (cache) return cache;
   const g0 = gmstDeg();
@@ -39,12 +31,9 @@ export function stars(): Star[] {
   return out;
 }
 
-/* ===================== THE SKY ===================== */
 export function startSky(sky: HTMLCanvasElement): () => void {
   const ox = sky.getContext('2d'); if (!ox) return () => {};
   const ST = stars();
-  /* batched by colour and brightness: a fillStyle per star would be half a
-     million context writes a second */
   const ABIN = 5;
   const batches = (() => {
     const b: Record<number, { rgb: number[]; lvl: number; list: Star[] }> = {};
@@ -57,7 +46,6 @@ export function startSky(sky: HTMLCanvasElement): () => void {
     return Object.values(b);
   })();
   const bright = ST.filter(s => s.mag < 2.6);
-  /* the camera is fixed: nothing here is being turned */
   const LAM = 18, PHI = 16, cosP = Math.cos(PHI * D2R), sinP = Math.sin(PHI * D2R);
   let W = 0, H = 0, CX = 0, CY = 0, SKYK = 540;
   const skyXY = (lng: number, lat: number): [number, number] | null => {
@@ -71,7 +59,6 @@ export function startSky(sky: HTMLCanvasElement): () => void {
     const r = SKYK * b;
     return [CX + (x / t) * r, CY - (y / t) * r];
   };
-  /* THE FIELD IS A BUFFER: painted when the window changes size, and never again */
   const buf = document.createElement('canvas'), bx = buf.getContext('2d');
   const size = () => {
     const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -108,21 +95,15 @@ export function startSky(sky: HTMLCanvasElement): () => void {
   addEventListener('resize', size);
   size();
   let raf = 0, last = 0;
-  /* twenty a second, and only while the tab is looked at */
   const frame = (now: number) => { if (!document.hidden && now - last > 50) { last = now; draw(now); } raf = requestAnimationFrame(frame); };
   if (reduced()) draw(0); else raf = requestAnimationFrame(frame);
   return () => { removeEventListener('resize', size); cancelAnimationFrame(raf); };
 }
 
-/* ===================== THE LIMB =====================
-   A dark body with a bright edge: the ground, the hairline of atmosphere, and
-   the haze as seven widening strokes. It moves once - when you are let through -
-   driven by the clock, never backwards. */
 export function startLimb(cv: HTMLCanvasElement, sunHost: HTMLElement): { fly: (t: number) => void; stop: () => void } {
   const lx = cv.getContext('2d'); if (!lx) return { fly: () => {}, stop: () => {} };
   let W = 0, H = 0, flyT = 0;
   let GROUND: CanvasGradient | null = null, AIR: CanvasGradient | null = null;
-  /* the sun's place, read from the same --sun-x the sky wash is built from */
   const sunX = () => {
     const v = getComputedStyle(sunHost).getPropertyValue('--sun-x').trim(), n = parseFloat(v);
     if (!Number.isFinite(n)) return 0.78;

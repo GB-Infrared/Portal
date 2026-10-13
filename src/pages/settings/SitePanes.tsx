@@ -12,11 +12,6 @@ const TYPE: Record<string, string> = { INV: 'Inverter', MFM: 'MFM', WMS: 'Weathe
 const typeOf = (d: Device) => TYPE[d.kind] ?? d.kind;
 const byName = (a: Device, b: Device) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
 
-/* ---------- CUSTOMER DEVICES ----------
-   The register the rest of the portal reads from. No Plant column - the pin
-   says it once. The table does not sort: the order is BY NAME, always. No
-   retire action: taking a device out of service is a decision about the plant,
-   not a settings edit. Renaming stays - a label is the register's to own. */
 export function DevicesPane({ on, site }: { on: boolean; site: Site }) {
   const toast = useToast();
   const dv = useApi(s => api.getSiteDevices(site.id, { signal: s }), [site.id]);
@@ -35,7 +30,6 @@ export function DevicesPane({ on, site }: { on: boolean; site: Site }) {
     if (!rn) return;
     const v = name.trim();
     if (!v) { setErr('A device needs a name.'); return; }
-    /* two devices with one name on one site is an ambiguity every page inherits */
     if (rows.some(x => x.id !== rn.id && x.name.toLowerCase() === v.toLowerCase())) { setErr(site.name + ' already has a device called that.'); return; }
     setBusy(true);
     try { await api.renameDevice(site.id, rn.id, v); setRn(null); dv.reload(); toast('Renamed to ' + v); }
@@ -81,8 +75,6 @@ export function DevicesPane({ on, site }: { on: boolean; site: Site }) {
         <button className="pgbtn" type="button" disabled={page >= pages - 1} onClick={() => setPg(page + 1)}>&rsaquo;</button>
       </div>
 
-      {/* the dialog states the device first, by what is unique about it, and says
-          where the new name will show up */}
       {rn && (
         <Modal title="Rename device" onClose={() => setRn(null)} onSubmit={save}
                foot={<><button className="btn" type="button" onClick={() => setRn(null)}>Cancel</button>
@@ -102,12 +94,6 @@ export function DevicesPane({ on, site }: { on: boolean; site: Site }) {
   );
 }
 
-/* ---------- RATES, WHICH ARE HISTORIES ----------
-   Emission and Electricity are one board twice: one number per site, versioned
-   by the date it takes effect, superseded rather than edited. Nothing stores an
-   END date - a rate runs until the next one starts, so Until is derived. Only
-   the ACTIVE row can be removed, which hands the period back to the one before;
-   a row from the middle cannot go, or a stretch of time is priced by nothing. */
 const RATE = {
   emission: { id: 'p-emission-rate', title: 'Emission Rate', noun: 'emission rate', head: <>kg CO&#8322; / kWh</>, unit: 'kg CO₂ per kWh', dp: 3, step: '0.001', ph: '0.727',
     hi: 5, hiSay: 'That looks like grams. This field is kg CO₂ per kWh.', empty: 'savings cannot be reported until there is one' },
@@ -128,7 +114,6 @@ export function RatePane({ on, site, kind }: { on: boolean; site: Site; kind: Ra
 
   const save = async () => {
     const v = parseFloat(rate);
-    /* later than every rate before it, never ahead of today */
     const e = check([
       ['rd-from', !from ? 'A rate needs a date it takes effect.'
         : last && asDate(from) <= asDate(last.from) ? 'Must be after ' + fmtDate(last.from) + ', the rate it replaces.'
@@ -211,17 +196,11 @@ export function RatePane({ on, site, kind }: { on: boolean; site: Site; kind: Ra
   );
 }
 
-/* ---------- ENERGY OFFSET ----------
-   A correction to metered generation, versioned per DEVICE and keyed by device
-   id (the name can be renamed above). REASON is required - this is the only
-   moment anyone will ever be able to say why a figure was moved. An offset of
-   0 is how a correction is ended. */
 export function OffsetPane({ on, site }: { on: boolean; site: Site }) {
   const toast = useToast(), ask = useAsk();
   const of = useApi(s => api.getOffsets(site.id, { signal: s }), [site.id]);
   const dv = useApi(s => api.getSiteDevices(site.id, { signal: s }), [site.id]);
   const devName = (id: string) => dv.data?.find(d => d.id === id)?.name ?? id;
-  /* signed, always: the sign is the whole difference between two corrections */
   const offNum = (v: number) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toLocaleString('en-IN');
   const list: EnergyOffset[] = of.data ?? [];
   const seriesOf = (id: string) => list.filter(r => r.deviceId === id).sort((a, b) => (a.from < b.from ? -1 : 1));
@@ -235,7 +214,6 @@ export function OffsetPane({ on, site }: { on: boolean; site: Site }) {
   const [errs, setErrs] = useState<Errs>({});
   const [busy, setBusy] = useState(false);
   const lastOf = (id: string) => { const g = seriesOf(id); return g[g.length - 1] ?? null; };
-  /* only devices in service: an offset on a retired device corrects nothing */
   const devOpts = (dv.data ?? []).filter(d => !d.retired).sort(byName).map(d => ({ v: d.id, t: d.name, s: typeOf(d) }));
 
   const save = async () => {

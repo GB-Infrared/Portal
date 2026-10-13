@@ -7,13 +7,7 @@ import type {
   LoginResult, PortfolioToday, Site, SiteSummary, User,
 } from './types';
 
-/* WHAT THE SCREENS CAN ASK FOR. One function per question, each a path from
-   endpoints.ts and an adapter from adapters.ts. Screens import from here and
-   from nowhere else in this folder. */
-
 type Sig = { signal?: AbortSignal };
-
-/* ---------------- session ---------------- */
 
 export async function login(email: string, password: string, o: Sig = {}): Promise<LoginResult> {
   const r = await request<Record<string, unknown>>(EP.login(), {
@@ -26,9 +20,6 @@ export async function logout(): Promise<void> {
   await request(EP.logout(), { method: 'POST', skipAuthRedirect: true });
 }
 
-/** The sign-in screen's LOST PASSKEY. The backend decides how the new passkey
- *  is confirmed (an emailed link or code) before it takes effect; the screen
- *  only asks and reports what the backend says. */
 export async function requestPasswordReset(email: string, newPassword: string): Promise<void> {
   await request(EP.passwordReset(), { method: 'POST', body: { email, newPassword }, skipAuthRedirect: true });
 }
@@ -36,8 +27,6 @@ export async function requestPasswordReset(email: string, newPassword: string): 
 export async function me(o: Sig = {}): Promise<User> {
   return A.adaptUser(await request(EP.me(), { signal: o.signal, skipAuthRedirect: true }));
 }
-
-/* ---------------- sites ---------------- */
 
 export async function getSites(o: Sig = {}): Promise<Site[]> {
   return A.adaptSites(await request(EP.sites(), { signal: o.signal }));
@@ -55,12 +44,10 @@ export async function getSiteDevices(siteId: string, o: Sig = {}): Promise<Devic
   return A.adaptDevices(await request(EP.siteDevices(siteId), { signal: o.signal }));
 }
 
-/** date: YYYY-MM-DD in the site's day */
 export async function getDayPower(siteId: string, date: string, o: Sig = {}): Promise<DayPowerSeries> {
   return A.adaptDayPower(await request(EP.sitePowerDay(siteId), { query: { date }, signal: o.signal }));
 }
 
-/** month: 1-12 */
 export async function getDailyEnergy(siteId: string, year: number, month: number, o: Sig = {}): Promise<DailyEnergy> {
   return A.adaptDailyEnergy(await request(EP.siteEnergyDaily(siteId), { query: { year, month }, signal: o.signal }));
 }
@@ -71,7 +58,6 @@ export async function getDailyKpi(siteId: string, metric: HomeKpiMetric, year: n
 
 export interface AlarmQuery {
   status?: AlarmStatus;
-  /** ISO times bounding when the alarm was received */
   from?: string;
   to?: string;
 }
@@ -85,14 +71,10 @@ export async function getDeviceLive(siteId: string, deviceId: string, o: Sig = {
 
 export interface SeriesQuery {
   devices: string[];
-  /** a tag from the parameter catalogue: P_AC, S_AC, GHI ... */
   param: string;
-  /** ISO times; `to` is exclusive */
   from: string;
   to: string;
-  /** bucket size: "5m", "15m", "1h", "1d" ... */
   interval: string;
-  /** how a bucket is reduced: "avg" (default), "max", "last" */
   agg?: 'avg' | 'max' | 'last';
 }
 export async function getTimeSeries(siteId: string, q: SeriesQuery, o: Sig = {}): Promise<TimeSeries> {
@@ -102,18 +84,12 @@ export async function getTimeSeries(siteId: string, q: SeriesQuery, o: Sig = {})
   }));
 }
 
-/** granularity "day": every day of `month` in `year`. "month": every month of `year`. */
 export async function getKpi(siteId: string, q: { metric: KpiMetric; granularity: 'day' | 'month'; year: number; month?: number }, o: Sig = {}): Promise<KpiBucket[]> {
   return A.adaptKpiBuckets(await request(EP.kpi(siteId), { query: { ...q }, signal: o.signal }));
 }
 
-/* ---------------- settings ----------------
-   After a write succeeds the screen re-reads the list, so what it shows is
-   what the server holds - never a local guess at what the write did. */
-
 export async function getProfile(o: Sig = {}): Promise<Profile> { return A.adaptProfile(await request(EP.profile(), { signal: o.signal })); }
 export async function saveProfile(p: Omit<Profile, 'roleLabel'>): Promise<void> { await request(EP.profile(), { method: 'PUT', body: p }); }
-/** a refusal (e.g. the current password is wrong) carries the backend's reason in ApiError.message */
 export async function changePassword(current: string, next: string): Promise<void> {
   await request(EP.password(), { method: 'POST', body: { current, next }, skipAuthRedirect: true });
 }
@@ -156,7 +132,6 @@ export async function saveRole(id: string | null, x: { name: string; siteIds: st
 export async function removeRole(id: string): Promise<void> { await request(EP.role(id), { method: 'DELETE' }); }
 
 export async function getUsers(o: Sig = {}): Promise<AccountUser[]> { return A.adaptUsers(await request(EP.users(), { signal: o.signal })); }
-/** details only - a role is never set here, only on Access Control */
 export async function saveUser(id: string | null, x: { first: string; last: string; email: string; phone: string }): Promise<void> {
   await request(id ? EP.user(id) : EP.users(), { method: id ? 'PUT' : 'POST', body: x });
 }

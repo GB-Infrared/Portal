@@ -1,19 +1,5 @@
 import { useEffect, useId, useState, type ReactNode } from 'react';
 
-/* ONE DROPDOWN IDIOM, NOT THE BROWSER'S.
-
-   Every list in the portal is drawn by the app:
-     .msel        the mount
-     .mbtn        the button carrying the current value
-       .mlab      its label   .any = nothing chosen   .off = a state, not a choice
-     panel        heading, then a row per option
-   Single choice closes on pick and has no footer. Multiple stays open with
-   All / None. Only one list is ever open: opening any closes the rest.
-
-   The mockups drew the panel in two class families - Home's .mpanel/.mrow and
-   the other pages' .colpanel/.colrow - and each page's stylesheet styles its
-   own, so `variant` picks the one the page was written for. */
-
 export interface Opt { v: string; t: ReactNode; extra?: ReactNode }
 
 const OPEN_EVENT = 'enerops:pick-open';
@@ -54,7 +40,6 @@ interface SingleProps {
   variant?: Variant;
   className?: string;
   title?: string;
-  /** a value that is a state rather than a choice ("Off") reads dimmed */
   dim?: (v: string) => boolean;
   id?: string;
 }
@@ -91,7 +76,6 @@ interface MultiProps {
   options: Opt[];
   onChange: (v: string[]) => void;
   head: ReactNode;
-  /** the label when nothing is chosen - which means "no narrowing at all" */
   any: string;
   variant?: Variant;
   className?: string;

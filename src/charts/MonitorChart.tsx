@@ -2,23 +2,11 @@ import { useRef, useState, type JSX, type MouseEvent } from 'react';
 import { MON, MONL, hourLabel, time12, toDate } from '../lib/format';
 import { areaPath, hourOfDay, lastIndexWithValue, linePath, niceMax } from './util';
 
-/* MONITORING · ONE TAG, SEVERAL DEVICES.
-
-   Day plots the curve across the whole day. Week and Month cannot: a month at
-   five-minute resolution is 9000 points of ink for a question nobody asked.
-   They plot each DAY'S PEAK, as bars - a line implies a value between two
-   points, and between two days there is nothing to read. The unit is the
-   same in all three, so the axis means the same thing.
-
-   Colours are IDENTITIES (--s1, --s2 ...), never the health colours: a line
-   and the health dot beside its device must not say two things in one hue. */
-
 export interface MSeries { id: string; name: string; color: string; values: (number | null)[] }
 export interface Marker { id: string; at: Date; title: string }
 
 interface Props {
   mode: 'day' | 'days';
-  /** day: one ISO time per value. days: one ISO date per bar */
   times: string[];
   series: MSeries[];
   width: number;
@@ -26,7 +14,6 @@ interface Props {
   yTitle: string;
   unit: string;
   foot: string;
-  /** draw the now-rule, its time tag and the live dots (the day shown is today) */
   live: boolean;
   markers: Marker[];
   emptyNote?: string;
@@ -66,7 +53,6 @@ export function MonitorChart({ mode, times, series, width: W, height: H, yTitle,
         <text key={'h' + h} className="axt" x={x} y={H - 13} textAnchor="middle">{hourLabel(h)}</text>);
     }
   } else {
-    /* bars sit IN a slot: the date under its middle, the gridline on its edge */
     const lstep = Math.max(1, Math.ceil(n / Math.max(1, Math.floor(PW / 22))));
     for (let i = 0; i < n; i++) {
       const xe = ML + i * slot, xm = ML + (i + 0.5) * slot;
@@ -99,7 +85,6 @@ export function MonitorChart({ mode, times, series, width: W, height: H, yTitle,
     }
   }
 
-  /* hover */
   const onMove = (e: MouseEvent) => {
     const svg = svgRef.current; if (!svg || !n) return;
     const r = svg.getBoundingClientRect();
@@ -153,7 +138,6 @@ export function MonitorChart({ mode, times, series, width: W, height: H, yTitle,
         {mode === 'day' && markers.map(m => {
           const s = series.find(x => x.id === m.id); if (!s) return null;
           const h = hourOfDay(m.at), x = ML + h / 24 * PW;
-          /* the reading nearest the moment it started */
           let bi = -1, bd = Infinity;
           dates.forEach((d, i) => { if (d) { const dd = Math.abs(hourOfDay(d) - h); if (dd < bd && s.values[i] != null) { bd = dd; bi = i; } } });
           if (bi < 0) return null;
@@ -191,7 +175,6 @@ export function MonitorChart({ mode, times, series, width: W, height: H, yTitle,
   );
 }
 
-/** "JULY 20TH 2026" */
 export function longDay(d: Date): string {
   const n = d.getDate();
   const ord = n > 3 && n < 21 ? 'TH' : (['TH', 'ST', 'ND', 'RD'][Math.min(n % 10, 4)] || 'TH');

@@ -4,17 +4,6 @@ import type {
   Reading, Severity, Site, SiteState, SiteSummary, User,
 } from './types';
 
-/* RAW BACKEND JSON -> THE SHAPES IN types.ts.
-
-   Each adapter takes whatever the endpoint returned and builds the portal's
-   type from it. As written they expect the field names in docs/API.md. Where
-   the existing backend names a field differently, change the right-hand side
-   here - e.g. `powerKw: num(r.power_kw)` - and nothing in the screens moves.
-
-   They are also where "not measured" is made honest: a missing or non-numeric
-   value becomes null, never 0, so the screens print a dash rather than a
-   plausible-looking zero. */
-
 type Raw = Record<string, any>;  // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export const num = (v: unknown): number | null => {

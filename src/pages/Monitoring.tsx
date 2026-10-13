@@ -4,7 +4,7 @@ import type { Device } from '../api/types';
 import { useSite } from '../auth/SiteContext';
 import { MonitorChart, longDay, type Marker, type MSeries } from '../charts/MonitorChart';
 import { DateInput } from '../components/DateInput';
-import { DataGate, Failed, Waiting } from '../components/DataState';
+import { DataGate, Failed, Waiting, NoSite } from '../components/DataState';
 import { RowPopover } from '../components/RowPopover';
 import { SingleSelect } from '../components/Select';
 import { TableFooter } from '../components/TableFooter';
@@ -16,18 +16,10 @@ import { downloadCsv } from '../lib/csv';
 import { DASH, MONL, fx, isoDay, parseIsoDay, pad, time12, toDate } from '../lib/format';
 import '../styles/pages/monitoring.css';
 
-/* MONITORING - one device type, one data point, one day: the device rail on
-   the left, the curve, and the readings behind it as a table.
-
-   Ported from design-mockup/monitoring.html. No APPLY: every control re-reads
-   on change, so the chart is always showing what the bar says it is. */
-
 const SLOTS = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(--s5)', 'var(--s6)', 'var(--s7)', 'var(--s8)'];
 type Range = 'day' | 'week' | 'month';
 const nf = (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
-/** 2026-07-20 12:05:02 - a history row is a point in TIME, so the stamp carries
- *  its date, sortable, with a 24-hour clock that has no AM/PM to lose. */
 const stamp = (d: Date | null) => d ? d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' +
   pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) : DASH;
 
@@ -36,32 +28,25 @@ function cardState(d: Device): 'on' | 'warn' | 'off' {
 }
 
 export default function Monitoring() {
-  const { site, error: siteErr, reloadSites } = useSite();
+  const { site, error: siteErr, loading: siteLoading, reloadSites } = useSite();
   const toast = useToast();
   const [refresh, setRefresh] = useState<Refresh>('300');
   const every = refreshMs(refresh);
   const siteId = site?.id ?? null;
 
-  /* -------- the filter bar -------- */
   const [dtype, setDtype] = useState(DEVICE_TYPES[0].label);
   const type = DEVICE_TYPES.find(t => t.label === dtype) ?? DEVICE_TYPES[0];
   const [dp, setDp] = useState(type.points[0]);
-  /* the device type narrows the data point, so the pair is one decision - and
-     the current answer is kept when the new list still offers it */
   useEffect(() => { if (!type.points.includes(dp)) setDp(type.points[0]); }, [type, dp]);
   const today = isoDay(new Date());
   const [day, setDay] = useState(today);
   const [range, setRange] = useState<Range>('day');
 
-  /* -------- data -------- */
   const devices = useApi(siteId ? s => api.getSiteDevices(siteId, { signal: s }) : null, [siteId], every);
   const summary = useApi(siteId ? s => api.getSiteSummary(siteId, { signal: s }) : null, [siteId], every);
   const alarms = useApi(siteId ? s => api.getAlarms(siteId, { status: 'active' }, { signal: s }) : null, [siteId], every);
   const list = useMemo(() => (devices.data ?? []).filter(d => d.kind === type.kind), [devices.data, type.kind]);
 
-  /* which devices are in the chart and the table - the FILTER panel's choice.
-     It starts on the first two that are reporting, and starts again when the
-     site or the device type changes, because the old choice names nothing here. */
   const [cols, setCols] = useState<string[] | null>(null);
   useEffect(() => { setCols(null); }, [siteId, type.kind]);
   const chosen = useMemo(() => cols ?? list.filter(d => d.status !== 'down').slice(0, 2).map(d => d.id), [cols, list]);
@@ -75,7 +60,6 @@ export default function Monitoring() {
     ? s => api.getTimeSeries(siteId, { devices: chosen, param: dp, from: dayDate.toISOString(), to: next.toISOString(), interval: '5m' }, { signal: s })
     : null, [siteId, chosen.join(','), dp, day], day === today ? every : 0);
 
-  /* week: the seven days to the chosen one; month: the chosen day's month */
   const span = useMemo(() => {
     if (range === 'week') { const a = new Date(dayDate); a.setDate(a.getDate() - 6); return { from: a, to: next }; }
     const a = new Date(dayDate.getFullYear(), dayDate.getMonth(), 1), b = new Date(dayDate.getFullYear(), dayDate.getMonth() + 1, 1);
@@ -86,7 +70,6 @@ export default function Monitoring() {
     ? s => api.getTimeSeries(siteId, { devices: chosen, param: dp, from: span.from.toISOString(), to: span.to.toISOString(), interval: '1d', agg: 'max' }, { signal: s })
     : null, [siteId, chosen.join(','), dp, range, day]);
 
-  /* -------- the device panel: hover a rail card -------- */
   const [cur, setCur] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const live = useApi(siteId && cur && panelOpen ? s => api.getDeviceLive(siteId, cur, { signal: s }) : null, [siteId, cur, panelOpen], every);
@@ -104,8 +87,6 @@ export default function Monitoring() {
     return () => { document.removeEventListener('mouseover', over); document.removeEventListener('keydown', key); };
   }, [panelOpen]);
 
-  /* -------- the chart is fitted to its card: height tracks the row's width
-     inside a readable band, and the panel opening only narrows it -------- */
   const mainRef = useRef<HTMLDivElement>(null), chartCard = useRef<HTMLDivElement>(null);
   const [sz, setSz] = useState({ w: 1000, h: 300 });
   const fit = useCallback(() => {
@@ -125,10 +106,10 @@ export default function Monitoring() {
   const [panelMax, setPanelMax] = useState<number | undefined>();
   useEffect(() => { if (panelOpen && chartCard.current) setPanelMax(chartCard.current.offsetHeight); }, [panelOpen]);
 
-  /* -------- the table -------- */
   const [per, setPer] = useState(100);
   const [page, setPage] = useState(0);
-  useEffect(() => setPage(0), [siteId, dp, day, chosen.join(','), per]);
+  const chosenKey = chosen.join(',');
+  useEffect(() => setPage(0), [siteId, dp, day, chosenKey, per]);
   const tableRef = useRef<HTMLTableElement>(null);
   const [colOpen, setColOpen] = useState(false);
   const colpick = useRef<HTMLDivElement>(null);
@@ -145,14 +126,12 @@ export default function Monitoring() {
       <div className="pg-monitoring">
         <TopBar refresh={refresh} onRefresh={setRefresh} />
         <div className="shell"><div className="card" style={{ gridColumn: '1 / -1' }}>
-          {siteErr ? <Failed error={siteErr} what="your sites" onRetry={reloadSites} /> : <Waiting what="Loading sites" />}
+          <NoSite loading={siteLoading} error={siteErr} onRetry={reloadSites} />
         </div></div>
       </div>
     );
   }
 
-  /* warnings, by device: when a device's active warning started, for the
-     deviation marker on its line and the amber cells after it */
   const warnSince = new Map<string, Date>();
   for (const a of alarms.data ?? []) {
     if (a.severity !== 'warn') continue;
@@ -161,7 +140,6 @@ export default function Monitoring() {
     if (!prev || at < prev) warnSince.set(a.deviceId, at);
   }
 
-  /* -------- what the chart draws -------- */
   const shownIds = chosen.filter(id => !hidden[id]);
   const P = paramOf(dp), unit = unitOf(dp);
   let chartTimes: string[] = [], chartSeries: MSeries[] = [];
@@ -179,7 +157,6 @@ export default function Monitoring() {
     : MONL[dayDate.getMonth()].toUpperCase() + ' ' + dayDate.getFullYear() + ' · DAILY PEAK';
   const chartState = range === 'day' ? dayTs : peaks;
 
-  /* -------- the rail -------- */
   const onDevs = list.filter(d => d.status !== 'down' && d.energyTotalKwh != null);
   const fleetAvg = onDevs.length ? onDevs.reduce((t, d) => t + (d.energyTotalKwh as number), 0) / onDevs.length : 0;
   const sum = summary.data;
@@ -189,7 +166,6 @@ export default function Monitoring() {
     eDelta = (p >= 0 ? '+' : '') + p.toFixed(1) + '% vs yesterday';
   }
 
-  /* -------- the table: newest reading first, one column per chosen device -------- */
   const rowsAll = dayTs.data ? dayTs.data.times.map((t, i) => ({ t, i })).filter(r => dayTs.data!.series.some(s => s.values[r.i] != null)).reverse() : [];
   const from = page * per, slice = rowsAll.slice(from, from + per);
   const UNIT = labelWithUnit(dp);
@@ -216,7 +192,6 @@ export default function Monitoring() {
     <div className="pg-monitoring">
       <TopBar refresh={refresh} onRefresh={setRefresh} />
 
-      {/* ======================= TOP ROW · title + filters, one line ======================= */}
       <div className="toprow">
         <div className="rail-head">
           <span className="t">Devices Live</span>
@@ -238,7 +213,6 @@ export default function Monitoring() {
       </div>
 
       <div className="shell">
-        {/* ======================= LEFT RAIL · DEVICES ======================= */}
         <aside className="rail">
           <div className="strip" id="strip">
             {devices.data ? list.map(d => {
@@ -263,7 +237,6 @@ export default function Monitoring() {
             {devices.data && !list.length && <div className="empty-note tall">No {dtype.toLowerCase()} devices on this site</div>}
           </div>
 
-          {/* plant readouts · live */}
           <div className="rail-kpis">
             <div className="kpi">
               <div className="lbl">Plant active power</div>
@@ -277,7 +250,6 @@ export default function Monitoring() {
           </div>
         </aside>
 
-        {/* ======================= MAIN COLUMN ======================= */}
         <main className="maincol">
           <div className="main" ref={mainRef}>
             {panelOpen && cur && (
@@ -332,7 +304,6 @@ export default function Monitoring() {
               <div className="chead">
                 <div className="title">{P?.label ?? dp}</div>
                 <div className="legend">
-                  {/* the chips wear the SERIES tokens, the same ones the lines are drawn with */}
                   {chosen.map(id => {
                     const vals = dayTs.data?.series.find(s => s.deviceId === id)?.values ?? [];
                     let last: number | null = null; for (let i = vals.length - 1; i >= 0; i--) if (vals[i] != null) { last = vals[i]; break; }
@@ -365,11 +336,7 @@ export default function Monitoring() {
             </div>
           </div>
 
-          {/* historical table */}
           <div className="card tcard">
-            {/* The FILTER is the column picker: what is ticked here is what the
-                table shows AND what the CSV carries. Time stamp is not optional -
-                a reading without its time is not a reading. */}
             <div className="ttools">
               <div className="colpick" id="colpick" ref={colpick}>
                 <button className="tbtn" id="colbtn" type="button" aria-expanded={colOpen} onClick={e => { e.stopPropagation(); setColOpen(!colOpen); }}>
@@ -385,7 +352,7 @@ export default function Monitoring() {
                         <label className="colrow" key={d.id}>
                           <input type="checkbox" checked={on} onChange={e => {
                             const next = e.target.checked ? [...chosen, d.id] : chosen.filter(x => x !== d.id);
-                            setCols(list.map(x => x.id).filter(x => next.includes(x)));     /* the fleet's own order */
+                            setCols(list.map(x => x.id).filter(x => next.includes(x)));
                           }} />
                           <span className="dot" style={{ background: ok ? (on ? colorOf(d.id) : 'var(--green)') : 'var(--red)' }} />{d.name}
                           {!ok && <span className="noda">NO DATA</span>}

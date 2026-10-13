@@ -1,208 +1,61 @@
-/* Ported from the design-mockup branch, plants.html.
-   Every rule is scoped to .pg-plants so pages cannot restyle each other in the
-   single-page app; the resets and the dark sky behind the glass live once in
-   base.css. Otherwise the stylesheet - comments included - is the mockup's. */
-/* ---- THE FIELD IS SPACE. THE INSTRUMENT IS NOT. ----
-   Two decisions, and they are separate on purpose.
-
-   BEHIND the glass there is a void, because the subject is a photograph of the
-   Earth taken from orbit and the correct background for that is the thing that
-   is actually behind it. A white field around a lit planet reads as a picture
-   pasted into a document.
-
-   The INSTRUMENT was light - the portal's ordinary panel tokens, on the
-   argument that a reader arriving from Monitoring should not have to re-learn
-   what a panel looks like. That was right about consistency and wrong about
-   this screen: a white card laid over a photograph of the night side is a hole
-   cut in the picture, and the eye goes to the hole rather than to the planet.
-
-   So the panels here are DARK GLASS - the --void-* tokens below - and they are
-   all the same glass, so the rail, the card, the portfolio panel and the labels
-   standing on the ground read as one instrument in one room. The type on them
-   still says what the portal's type says, in three colours used consistently:
-   WHITE for a fixed fact, EMERALD for live power, GOLD for what the day has
-   banked. The layout, the type scale and the spacing are the product's; only
-   the surface changed.
-
-   The portal's LIGHT tokens are kept below rather than deleted: they are the
-   base every rule is written against, and the narrow-window layout further
-   down still uses several of them. The void block overrides the surfaces.
-
-   Everything painted on the VOID itself - the stars, the graticule, the
-   vignette - is written in literals rather than tokens, precisely because it is
-   not part of the token surface and must not follow it. */
 .pg-plants{
-  /* ---- LIGHT · UTILITY BLUE (default) · enterprise solar-portal palette ---- */
-  --bg:#f1f4f8;            /* page background            */
-  --panel:#ffffff;         /* card surface               */
-  --panel-2:#f5f8fb;       /* nested surface / inputs    */
-  --line:#dde4ec;          /* card borders               */
-  --line-soft:#e9eef4;     /* gridlines, dividers        */
-  --line-hi:#b5c2d1;       /* hover / active borders     */
-  --text:#152234;          /* primary text               */
-  --muted:#5a6b7f;         /* secondary text             */
-  --faint:#8494a6;         /* tertiary text              */
-  --dim:#aab6c4;           /* dead readouts (offline)    */
-  --elev:#ffffff;          /* tooltips, toasts           */
-  --sel:#e8f0fb;           /* selected card surface      */
+  --bg:#f1f4f8;
+  --panel:#ffffff;
+  --panel-2:#f5f8fb;
+  --line:#dde4ec;
+  --line-soft:#e9eef4;
+  --line-hi:#b5c2d1;
+  --text:#152234;
+  --muted:#5a6b7f;
+  --faint:#8494a6;
+  --dim:#aab6c4;
+  --elev:#ffffff;
+  --sel:#e8f0fb;
   --hover:rgba(11,99,206,.07);
   --hover-soft:rgba(11,99,206,.045);
-  /* the row under the pointer, and only that row */
   --row-hover:rgba(11,99,206,.10);
-  --shadow:rgba(4,10,20,.55);   /* a panel on the void casts into the void */
-  --on-accent:#ffffff;     /* text on a filled accent    */
-  /* header bar — same surface family as the cards */
+  --shadow:rgba(4,10,20,.55);
+  --on-accent:#ffffff;
   --topbar:var(--panel);
   --topbar-fg:var(--text);
   --topbar-fg-2:var(--muted);
   --topbar-tab:var(--muted);
   --topbar-hover:var(--hover);
   --topbar-active:var(--green-soft);
-  --green:#12a150;         /* producing / healthy        */
-  --green-rgb:18,161,80;   /* same green, for rgba() glows */
+  --green:#12a150;
+  --green-rgb:18,161,80;
   --green-soft:rgba(18,161,80,.12);
   --green-deep:#0b7a3c;
   --blue:#1a73c8;
   --blue-soft:rgba(26,115,200,.12);
-  --red:#d92d20;           /* offline / alarms           */
+  --red:#d92d20;
   --red-soft:rgba(217,45,32,.1);
-  --amber:#dc7a06;         /* yield / deviations         */
+  --amber:#dc7a06;
   --amber-soft:rgba(220,122,6,.12);
-  --brand:#a87b0f;         /* wordmark · gold            */
+  --brand:#a87b0f;
   --mono:ui-monospace,'SF Mono','Cascadia Code','Roboto Mono',Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
   --serif:Georgia,'Times New Roman',serif;
   --r-lg:14px; --r-md:10px; --r-sm:8px;
 }
-/* ---- DARK · same hues on navy. Only the base tokens are redefined; the
-   header/brand tokens above reference them, so they follow automatically. ---- */
-/* [global - see base.css] * */
 .pg-plants{scrollbar-color:var(--line-hi) transparent}
 .pg-plants{background:#070c14;color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.45;
      -webkit-font-smoothing:antialiased}
-/* [global - see base.css] ::-webkit-scrollbar */
-/* [global - see base.css] ::-webkit-scrollbar-thumb */
-/* [global - see base.css] ::-webkit-scrollbar-track */
-/* [global - see base.css] button */
-/* [global - see base.css] a */
 
-/* =====================================================================
-   SELECT A SITE — the room between the sign-in and the portal.
-
-   Signing in used to drop you straight onto one plant's Home, which meant
-   the portfolio was something you discovered afterwards from a dropdown.
-   This makes the portfolio the first thing you see: every site standing
-   where it actually stands, and the portal opens on whichever one you pick.
-
-   It continues the sign-in rather than starting something new — same void,
-   same stars, same aurora, same corner brackets — so signing in and choosing
-   a site read as one arrival instead of two screens that happen to follow
-   each other.
-
-   THIS WAS A RING, AND THE RING WAS WRONG. Sites used to sit evenly around
-   an orbit, and the comment here defended that by saying a geography would be
-   an invented fact. That was only true of a portfolio with no addresses. Every
-   site in this one IS a place — Sangria in Hanumangarh, Rioja at Bikaner,
-   Mendoza out past Jaisalmer — so the ring was not avoiding an invention, it
-   was throwing away the one attribute that tells these sites apart. Distance
-   is the operational fact of a fleet: it decides which crew goes, how long
-   they are on the road, and whether one storm front is about to take out three
-   sites or one. A ring cannot say any of that. A map says all of it for free.
-
-   WHAT THE PICTURE ENCODES, and it is only these four things:
-     POSITION   where the site is. Real latitude and longitude, projected;
-                nothing is nudged for looks except demo sites that share a
-                town, and those say so where they are built.
-     SIZE       AC capacity. The biggest site is the biggest node.
-     COLOUR     health, and health only: green producing, amber a warning,
-                red a critical alarm, grey nothing coming in. Warm anywhere
-                on this map means somebody has to look at something.
-     BRIGHTNESS output against the site's own nameplate.
-   So a fleet at midday glows and the same fleet at midnight goes quiet without
-   a single number being read — and now you can also see that the warm one is
-   the far one.
-
-   The core went with the ring. A glowing portfolio total in the middle of the
-   frame was honest over an orbit, where the centre meant "the sum"; over a map
-   the centre is a point in Nagaur district, and parking the fleet total there
-   would invent exactly the fact the old comment was afraid of. The total moved
-   to a plate in the corner, where it is a readout and not a location.
-   ===================================================================== */
 .pg-plants,.pg-plants{height:100%}
-/* ---------- the field ----------
-   One lit navy pool behind the content, falling off to --bg at the edges. The
-   portal never shows a flat background either: it is always cards lifted off a
-   base, and that separation is what makes it look like itself.
-
-   The pool is re-mixed for the lifted ramp. It is not a decorative value: it is
-   chosen so the centre of the field lands just above --panel, which is what
-   makes a card read as sitting ON something rather than floating in it. Over
-   the old #0a1017 the same ink landed at about #1a2840; over #121a26 it takes a
-   lighter ink to arrive at the equivalent place, and pasting the old numbers
-   onto the new ramp would have left the middle of the screen reading DARKER
-   than the cards on top of it. */
-/* THE SOLAR BACKGROUND.
-   Two washes and the base. A warm one from the top, which is the sun; a cool
-   one low and wide, which is the sky it is shining through. Neither is strong
-   enough to be a colour you would name - together they are the difference
-   between a page that is white and a page that is daylit, and daylight is the
-   correct ambience for a screen whose whole subject is where the sun currently
-   is. The globe sits in it rather than on it. */
-/* ---------- THE VOID, AND THE SUN IN IT ----------
-   Deep space, two cold nebulae so the black is not a flat fill, and one warm
-   wash that is the SUN - parked where the sun actually is. The frame loop hands
-   the page the screen position of the subsolar point every time it moves, so
-   the light falling across this screen arrives from the same direction as the
-   terminator drawn on the globe. Turn the world and the daylight travels with
-   it. A glow pinned to a corner would have been the background disagreeing with
-   the subject, which is the one thing this screen may not do.
-
-   The starfield is NOT here. It is drawn on the canvas with the gravity grid,
-   because both of them are bent by the Earth and a CSS gradient cannot be. */
-/* AND IT GOES OUT WHEN THE SUN DOES.
-   --sun-x/--sun-y say WHERE the sun is; --day says whether it is on our side of
-   the world at all. It is 1 with the sun behind the reader and the whole disc
-   lit, and 0 with the sun round the back and the reader looking at the night
-   side - which is a real state of this screen, reached by dragging the globe or
-   simply by waiting. The warm wash and the corona are multiplied by it, so they
-   leave WITH the daylight instead of burning over a dark planet; a cold field
-   comes up by exactly as much as they go, so the void gets deeper and bluer
-   rather than merely dimmer. The stars brighten in the same breath - see
-   drawSpace - because the thing that hides them is glare, and the glare has
-   gone. Nothing here is a mood: it is the same sun the terminator is drawn
-   from, said in the background. */
 .pg-plants{background:
     radial-gradient(circle 38vmax at var(--sun-x,80%) var(--sun-y,12%),
       rgba(255,216,146,calc(.26*var(--day,1))) 0%,
       rgba(240,178,73,calc(.09*var(--day,1))) 30%, transparent 62%),
-    /* THE TWO PAINTED NEBULAE ARE GONE. They were a green wash and a blue one,
-       and both had to go: green is PRODUCING on this portal, so a green cloud in
-       the sky was competing with every site marker on the screen for the same
-       meaning - and the real Milky Way is behind the globe now, with real dust
-       lanes, which is what they were standing in for. */
-    /* the wide one, and it is what makes NOON legible. With the sun dead behind
-       the reader the tight wash above lands where the globe already is and is
-       never seen; this one is 140% of the frame from the same anchor, so a
-       fully lit face sits in a field that has been lifted everywhere rather
-       than in the same black it would have at midnight.
-
-       It carries most of the day/night swing, and it used to be too polite to
-       do it: at .115 the difference between noon and midnight in the corner of
-       this screen was about eight values out of 255, which is a thing that is
-       true of the markup and not true of the picture. A background keyed to
-       the sun that nobody can see move is not keyed to the sun. */
     radial-gradient(ellipse 150% 130% at var(--sun-x,80%) var(--sun-y,12%),
       rgba(126,158,214,calc(.30*var(--day,1))) 0%,
       rgba(90,120,180,calc(.14*var(--day,1))) 45%, transparent 78%),
-    /* the night field: deep, cold, and worth exactly what the daylight is not */
     radial-gradient(ellipse 120% 96% at 50% 48%,
       rgba(4,10,24,calc(.92*(1 - var(--day,1)))) 0%,
       rgba(0,1,5,calc(1 - var(--day,1))) 100%),
     #070c14;
   color:var(--muted);font-family:var(--mono);overflow:hidden}
 
-/* the corona. Same anchor point as the wash, so the light has one source
-   instead of two that nearly agree. */
 .pg-plants .rays{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:calc(.6*var(--day,1));
   background:repeating-conic-gradient(from 0deg at var(--sun-x,80%) var(--sun-y,12%),
     rgba(255,226,170,.17) 0deg 1.2deg, transparent 1.2deg 7.5deg);
@@ -211,28 +64,15 @@
   mask-image:radial-gradient(circle 32vmax at var(--sun-x,80%) var(--sun-y,12%),
     rgba(0,0,0,.95) 0%, transparent 58%)}
 
-/* A vignette on a light page cannot be a shadow at the edges - that is how you
-   get a white screen with dirty corners. It is a WARM one instead, the light
-   falling off towards the frame, which reads as depth rather than as grime. */
-/* On a light page a vignette had to be warm, or you got a white screen with
-   dirty corners. In the void it is what it has always been: the frame falling
-   off into the dark, so the eye is handed the middle. */
 .pg-plants .vignette{position:fixed;inset:0;z-index:3;pointer-events:none;
   background:radial-gradient(ellipse at 50% 46%, transparent 54%,
     rgba(2,5,10,calc(.70 + .24*(1 - var(--day,1)))) 100%)}
-/* the faint horizontal ruling of a CRT, at the edge of visibility - it is what
-   makes the black read as a screen rather than as absence */
 .pg-plants .grain{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.05;
   background:repeating-linear-gradient(0deg,transparent 0 2px,#0f1a28 2px 3px)}
 .pg-plants .corner{position:fixed;width:26px;height:26px;z-index:4;pointer-events:none}
 .pg-plants .corner.tl{top:16px;left:16px;border-top:1px solid rgba(var(--green-rgb),.42);border-left:1px solid rgba(var(--green-rgb),.42)}
 .pg-plants .corner.br{bottom:16px;right:16px;border-bottom:1px solid rgba(var(--green-rgb),.42);border-right:1px solid rgba(var(--green-rgb),.42)}
 
-/* ---------- header ---------- */
-/* A LIT PANEL IN A DARK ROOM. On a light page a 62%-opaque white bar was a
-   tint; over the void it would be a grey smear with stars showing through the
-   type. It is nearly solid here, and what lifts it off the field is the shadow
-   underneath rather than the transparency. */
 .pg-plants .hud{position:fixed;top:0;left:0;right:0;z-index:6;display:flex;align-items:center;gap:22px;
   height:62px;padding:0 20px;font-size:11px;color:var(--faint);
   background:color-mix(in srgb, var(--panel) 93%, transparent);
@@ -245,9 +85,6 @@
   line-height:1.05;display:block}
 .pg-plants .hud .sub{font-size:9px;letter-spacing:.28em;color:var(--faint);text-transform:uppercase;
   display:block;margin-top:3px}
-/* The headline numbers live IN the bar rather than in a panel on the field.
-   A panel beside the map is a second thing competing for the same glance; a
-   bar above it is the frame the picture is read inside. */
 .pg-plants .hud .cell{display:flex;flex-direction:column;justify-content:center;gap:6px;flex:none;
   height:100%;padding:0 20px;border-left:1px solid var(--line)}
 .pg-plants .hud .cell .k{font-size:9px;letter-spacing:.22em;color:var(--faint);text-transform:uppercase;
@@ -261,65 +98,19 @@
 .pg-plants .hud .out{background:none;border:1px solid var(--line);border-radius:6px;color:var(--faint);
   font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;padding:8px 15px;margin-left:20px}
 .pg-plants .hud .out:hover{color:var(--red);border-color:rgba(255,107,107,.5)}
-/* the cells fold from the least load-bearing end inward rather than wrapping */
-/* Measured against the widest each cell actually gets, not guessed: at 17px
-   the five cells plus the mark and the right-hand block need about 1430px, and
-   each fold buys back roughly its own cell. Folding earlier than that throws
-   away a number the screen had room for. */
 @media (max-width:1400px){ .pg-plants .hud .cell.c4{display:none} }
 @media (max-width:1280px){ .pg-plants .hud .cell.c3{display:none} }
 @media (max-width:1160px){ .pg-plants .hud .cell.c2{display:none} }
 
-/* ---------- the theatre ---------- */
-/* The globe owns everything between the bar and the rail. The canvas measures
-   its own parent, so moving these four numbers is the whole of moving the
-   globe: the sphere is sized to the box, and every label follows from it. */
-/* The globe now has the whole window. It used to stop 360px short for the
-   right-hand panel; with the panel gone, leaving the gap would be leaving a
-   margin around nothing. */
-/* FULL BLEED. The space goes behind the bar and behind the strip, because a
-   starfield that stops in a straight line 62px down is a wallpaper, not a view.
-   The bar and the strip float ON it, and the GLOBE is centred on what is left
-   between them - see size(), which is the only place that offset lives. */
 .pg-plants .theatre{position:fixed;inset:0;z-index:5}
-/* grab, not crosshair: the world turns under the pointer, and the cursor is the
-   only thing on screen that can say so before you try it */
-/* the photograph sits under the instrument and takes no clicks - every gesture
-   on this screen belongs to the layer above it */
 .pg-plants #earth{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .pg-plants #atlas{cursor:grab}
 .pg-plants #atlas:active{cursor:grabbing}
 
 .pg-plants #atlas{position:absolute;inset:0;width:100%;height:100%}
 
-/* The rule used to name .clk, which nothing on the page has ever carried, so
-   the clock stayed and pushed the way out off the edge of a narrow screen.
-   THE LIVE PIP IS GONE FROM THE BAR. There is one on the strip, over figures
-   that are actually moving; a second one beside the operator's own name was a
-   light announcing that a name was live. */
 @media (max-width:860px){ .pg-plants .hud .lc{display:none} }
 
-
-/* ============================================================================
-   THE RAIL, AND THE CARD IT OPENS
-   ----------------------------------------------------------------------------
-   TWO COLUMNS OF FULL READOUTS WAS THE WRONG SHAPE, twice over.
-
-   It could not COUNT. Cards were pitched down two fixed columns, and when the
-   fleet outgrew the window the pitch closed up until they overlapped - so the
-   one portfolio the screen was built for, a big one, was the one it could not
-   draw. A rail of names scrolls. Three sites or ninety, it holds.
-
-   And it could not be READ. Every site shouted its full readout at once, so
-   nothing was foreground: sixteen numbers competing on a screen whose only
-   question is WHICH SITE. The rail answers that question and nothing else -
-   state, name, what it is making - and the detail waits behind a click, where
-   detail belongs.
-
-   Both of them are dark now. A white card on a photograph of the night side
-   was a hole cut in the picture; these are the same glass as the bar, so the
-   instrument reads as one object standing in one room.
-   ============================================================================ */
 .pg-plants .rail{position:fixed;left:22px;top:78px;width:236px;z-index:7;
   max-height:calc(100vh - 132px);
   display:flex;flex-direction:column;
@@ -339,13 +130,6 @@
 .pg-plants .rows::-webkit-scrollbar{width:6px}
 .pg-plants .rows::-webkit-scrollbar-thumb{background:rgba(150,180,220,.22);border-radius:6px}
 
-/* one site. The pip is the state, the name is the subject, the figure is what
-   it is doing - and that is the whole row, because that is the whole question. */
-/* user-select is off because the second half of a double click, on a row whose
-   first half has already started leaving, otherwise selects the site's name and
-   leaves a highlighted word sitting on the screen during the navigation. The
-   row is a control, not a passage of text; nothing on it was ever for copying,
-   and the address you might actually want to copy is on the card. */
 .pg-plants .rrow{display:flex;align-items:center;gap:10px;width:100%;
   padding:9px 13px 9px 11px;background:none;border:0;
   border-left:2px solid transparent;text-align:left;font-family:var(--mono);
@@ -371,23 +155,12 @@
   background:rgba(240,183,74,.16);border:1px solid rgba(240,183,74,.5);color:var(--gold)}
 .pg-plants .rrow .alm.on{display:inline-flex}
 .pg-plants .rrow .alm.crit{background:rgba(255,107,94,.16);border-color:rgba(255,107,94,.55);color:#ff6b5e}
-/* THE ROW IS THE WAY IN, AND IT SAYS SO.
-   A click on a name used to only PIN the card, which left the one gesture
-   everybody already tries on a list of sites doing nothing you could see. It
-   opens the site now, and the arrow is PRINTED rather than revealed on hover -
-   the same bargain the card's nameplate makes fifty lines down. A control that
-   only admits to being one once the pointer is on it has already failed the
-   reader who was looking for it. */
 .pg-plants .rrow .go{flex:none;width:9px;height:9px;stroke:rgba(150,180,220,.32);
   stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round;
   transition:stroke .16s ease,transform .16s ease}
 .pg-plants .rrow:hover .go,.pg-plants .rrow:focus-visible .go,.pg-plants .rrow.on .go{
   stroke:var(--emerald);transform:translateX(2px)}
 
-/* ---- the card the rail opens ----
-   Pinned beside the row that asked for it, tethered to the actual site by the
-   leader already drawn on the canvas. One at a time, on purpose: this screen
-   compares sites, and a comparison needs one subject. */
 .pg-plants .card{position:fixed;left:270px;z-index:8;width:264px;box-sizing:border-box;
   background:var(--glass);border:1px solid var(--edge);border-radius:13px;
   box-shadow:0 26px 64px rgba(0,0,0,.62);
@@ -398,27 +171,6 @@
   transition:opacity .2s ease,transform .2s ease}
 .pg-plants .card.on{opacity:1;transform:translate(0,-50%);pointer-events:auto}
 .pg-plants .card .ch{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
-/* THE CARD DOES NOT OPEN ANYTHING, AND THAT IS THE WHOLE OF THIS BLOCK.
-
-   The nameplate used to be a button with an arrow on it, on the argument that
-   the leader from the globe has pointed at that line all along, so the line is
-   where "open this site" belongs. The argument was sound about WHERE, and wrong
-   about WHETHER. It left the screen with two doors to the same room - this one
-   and the fleet row that summons it - and two doors is not twice as easy to
-   leave by, it is one question asked twice: a reader who finds one of them now
-   has to wonder what the other one does differently. Nothing. It did the same
-   thing.
-
-   So the card is what it looks like: a READOUT. It appears by being pointed at,
-   it says what a site is doing, and it takes no gesture at all. Every way into
-   a site on this screen is a fleet row - the list you were already reading down
-   when the card came up - and the arrow printed at the end of that row is the
-   only arrow on the screen that promises anything.
-
-   It also settles a smaller thing that was never quite right: the card is a
-   hover surface, and a control that appears under the pointer because the
-   pointer went past it is a control that can be hit by a hand that was only
-   reading. Nothing on it can be hit now. */
 .pg-plants .card .ch .nm{font-size:12.5px;letter-spacing:.16em;color:var(--void-fg);
   font-weight:700;text-transform:uppercase}
 .pg-plants .card .ch .st{margin-left:auto;font-size:8.5px;letter-spacing:.2em;color:var(--emerald)}
@@ -454,10 +206,6 @@
 .pg-plants .card .ad{flex:1;min-width:0;font-size:9px;letter-spacing:.03em;color:var(--void-dim);
   line-height:1.45;white-space:normal}
 
-/* ---------- the list, for when the map will not do ----------
-   Under 720px the map stops being readable — the nodes crowd and the chips
-   overlap — so the same sites become a plain list. Same data, same click, no
-   picture: the picture was never the point, choosing was. */
 .pg-plants .fallback{display:none}
 @media (max-width:720px){
   .pg-plants .theatre{display:none}
@@ -479,20 +227,6 @@
   .pg-plants .frow .kw{margin-left:auto;font-size:11.5px;color:var(--green-deep);text-align:right}
 }
 
-/* ============================================================================
-   WHAT THE FLEET ADDS UP TO - and it stands on the right, not along the foot.
-   ----------------------------------------------------------------------------
-   As a full-width strip it was a wall: seven figures ruled edge to edge, the
-   heaviest object on a screen whose subject is a planet. As a panel it is a
-   READOUT - it takes the room it needs, floats clear of every border, and lets
-   the picture run underneath it.
-
-   And it carries the one thing the strip could not. A fleet reading 5.7 MW says
-   nothing on its own; 5.7 MW against the ARC OF ITS OWN DAY says whether that
-   is a good noon or a poor one, how much of the day is already banked, and how
-   much is still to come. That is the curve below, and it is drawn from the same
-   function every figure on this screen is built on.
-   ============================================================================ */
 .pg-plants .sumx{position:fixed;right:26px;top:88px;width:296px;z-index:7;box-sizing:border-box;
   background:var(--glass);border:1px solid var(--edge);border-radius:16px;
   box-shadow:0 28px 72px rgba(0,0,0,.58);
@@ -513,10 +247,6 @@
   font-variant-numeric:tabular-nums}
 .pg-plants .sumx .of em{font-style:normal;color:var(--void-fg)}
 
-/* ---- the arc of the day ----
-   Filled to NOW in emerald and left faint beyond it, so the panel says at a
-   glance how much of today is in the bank and how much is still coming. The
-   dashed upright is this moment; the two hours below it are dawn and dusk. */
 .pg-plants .sumx .curve{display:block;width:100%;height:64px;margin:13px 0 5px;overflow:visible}
 .pg-plants .sumx .tt{display:flex;justify-content:space-between;font-size:8.5px;
   letter-spacing:.14em;color:var(--void-dim)}
@@ -533,36 +263,17 @@
 .pg-plants .sumx .xg b.al{color:#ff6b5e}
 .pg-plants .sumx .xg b small{font-size:.66em;color:var(--void-dim);margin-left:5px;letter-spacing:.1em}
 
-/* a narrow window has no room for a rail, a card AND a panel beside a globe.
-   The panel is the first to go: it is a summary, and the fallback list below
-   is nothing but summaries. */
 @media (max-width:1180px){ .pg-plants .sumx{display:none} }
 @media (max-width:980px){ .pg-plants .rail{display:none} .pg-plants .card{display:none} }
 
-/* ============================================================================
-   THE CHROME JOINS THE SPACE IT IS STANDING IN
-   ----------------------------------------------------------------------------
-   The bar and the strip were white panels sitting ON the void, and the giveaway
-   was the EDGE: a hairline and a drop shadow announcing where the instrument
-   stopped and the sky started. They are glass now, and they DISSOLVE - a
-   vertical gradient with a matching mask, so the panel has no far edge at all.
-   It is dense where the type is and gone by the time it reaches the globe.
-
-   The mask is on a ::before rather than on .hud itself, because a mask on the
-   element fades the TYPE along with the glass. The pseudo carries the gradient
-   and the backdrop blur; the content above it stays at full strength.
-
-   (An absolutely positioned ::before is NOT a flex item, which is the only
-   reason this can be a pseudo-element on a flex container at all.)
-   ============================================================================ */
 .pg-plants{
-  --void-fg:#e9f1fb;                  /* white   - fixed facts, identity      */
-  --void-dim:#8ba0bb;                 /* labels, units, denominators          */
-  --void-line:rgba(150,180,220,.14);  /* dividers, at the edge of visibility  */
-  --emerald:#3ad998;                  /* live POWER - what the fleet is doing */
-  --glass:rgba(9,16,28,.74);          /* every panel standing on the void     */
-  --edge:rgba(140,175,215,.17);       /* and the one hairline that bounds it  */
-  --gold:#f0b74a;                     /* what the day has EARNED - kWh, money */
+  --void-fg:#e9f1fb;
+  --void-dim:#8ba0bb;
+  --void-line:rgba(150,180,220,.14);
+  --emerald:#3ad998;
+  --glass:rgba(9,16,28,.74);
+  --edge:rgba(140,175,215,.17);
+  --gold:#f0b74a;
 }
 
 .pg-plants .hud{
@@ -578,12 +289,6 @@
   -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 44%,rgba(0,0,0,.40) 76%,transparent 100%);
   mask-image:linear-gradient(to bottom,#000 0%,#000 44%,rgba(0,0,0,.40) 76%,transparent 100%)}
 
-/* ON THE GROUND, A DEEPER SCRIM.
-   The gradient above fades out entirely at its lower edge, which is right over
-   black space and wrong over sunlit desert - at the descended view the wordmark
-   held but "Site Control" and the Exit control washed clean off the screen. The
-   scrim carries further down and stays denser once there is ground under it,
-   and the type stops relying on the picture being dark. */
 body.down .pg-plants .hud::before{
   background:linear-gradient(to bottom,
     rgba(3,7,13,.94) 0%,rgba(3,7,13,.86) 52%,rgba(3,7,13,.54) 80%,rgba(3,7,13,0) 100%);
@@ -592,20 +297,8 @@ body.down .pg-plants .hud::before{
 body.down .pg-plants .hud .sub{color:#8fa6bd}
 body.down .pg-plants .hud .out{color:#c3d2e2;border-color:rgba(150,180,220,.34)}
 
-/* the dividers were --line, a pale grey picked to sit on white. On the void
-   the same value is a bright bar; these are light-on-dark at 14%. */
 .pg-plants .hud .cell,.pg-plants .hud .right .cell:first-child{border-left-color:var(--void-line)}
 
-/* ---- and the type on it ----
-   THREE COLOURS, AND EACH ONE MEANS SOMETHING, here and on every panel below:
-     WHITE    a fixed fact. Capacity, device counts, who is signed in. None of
-              it moves between now and tomorrow.
-     EMERALD  live POWER. What the fleet is doing at this second - and it is the
-              portal's own producing-green, lifted to carry on black, because a
-              green mixed to sit on a white card goes muddy on the void.
-     GOLD     what the day has EARNED and cannot lose: kilowatt-hours banked and
-              the money they came to. Same gold as the wordmark, which is the
-              one other thing on this screen that is about value. */
 .pg-plants .hud .cell .k,.pg-plants .hud .sub{color:var(--void-dim)}
 .pg-plants .hud .cell .v{color:var(--void-fg)}
 .pg-plants .hud .cell .v small{color:var(--void-dim)}
@@ -614,22 +307,10 @@ body.down .pg-plants .hud .out{color:#c3d2e2;border-color:rgba(150,180,220,.34)}
 .pg-plants .hud .out:hover{color:#ff8f85;border-color:rgba(255,143,133,.55)}
 .pg-plants .corner.tl,.pg-plants .corner.br{border-color:rgba(58,217,152,.42)}
 
-/* the strip now floats over the bright limb of a planet rather than over a
-   panel, so the type carries its own ground with it */
 .pg-plants .hud .word,.pg-plants .hud .cell .v,.pg-plants .sum .v{text-shadow:0 1px 14px rgba(0,4,10,.72)}
 
-/* ============================================================================
-   THE VOID, AND THE DESCENT THROUGH IT
-   ============================================================================ */
-
-/* THE SCANLINES ARE OFF. A repeating 2px ruling is a CRT - a shadow mask on a
-   television - and the subject of this screen is now a photograph taken from
-   orbit. It was reading as dirt on a lens that is not that kind of lens. If a
-   sensor artefact is wanted here it should be grain or edge aberration, not the
-   horizontal ruling of a 1980s monitor. */
 .pg-plants .grain{display:none}
 
-/* zoom in/out - the only chrome the descent needs now, dressed for space */
 .pg-plants .zoom{position:absolute;left:26px;bottom:26px;z-index:7;display:flex;gap:8px}
 .pg-plants .zbtn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;
   font-family:var(--mono);font-size:19px;line-height:1;box-sizing:border-box;
@@ -643,32 +324,9 @@ body.down .pg-plants .hud .out{color:#c3d2e2;border-color:rgba(150,180,220,.34)}
   box-shadow:0 0 0 2px rgba(58,217,152,.75)}
 @media (max-width:1100px){ .pg-plants .zoom{left:20px;bottom:20px} }
 
-/* THE COLUMNS STAND DOWN ON ARRIVAL.
-   Two rails of cards beside a planet is the right shape for a picker you are
-   reading from orbit. It is the wrong shape once you have landed on the ground
-   the cards were describing: down there the labels sit ON the sites, in the
-   place they are about, and the rails would only be competing with the thing
-   you flew down to see. They come back the moment you climb. */
 .pg-plants .theatre .chip{transition:opacity .45s ease}
 .pg-plants .theatre.down .chip{opacity:0;pointer-events:none}
 
-/* ================= THE DEPARTURE =================
-   Opening a site is the one moment this screen exists for, and it used to be a
-   cut. The fall it becomes instead is described where it is started, in open().
-   What lives here is everything that is NOT the camera: the fleet-scale chrome
-   getting out of the way, and the frame closing.
-
-   EVERY DURATION BELOW IS A FRACTION OF --go, and --go is written from GO_MS in
-   the script. One number decides how long the departure is. Two numbers - one
-   here and one there - is how a transition ends up navigating a quarter second
-   after the picture has already gone black, which is a bug nobody can see and
-   everybody can feel. */
-
-/* THE FLEET GOES WITH THE ALTITUDE. The rail, the portfolio total and the card
-   are all readings taken from orbit, and half a second into a fall they are
-   describing somewhere the reader no longer is. They leave OUTWARD, each to the
-   edge it already lives against, so the screen reads as opening rather than as
-   a set of panels being switched off. */
 body.going .pg-plants .rail,body.going .pg-plants .sumx,body.going .pg-plants .card,body.going .pg-plants .zoom,body.going .pg-plants .hud{
   pointer-events:none;opacity:0;
   transition:opacity calc(var(--go,1150ms)*.30) ease,
@@ -678,46 +336,18 @@ body.going .pg-plants .sumx{transform:translateX(30px)}
 body.going .pg-plants .card{transform:translate(-18px,-50%)}
 body.going .pg-plants .hud{transform:translateY(-14px)}
 
-/* THE BRACKETS GO LAST, and they go last because they are the only two marks on
-   this page that belong to the INSTRUMENT rather than to the fleet. While they
-   are up, whatever is happening is still happening inside a frame. Letting them
-   go is the frame itself standing down, and it is the last thing that should. */
 body.going .pg-plants .corner{opacity:0;
   transition:opacity calc(var(--go,1150ms)*.26) ease calc(var(--go,1150ms)*.46)}
 
-/* ---- AND THEN THROUGH ----
-   The iris closes on the SITE, not on the middle of the window - --go-x and
-   --go-y are written every frame from the same projected position the marker
-   is drawn at, exactly the way --sun-x and --sun-y already carry the sun into
-   the stylesheet. The hole is over the ground being fallen to, so the last
-   thing visible on this page is the place the next one is about.
-
-   Declared through @property so the radius can be TRANSITIONED. A custom
-   property is a string by default and a string does not interpolate: without
-   this the hole would sit open and then snap shut on the final frame. Where
-   @property is not understood that snap is exactly what happens, which is the
-   old cut - the behaviour this replaces - and nothing worse. */
 @property --iris{syntax:'<percentage>';inherits:false;initial-value:150%}
 .pg-plants .iris{position:fixed;inset:0;z-index:20;pointer-events:none;opacity:0;--iris:150%;
   background:radial-gradient(circle at var(--go-x,50%) var(--go-y,46%),
     transparent var(--iris), #04080e calc(var(--iris) + 18%))}
-/* CLOSED WITH ROOM TO SPARE, and the margin is the point of these two numbers.
-   .28 + .56 puts the last frame of the close at 84% of the beat; the navigation
-   is at 100% of it. That gap is not padding, it is the only thing making the
-   claim above true - the cut has to happen behind a shutter that is ALREADY
-   down. Timed to land exactly on the cut it is not: a transition does not begin
-   on the frame its class is set, it begins on the next style flush, which
-   measured about 60ms here and will be worse on a machine drawing a real globe
-   rather than a software one. Tuned flush, that latency is the whole margin,
-   and the flash it produces is the artefact this element exists to prevent. */
 body.going .pg-plants .iris{opacity:1;--iris:0%;
   transition:--iris calc(var(--go,1150ms)*.56) cubic-bezier(.55,0,.85,.55)
                calc(var(--go,1150ms)*.28),
              opacity calc(var(--go,1150ms)*.10) linear calc(var(--go,1150ms)*.28)}
 
-/* a reader who asked for less motion is not shown a fall - open() skips the
-   whole departure for them and cuts, the way it always did. This is belt and
-   braces for the chrome, in case the class is ever set from somewhere else. */
 @media (prefers-reduced-motion:reduce){
   body.going .pg-plants .rail,body.going .pg-plants .sumx,body.going .pg-plants .card,body.going .pg-plants .zoom,
   body.going .pg-plants .hud,body.going .pg-plants .corner,body.going .pg-plants .iris{transition:none}

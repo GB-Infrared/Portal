@@ -1,13 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-/* Load something from the backend and keep it current.
-
-   - data stays on screen while a refresh is in flight, so a five-minute poll
-     never blanks the page; `loading` is true only until the first answer.
-   - a stale answer (the site changed while it was in flight) is dropped.
-   - refreshMs re-asks on an interval; 0 or undefined means only when deps change.
-   - loadedAt is when the last good answer arrived. */
-
 export interface ApiState<T> {
   data: T | null;
   error: Error | null;
@@ -29,8 +21,6 @@ export function useApi<T>(
   const fnRef = useRef(fn);
   fnRef.current = fn;
 
-  /* new question: forget the old answer, so one site's figures never sit
-     under another site's name while the new ones load */
   useEffect(() => {
     setData(null); setError(null); setLoadedAt(null); setLoading(!!fn);
     // eslint-disable-next-line react-hooks/exhaustive-deps

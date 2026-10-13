@@ -1,35 +1,24 @@
 import { useRef, useState, type JSX, type MouseEvent } from 'react';
 import { MON, MONL } from '../lib/format';
 
-/* HOME · A MONTH OF DAYS, as bars. Plant Energy Generation (one series) and
-   Plant KPI (actual beside simulated) are the same picture: one slot per day,
-   the 1st and the last day always named, dates written as densely as the slot
-   allows, gridlines kept sparse.
-
-   A day with no value yet - the rest of this month, or a day the backend has
-   nothing for - draws a 3px stub on the baseline, not a zero-height bar: it
-   is a place a bar will be, not a reading of nothing. Today is drawn at reduced
-   opacity because it is still being made. */
-
 export interface BarSeries {
   key: string;
   name: string;
   color: string;
-  /** index 0 = day 1 */
   values: (number | null)[];
 }
 
 interface Props {
   idp: 'en' | 'cuf';
   year: number;
-  month: number;                /* 1-12 */
+  month: number;
   series: BarSeries[];
   yMax: number;
   yStep: number;
   yDecimals?: number;
   yTitle: string;
   unit: (v: number) => string;
-  today: number | null;         /* day of month, when this month is the current one */
+  today: number | null;
   width: number;
   height: number;
 }

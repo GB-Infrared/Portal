@@ -1,15 +1,5 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 
-/* SETTINGS' ONE-OF-MANY. Monitoring's markup (a .mbtn carrying the current
-   value, a .colpanel of radio rows, closing on the pick), with what a form
-   needs on top: the panel is placed against the viewport and flipped above the
-   button when below is the shorter half; the keyboard moves a cursor (.here)
-   that is not the selection, so Escape puts the list away untouched; typing
-   the first letters finds a row; the ends hold rather than wrap.
-
-   One open at a time across the page. The panel renders where the component
-   is - inside the page - so the page's scoped stylesheet reaches it. */
-
 export interface SsOpt { v: string; t: string; s?: string; none?: boolean }
 
 const OPEN = 'enerops:ss-open';
@@ -18,10 +8,10 @@ interface Props {
   value: string;
   options: SsOpt[];
   onPick: (v: string) => void;
-  label: string;              /* the panel's heading */
-  any?: string;               /* what the button says with nothing chosen */
-  empty?: string;             /* what the panel says with nothing to offer */
-  className?: string;         /* 'mini', 'mini perbtn' */
+  label: string;
+  any?: string;
+  empty?: string;
+  className?: string;
   id?: string;
   ariaLabel?: string;
 }
@@ -47,8 +37,6 @@ export function SsSelect({ value, options, onPick, label, any = 'Choose', empty 
     return () => window.removeEventListener(OPEN, other);
   }, [me]);
 
-  /* close on a mousedown ELSEWHERE, in the capture phase, so a control that
-     stops its own click still closes this list */
   useEffect(() => {
     if (!open) return;
     const down = (e: MouseEvent) => {
@@ -74,7 +62,6 @@ export function SsSelect({ value, options, onPick, label, any = 'Choose', empty 
       if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) { e.preventDefault(); show(true); }
       return;
     }
-    /* Escape closes the list and STOPS: the dialog under it listens for Escape too */
     if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setOpen(false); return; }
     if (e.key === 'Tab') { setOpen(false); return; }
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); pick(here); return; }
@@ -118,8 +105,6 @@ export function SsSelect({ value, options, onPick, label, any = 'Choose', empty 
   );
 }
 
-/* placed against the viewport, flipped above when below is the shorter half -
-   a panel that opens downward into 40px of room is a panel with one row showing */
 function placePanel(b: HTMLElement | null, p: HTMLElement | null) {
   if (!b || !p) return;
   const r = b.getBoundingClientRect(), gap = 6, edge = 10;

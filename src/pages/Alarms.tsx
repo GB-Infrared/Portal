@@ -3,7 +3,7 @@ import * as api from '../api/portal';
 import type { Alarm, Severity } from '../api/types';
 import { useSite } from '../auth/SiteContext';
 import { DateInput } from '../components/DateInput';
-import { Failed, Waiting } from '../components/DataState';
+import { Failed, Waiting, NoSite } from '../components/DataState';
 import { RowPopover } from '../components/RowPopover';
 import { MultiSelect } from '../components/Select';
 import { TableFooter } from '../components/TableFooter';
@@ -14,16 +14,6 @@ import { downloadCsv } from '../lib/csv';
 import { DASH, MON, WDAY, dt24, isoDay, parseIsoDay, toDate } from '../lib/format';
 import '../styles/pages/alarms.css';
 
-/* ALARMS - one site's log for a window of days.
-
-   Ported from design-mockup/alarms.html. The window is the query: moving either
-   date re-reads the log from the backend. Device, severity and status narrow
-   what came back, in the browser, so the summary, the table and the export are
-   always counted off the same rows. No APPLY step: the state the bar describes
-   IS the state on screen. */
-
-/* Received Time first: it is the alarm's identity in time. No plant column -
-   the table is one site's log, and the site is named in the bar above. */
 const COLDEF: { k: keyof typeof RAW; t: string }[] = [
   { k: 'recv', t: 'Received Time' },
   { k: 'res', t: 'Resolved Time' },
@@ -34,7 +24,6 @@ const COLDEF: { k: keyof typeof RAW; t: string }[] = [
   { k: 'dev', t: 'Device Name' },
 ];
 const SEVWORD = (s: Severity) => (s === 'warn' ? 'WARNING' : s.toUpperCase());
-/* the export reads plain text where the table reads markup */
 const RAW = {
   recv: (a: Alarm) => dt24(toDate(a.receivedAt)),
   res: (a: Alarm) => (a.resolvedAt ? dt24(toDate(a.resolvedAt)) : ''),
@@ -48,17 +37,14 @@ const RAW = {
 const SEV_OPTS = [{ v: 'alarm', t: 'Alarm' }, { v: 'event', t: 'Event' }, { v: 'warn', t: 'Warning' }, { v: 'critical', t: 'Critical' }];
 const ST_OPTS = [{ v: 'active', t: 'Active' }, { v: 'resolved', t: 'Resolved' }];
 
-/* the day an alarm arrived on, on the local clock its times are printed in */
 const dayKey = (d: Date) => (d.getFullYear() * 100 + d.getMonth()) * 100 + d.getDate();
 
 export default function Alarms() {
-  const { site, error: siteErr, reloadSites } = useSite();
+  const { site, error: siteErr, loading: siteLoading, reloadSites } = useSite();
   const toast = useToast();
   const [refresh, setRefresh] = useState<Refresh>('300');
   const siteId = site?.id ?? null;
 
-  /* the window: yesterday through today, by default. The end date is
-     INCLUSIVE - a log asked for "the 26th to the 27th" contains the 27th. */
   const todayD = new Date();
   const yest = new Date(todayD); yest.setDate(yest.getDate() - 1);
   const [fromD, setFromD] = useState(isoDay(yest));
@@ -70,7 +56,6 @@ export default function Alarms() {
     return end > a ? { from: a.toISOString(), to: end.toISOString() } : null;
   }, [fromD, toD]);
 
-  /* an inverted window keeps the last good log rather than emptying the page */
   const lastWin = useRef(win);
   if (win) lastWin.current = win;
   const w = win ?? lastWin.current;
@@ -90,8 +75,6 @@ export default function Alarms() {
       (!fDev.length || fDev.includes(a.deviceId)) &&
       (!fSev.length || fSev.includes(a.severity)) &&
       (!fSt.length || fSt.includes(a.status)))
-      /* newest first, always - the headings do not sort, and the day groups only
-         hold together while the rows stay in time order */
       .sort((x, y) => (toDate(y.receivedAt)?.getTime() ?? 0) - (toDate(x.receivedAt)?.getTime() ?? 0));
   }, [log.data, fDev, fSev, fSt]);
 
@@ -102,9 +85,6 @@ export default function Alarms() {
   const pg = Math.min(page, pages - 1);
   const from = pg * per, slice = rows.slice(from, from + per);
 
-  /* One line, replaced in place - not a stack. Ticking four devices is ONE
-     decision; the wait lets a run of ticks settle so the count that speaks is
-     the count on screen. */
   const firstRun = useRef(true);
   useEffect(() => {
     if (firstRun.current) { firstRun.current = false; return; }
@@ -123,13 +103,12 @@ export default function Alarms() {
       <div className="pg-alarms">
         <TopBar refresh={refresh} onRefresh={setRefresh} />
         <div className="wrap"><div className="card">
-          {siteErr ? <Failed error={siteErr} what="your sites" onRetry={reloadSites} /> : <Waiting what="Loading sites" />}
+          <NoSite loading={siteLoading} error={siteErr} onRetry={reloadSites} />
         </div></div>
       </div>
     );
   }
 
-  /* summary: counted off the SAME filtered rows the table shows */
   const act = rows.filter(a => a.status === 'active').length;
   const of = (k: Severity) => rows.filter(a => a.severity === k).length;
   const alarm = of('alarm'), event = of('event'), warn = of('warn'), crit = of('critical');
@@ -138,8 +117,6 @@ export default function Alarms() {
   );
   const ready = !!log.data;
 
-  /* each day's count over the whole filtered list, so a heading repeated after
-     a page break still counts the whole day */
   const perDay = new Map<number, number>();
   for (const a of rows) { const d = toDate(a.receivedAt); if (d) perDay.set(dayKey(d), (perDay.get(dayKey(d)) ?? 0) + 1); }
   let lastDay: number | null = null;
@@ -155,7 +132,6 @@ export default function Alarms() {
     <div className="pg-alarms">
       <TopBar refresh={refresh} onRefresh={setRefresh} />
 
-      {/* ======================= FILTER BAR ======================= */}
       <div className="toprow">
         <div className="filters">
           <div className="field"><label>Device</label>
@@ -164,8 +140,6 @@ export default function Alarms() {
             <MultiSelect head="Severity" any="Any severity" value={fSev} options={SEV_OPTS} onChange={setFSev} /></div>
           <div className="field"><label>Status</label>
             <MultiSelect head="Status" any="Any status" value={fSt} options={ST_OPTS} onChange={setFSt} /></div>
-          {/* DATES, NOT DATE-TIMES: an alarm log is asked for by the day. The
-              window runs from the start of the first day to the END of the last. */}
           <div className="field"><label>Start date</label>
             <div className="dt"><DateInput id="f-from-d" aria-label="Start date" value={fromD} onValue={setFromD} /></div></div>
           <div className="field"><label>End date</label>
@@ -174,7 +148,6 @@ export default function Alarms() {
       </div>
 
       <div className="wrap">
-        {/* ======================= SUMMARY ======================= */}
         <div className="sumbar" id="sumbar">
           {[tile('All', ready ? rows.length : DASH, 'all'),
             tile('Active', ready ? act : DASH, act ? 'alarm' : 'ok'),
@@ -185,7 +158,6 @@ export default function Alarms() {
             tile('Critical', ready ? crit : DASH, crit ? 'crit' : 'ok')]}
         </div>
 
-        {/* ======================= ALARM DATA ======================= */}
         <div className="card">
           <div className="chead">
             <div className="title">Alarm Data</div>

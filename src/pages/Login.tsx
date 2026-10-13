@@ -5,19 +5,7 @@ import * as api from '../api/portal';
 import { useAuth } from '../auth/AuthContext';
 import { startLimb, startSky } from './login/canvases';
 import '../styles/pages/login.css';
-
-/* THE FRONT DOOR. Ported from design-mockup/login.html: the void, the sign-in
-   assembling itself row by row, the boot log underneath, and - once the
-   operator is through - the opening ledger, during which the horizon rises.
-
-   What changed is that the ledger now reports things that actually happen:
-     connecting        the sign-in call itself          LINKED
-     loading sites     the site list                    "<n> SITES" - the real count
-     preparing portal  the next screen's code           READY
-     opening           going through                    GO
-   A step that fails says the real reason (NO ROUTE, TIMED OUT, SERVER ERROR,
-   REFUSED). Refused credentials go back to the form with the backend's answer;
-   anything else offers RETRY. */
+import { ignoreErrors } from '../lib/ignoreErrors';
 
 const BOOT: [string, string][] = [
   ['[ 0.214 ]  monitoring ...................... ', 'READY'],
@@ -27,8 +15,6 @@ const BOOT: [string, string][] = [
 ];
 const BEAT = 165;
 const STEPMS = BEAT * 2.2, RUNMS = STEPMS * 4, SLOWAT = 1.5;
-/* `at` is where each step ENDS - the stages are not equal, and the notches in
-   the bar are drawn at these same numbers */
 const OPENING = [
   { say: 'CONNECTING', row: 'connecting', at: 16 },
   { say: 'LOADING SITES', row: 'loading sites', at: 48 },
@@ -41,13 +27,12 @@ const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').match
 const EYE = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2.2 12S5.8 5.4 12 5.4 21.8 12 21.8 12 18.2 18.6 12 18.6 2.2 12 2.2 12Z" /><circle cx="12" cy="12" r="3.1" /></svg>;
 const EYE_OFF = <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9.9 5.7A9.6 9.6 0 0 1 12 5.4c6.2 0 9.8 6.6 9.8 6.6a17 17 0 0 1-2.9 3.8M6.2 7.5A17 17 0 0 0 2.2 12S5.8 18.6 12 18.6c1.5 0 2.8-.4 3.9-.9" /><path d="M10 10a2.9 2.9 0 0 0 4 4" /><path d="M3.2 3.2 20.8 20.8" /></svg>;
 
-/* one control per field, and it is the eye; title and label name the ACTION */
 function Secret({ id, value, onChange, onEnter, auto, placeholder, bad, onCaps }: {
   id: string; value: string; onChange: (v: string) => void; onEnter: () => void; auto: string; placeholder: string; bad: boolean; onCaps: (on: boolean) => void;
 }) {
   const [show, setShow] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
-  const caps = (e: KeyboardEvent) => { try { onCaps(!!e.getModifierState?.('CapsLock')); } catch { /* not supported */ } };
+  const caps = (e: KeyboardEvent) => ignoreErrors(() => onCaps(!!e.getModifierState?.('CapsLock')));
   return (
     <span className="lfield pw">
       <input ref={ref} id={id} type={show ? 'text' : 'password'} autoComplete={auto} placeholder={placeholder} value={value}
@@ -70,8 +55,8 @@ export default function Login() {
   const running = useRef(false);
 
   const [box, setBox] = useState<'signin' | 'reset' | 'opening'>('signin');
-  const [shown, setShown] = useState(0);          /* rows of the form that have arrived */
-  const [boot, setBoot] = useState(0);            /* lines of the boot log typed */
+  const [shown, setShown] = useState(0);
+  const [boot, setBoot] = useState(0);
   const [done, setDone] = useState(false);
   const [lu, setLu] = useState(''), [lp, setLp] = useState('');
   const [ru, setRu] = useState(''), [rp, setRp] = useState(''), [rp2, setRp2] = useState('');
@@ -82,13 +67,11 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
   const from = (loc.state as { from?: string } | null)?.from;
 
-  /* the void: the document under this page must not show through as daylight */
   useEffect(() => {
     document.documentElement.classList.add('void');
     document.title = 'ENEROPS OS · Sign in';
     return () => document.documentElement.classList.remove('void');
   }, []);
-  /* somebody already signed in has nothing to do at the door */
   useEffect(() => { if (status === 'in' && !running.current) nav(from || '/home', { replace: true }); }, [status, nav, from]);
 
   useEffect(() => {
@@ -98,8 +81,6 @@ export default function Login() {
     return () => { stopSky(); limb?.stop(); };
   }, []);
 
-  /* THE FORM COMES FIRST, THEN THE LOG: the sign-in assembles row by row on the
-     beat, and the log picks the beat up underneath the moment the last row lands */
   useEffect(() => {
     const timers: number[] = [];
     const rows = 3, red = reducedMotion();
@@ -108,19 +89,12 @@ export default function Login() {
     let t = 90 + rows * BEAT;
     BOOT.forEach((_, i) => { timers.push(window.setTimeout(() => setBoot(i + 1), t)); t += i < 2 ? 300 : 165; });
     timers.push(window.setTimeout(() => setDone(true), t));
-    /* someone who has seen the boot once should not sit through it again */
     const skip = () => { timers.forEach(clearTimeout); setShown(rows); setBoot(BOOT.length); setDone(true); };
     addEventListener('keydown', skip, { once: true });
     document.getElementById('lu')?.focus();
     return () => { timers.forEach(clearTimeout); removeEventListener('keydown', skip); };
   }, []);
 
-  /* ---------- the opening sequence ----------
-     One frame loop drives the count and the bar together, so the two readouts
-     cannot drift; the rows' clocks are measured from the same instant. Each step
-     waits for BOTH its travel and its real work, says SLOW once if the work runs
-     past half again its budget, and fails with the real reason. The descent
-     reads the run's clock, not the bar, and never goes backwards. */
   const openPortal = (email: string, password: string) => {
     const el = ledger.current; if (!el) return;
     running.current = true;
@@ -159,8 +133,6 @@ export default function Login() {
       running.current = false;
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'lgo retry'; b.id = 'load-retry';
-      /* refused credentials are not retried - they go back to the box, with the
-         backend's own words, because pressing RETRY would only be refused again */
       if (n === 0 && kind === 'REFUSED') {
         b.textContent = 'BACK';
         b.onclick = () => { setBox('signin'); setBusy(false); setBad('lp'); setErr(((e as ApiError).message || 'OPERATOR OR PASSKEY NOT RECOGNISED').toUpperCase()); document.title = 'ENEROPS OS · Sign in'; requestAnimationFrame(() => document.getElementById('lp')?.focus()); };
@@ -171,8 +143,6 @@ export default function Login() {
       foot.appendChild(b); b.focus();
     };
 
-    /* where the sign-in was headed: back to the page that sent them here, or
-       on to Site Control, which is where the arrival lands */
     const dest = from || '/sites';
     let pFrom = 0;
     const step = (n: number) => {
@@ -187,13 +157,11 @@ export default function Login() {
         paint(pFrom + (to - pFrom) * (red ? 1 : e));
         if (!red) put(n, '.lt', clock(performance.now() - runT0));
         if (!red) { const tt = Math.max(0, Math.min(1, (now - runT0) / RUNMS)); fly.current(tt * tt * (3 - 2 * tt)); }
-        /* LATE IS SAID ONCE, and the row keeps running */
         if (!said && !settled && now - t0 > STEPMS * SLOWAT) { said = true; mark(n, 'run slow'); put(n, '.lv', 'SLOW'); say.textContent = s.say + ' - TAKING LONGER THAN EXPECTED'; }
         if (k < 1 || !settled) { requestAnimationFrame(frame); return; }
         if (error) { fail(n, error); return; }
         pFrom = to; mark(n, 'done'); put(n, '.lt', clock(performance.now() - runT0)); put(n, '.lv', result as string);
         if (n + 1 < OPENING.length) step(n + 1);
-        /* the last step is allowed to be SEEN before the page changes under it */
         else window.setTimeout(() => nav(dest, { replace: true }), red ? 150 : 620);
       };
       requestAnimationFrame(frame);
@@ -217,14 +185,12 @@ export default function Login() {
     setBusy(true); setRerr(''); setRnote('');
     try {
       await api.requestPasswordReset(u, rp);
-      /* the backend confirms the new passkey its own way before it takes effect */
       setRnote('REQUEST SENT · CHECK YOUR EMAIL TO CONFIRM THE NEW PASSKEY');
       setRp(''); setRp2('');
     } catch (e) { setRerr(e instanceof ApiError ? e.kind + ' · ' + e.message.toUpperCase() : 'THE REQUEST DID NOT GO THROUGH'); }
     finally { setBusy(false); }
   };
   const goStep = (to: 'signin' | 'reset') => {
-    /* the operator carries across: being asked for it twice reads as not listened to */
     if (to === 'reset' && lu.trim() && !ru) setRu(lu.trim());
     if (to === 'signin' && ru.trim() && !lu) setLu(ru.trim());
     setBad(''); setErr(''); setRerr(''); setRnote('');
@@ -249,7 +215,6 @@ export default function Login() {
             <span><span className="word">ENEROPS OS</span><span className="sub">Site Control</span></span>
           </div>
 
-          {/* ---------- SIGN IN ---------- */}
           <div className={'lbox' + (box === 'signin' ? ' on' : '')} id="loginbox">
             <div className={'lrow ' + stepCls(0)}>
               <label htmlFor="lu">Operator</label>
@@ -264,13 +229,11 @@ export default function Login() {
             <div className={'lcaps' + (caps && box === 'signin' ? ' on' : '')}>CAPS LOCK IS ON</div>
             <div className={'lact ' + stepCls(2)}>
               <button className="lgo" id="lgo" type="button" disabled={busy} onClick={authenticate}>{busy && box === 'signin' && <span className="spin" />}AUTHENTICATE</button>
-              {/* no mailed link and no second page: the reset is asked here, in the same box */}
               <button className="lalt" type="button" onClick={() => goStep('reset')}>LOST PASSKEY?</button>
             </div>
             <div className="lerr">{err}</div>
           </div>
 
-          {/* ---------- RESET, IN THE SAME BOX ---------- */}
           <div className={'lbox' + (box === 'reset' ? ' on' : '')} id="resetbox">
             <div className="lrow step in">
               <label htmlFor="ru">Operator</label>
@@ -299,7 +262,6 @@ export default function Login() {
             <pre id="bootlog">{BOOT.slice(0, boot).map(([t, b]) => <div key={t}>{t}<b>{b}</b></div>)}</pre>
           )}
 
-          {/* ---------- OPENING: takes the log's place ---------- */}
           <div className="load" id="loading" hidden={box !== 'opening'} ref={ledger}>
             <div className="lop">{who}</div>
             <div className="lsteps" id="load-steps" />

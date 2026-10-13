@@ -1,7 +1,3 @@
-/* Small pieces every chart in the portal uses. */
-
-/** The power axis is cut to the day's own peak rather than a fixed ceiling, so
- *  the curve fills the plot - with headroom, at most five bands. */
 export function niceMax(peak: number): { max: number; step: number } {
   const p = Math.max(1, peak) * 1.08;
   const steps = [10, 20, 25, 50, 100, 150, 200, 250, 500, 1000, 2000, 2500, 5000, 10000];
@@ -13,8 +9,6 @@ export function niceMax(peak: number): { max: number; step: number } {
   return { max: Math.ceil(p / s) * s, step: s };
 }
 
-/** `bands` equal steps of a round size that clear `max` - for axes whose
- *  number of gridlines is fixed by the design (four on the energy chart). */
 export function niceSteps(max: number, bands: number): { max: number; step: number } {
   const raw = Math.max(max, 1e-9) * 1.05 / bands;
   const mag = Math.pow(10, Math.floor(Math.log10(raw)));
@@ -22,9 +16,6 @@ export function niceSteps(max: number, bands: number): { max: number; step: numb
   return { max: step * bands, step };
 }
 
-/** A GAP IS A GAP. A line breaks where a bucket has no value rather than being
- *  drawn straight across it: a device that stopped reporting does not get a
- *  line across the hours it was silent. Returns one subpath per run. */
 export function linePath(xs: number[], ys: (number | null)[], fy: (v: number) => number): string {
   let d = '', pen = false;
   for (let i = 0; i < xs.length; i++) {
@@ -36,8 +27,6 @@ export function linePath(xs: number[], ys: (number | null)[], fy: (v: number) =>
   return d.trim();
 }
 
-/** The fill under a line, one closed shape per run of readings - so the fill
- *  breaks where the line does. */
 export function areaPath(xs: number[], ys: (number | null)[], fy: (v: number) => number, floorY: number): string {
   let d = '', run: number[] = [];
   const flush = () => {
@@ -56,7 +45,6 @@ export function areaPath(xs: number[], ys: (number | null)[], fy: (v: number) =>
   return d.trim();
 }
 
-/** hours since local midnight of the day the time falls on */
 export function hourOfDay(d: Date): number {
   return d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600;
 }

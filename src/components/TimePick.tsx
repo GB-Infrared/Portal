@@ -2,11 +2,6 @@ import { useEffect, useRef } from 'react';
 import { usePanelOpen } from './Select';
 import { pad } from '../lib/format';
 
-/* HOURS AND MINUTES ARE TWO DROPDOWNS, not two columns of one panel: each opens
-   its own list, the current value centred and snapped to whole rows - a list
-   resting part way into one reads as a misprint. Shares the page's "one list
-   open at a time" with every other dropdown. */
-
 function Bit({ part, n, value, onPick }: { part: 'h' | 'm'; n: number; value: number; onPick: (v: number) => void }) {
   const [open, setOpen] = usePanelOpen();
   const list = useRef<HTMLDivElement>(null);
@@ -33,7 +28,6 @@ function Bit({ part, n, value, onPick }: { part: 'h' | 'm'; n: number; value: nu
   );
 }
 
-/** value "HH:MM" */
 export function TimePick({ value, onValue }: { value: string; onValue: (v: string) => void }) {
   const m = /^(\d{1,2}):(\d{2})/.exec(value || '');
   const h = m ? +m[1] : 0, mi = m ? +m[2] : 0;

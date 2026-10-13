@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type JSX, type Mouse
 import * as api from '../api/portal';
 import type { KpiBucket, KpiMetric } from '../api/types';
 import { useSite } from '../auth/SiteContext';
-import { Failed, Waiting } from '../components/DataState';
+import { Failed, Waiting, NoSite } from '../components/DataState';
 import { MonthPicker } from '../components/MonthPicker';
 import { RowPopover } from '../components/RowPopover';
 import { SingleSelect } from '../components/Select';
@@ -14,14 +14,6 @@ import { downloadCsv } from '../lib/csv';
 import { DASH, MON, MONL, pad } from '../lib/format';
 import '../styles/pages/kpi.css';
 
-/* KPI - one site, one metric, examined closely: what the plant did (actual),
-   what the design model says it should have done (simulated), and what it is
-   expected to do (forecast), by day across a month or by month across a year.
-
-   Ported from design-mockup/kpi.html. The buckets come from the backend whole;
-   nothing is recomputed here, so this page and any report built on the same
-   endpoint cannot disagree. */
-
 const METRICS: { k: KpiMetric; t: string; u: string; dec: number }[] = [
   { k: 'PR', t: 'Performance Ratio', u: '%', dec: 1 },
   { k: 'CUF', t: 'Capacity Factor', u: '%', dec: 1 },
@@ -31,18 +23,12 @@ const METRICS: { k: KpiMetric; t: string; u: string; dec: number }[] = [
   { k: 'IRR', t: 'Irradiation', u: 'kWh/m²', dec: 2 },
 ];
 
-/* THREE READINGS, THREE MARKS - and the mark says which kind of claim it is.
-   ACTUAL is measured: a BAR, whose height is the whole of it. SIMULATED is a
-   model, continuous: a LINE carrying a HOLLOW DOT per bucket, hollow so the bar
-   shows through. FORECAST is a set of separate estimates: a FILLED TRIANGLE,
-   no line. They differ by form, not only by colour. */
 type SK = 'actual' | 'simulated' | 'forecast';
 const SERIES: { k: SK; t: string; col: string; mark: 'bar' | 'line' | 'tri' }[] = [
   { k: 'actual', t: 'Actual', col: 'var(--green)', mark: 'bar' },
   { k: 'simulated', t: 'Simulated', col: 'var(--blue)', mark: 'line' },
   { k: 'forecast', t: 'Forecast', col: 'var(--amber)', mark: 'tri' },
 ];
-/* the legend and the tooltip draw what the plot draws */
 function Mark({ s }: { s: (typeof SERIES)[number] }) {
   return (
     <svg className="mk" viewBox="0 0 17 12" aria-hidden="true">
@@ -59,8 +45,6 @@ function niceTop(v: number) {
   const p = Math.pow(10, Math.floor(Math.log10(v)));
   return Math.ceil(v / p * 1.08) * p;
 }
-/* a triangle CENTRED on the point (centroid on the value), equilateral, with
-   about the ink of a dot of radius r when s = 1.5r */
 const triPath = (x: number, y: number, s: number) =>
   'M' + x.toFixed(1) + ' ' + (y - s).toFixed(1) + 'L' + (x + s * 0.866).toFixed(1) + ' ' + (y + s * 0.5).toFixed(1) +
   'L' + (x - s * 0.866).toFixed(1) + ' ' + (y + s * 0.5).toFixed(1) + 'Z';
@@ -110,7 +94,6 @@ function KpiChart({ rows, live, dec, unit, title, foot, W, H }: {
       g.push(<rect key={'a' + i} x={x.toFixed(1)} y={y.toFixed(1)} width={abw.toFixed(1)} height={Math.max(1, MT + PH - y).toFixed(1)} rx="2" fill={actual.col} opacity=".92" />);
     });
   }
-  /* the mark grows with the slot and then stops; a gap is a gap */
   const r = Math.max(2.8, Math.min(5.4, SLOT * 0.17));
   for (const s of live.filter(x => x.mark !== 'bar')) {
     if (s.mark === 'line') {
@@ -148,7 +131,6 @@ function KpiChart({ rows, live, dec, unit, title, foot, W, H }: {
       const peak = Math.max(...items.map(x => x.v as number));
       tip = (
         <div className="tip" id="tip" style={{ left: lx, top: Math.max(4, (Y(peak) / H) * rc.height + (rc.top - wr.top) - 10), opacity: 1 }}>
-          {/* a half-elapsed bucket says so, rather than looking like a bad day */}
           <div className="tt">{b.stamp + (b.partial ? ' · in progress' : '')}</div>
           {items.map(({ s, v }) => (
             <div className="tr" key={s.k} style={s.k === 'forecast' ? { opacity: 0.7 } : undefined}><Mark s={s} />{s.t}<b>{trim(v as number, dec) + ' ' + unit}</b></div>
@@ -164,7 +146,6 @@ function KpiChart({ rows, live, dec, unit, title, foot, W, H }: {
         <rect id="hl" x={hov !== null ? (ML + SLOT * hov).toFixed(1) : 0} y={MT} width={SLOT.toFixed(1)} height={PH.toFixed(1)} fill="var(--hover)" opacity={hov !== null ? 1 : 0} />
         <g id="axes">
           {ax}
-          {/* the y axis names what it measures and in what */}
           <g transform={`translate(13,${MT + PH / 2}) rotate(-90)`}>
             <text className="axtitle" x="0" y="0" textAnchor="middle">{title.toUpperCase() + (unit ? ' · ' + unit : '')}</text>
           </g>
@@ -178,9 +159,8 @@ function KpiChart({ rows, live, dec, unit, title, foot, W, H }: {
 }
 
 export default function Kpi() {
-  const { site, error: siteErr, reloadSites } = useSite();
+  const { site, error: siteErr, loading: siteLoading, reloadSites } = useSite();
   const toast = useToast();
-  /* a KPI over a month does not move while you read it: refresh starts Off */
   const [refresh, setRefresh] = useState<Refresh>('off');
   const siteId = site?.id ?? null;
 
@@ -200,7 +180,6 @@ export default function Kpi() {
       : { ...b, idx, label: MON[p[1] - 1], stamp: MON[p[1] - 1] + ' ' + p[0] };
   }), [q.data, gran]);
 
-  /* off, not on: a series switched off stays off while you change the metric */
   const [off, setOff] = useState<Record<SK, boolean>>({ actual: false, simulated: false, forecast: false });
   const live = SERIES.filter(s => !off[s.k]);
 
@@ -218,14 +197,12 @@ export default function Kpi() {
     return () => ro.disconnect();
   }, [fit, site]);
 
-  /* -------- table: the graph's data, nothing else -------- */
   const [cols, setCols] = useState<SK[]>(['actual', 'simulated', 'forecast']);
   const [sort, setSort] = useState<{ k: 'stamp' | SK; dir: 1 | -1 }>({ k: 'stamp', dir: 1 });
   const [per, setPer] = useState(100), [page, setPage] = useState(0);
   useEffect(() => setPage(0), [rows, per, sort]);
   const sorted = useMemo(() => rows.slice().sort((a, b) => {
     const x = sort.k === 'stamp' ? a.idx : a[sort.k], y = sort.k === 'stamp' ? b.idx : b[sort.k];
-    /* a bucket with no reading sorts last either way - it is absent, not small */
     if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
     return x < y ? -sort.dir : x > y ? sort.dir : 0;
   }), [rows, sort]);
@@ -248,7 +225,7 @@ export default function Kpi() {
       <div className="pg-kpi">
         <TopBar refresh={refresh} onRefresh={setRefresh} />
         <div className="wrap"><div className="card">
-          {siteErr ? <Failed error={siteErr} what="your sites" onRetry={reloadSites} /> : <Waiting what="Loading sites" />}
+          <NoSite loading={siteLoading} error={siteErr} onRetry={reloadSites} />
         </div></div>
       </div>
     );
@@ -258,7 +235,6 @@ export default function Kpi() {
   const sortBy = (k: 'stamp' | SK) => setSort(s => (s.k === k ? { k, dir: (-s.dir) as 1 | -1 } : { k, dir: k === 'stamp' ? 1 : -1 }));
   const arrow = (k: string) => (sort.k === k ? <span className="ar">{sort.dir < 0 ? '▼' : '▲'}</span> : null);
   const exportCsv = () => {
-    /* the header carries the metric and its unit: "Actual" in a file opened next week says nothing */
     const head = ['Timestamp', ...shown.map(s => s.t + ' ' + met.k + (met.u ? ' (' + met.u + ')' : ''))];
     downloadCsv('KPI_' + site.name + '_' + met.k + '_' + py + (gran === 'month' ? '' : '-' + pad(pm + 1)) + '.csv',
       [head, ...sorted.map(r => [r.stamp, ...shown.map(s => cell(r, s.k))])]);
@@ -270,7 +246,6 @@ export default function Kpi() {
       <TopBar refresh={refresh} onRefresh={setRefresh} />
       <div className="toprow">
         <div className="filters">
-          {/* one KPI at a time: a second metric on the same axis would be a different unit */}
           <div className="field"><label>KPI metric</label>
             <SingleSelect head="KPI metric" value={metK}
                           options={METRICS.map(m => ({ v: m.k, t: m.t, extra: <span className="unit">{m.u}</span> }))}
@@ -289,13 +264,11 @@ export default function Kpi() {
               {SERIES.map(s => (
                 <span key={s.k} className={'lg' + (off[s.k] ? ' off' : '')} title="Click to hide or show" onClick={() => {
                   const next = { ...off, [s.k]: !off[s.k] };
-                  /* the last visible series cannot be switched off */
                   if (SERIES.every(x => next[x.k])) { toast('At least one series stays on'); return; }
                   setOff(next);
                 }}><Mark s={s} /><span className="n">{s.t}</span></span>
               ))}
             </div>
-            {/* DAY is "what happened this month", MONTH is "how is the year going" */}
             <div className="tools">
               <div className="seg" id="gran">
                 <button type="button" className={gran === 'day' ? 'on' : undefined} onClick={() => { if (gran !== 'day') { setGran('day'); toast('Daily · ' + MONL[pm] + ' ' + py); } }}>Daily</button>
@@ -305,7 +278,7 @@ export default function Kpi() {
           </div>
           {q.data
             ? <KpiChart rows={rows} live={live} dec={met.dec} unit={met.u} title={met.t} W={sz.w} H={sz.h}
-                        foot={gran === 'month' ? py + ' · MONTH' : (MONL[pm] + ' ' + py + ' · DAY').toUpperCase()} />
+                        foot={gran === 'month' ? py + ' · MONTH' : MONL[pm] + ' ' + py + ' · DAY'} />
             : <div className="chartwrap" style={{ height: sz.h + 18 }}>
                 {q.error ? <Failed error={q.error} what={met.t} onRetry={q.reload} style={{ height: '100%' }} /> : <Waiting what={'Loading ' + met.t} style={{ height: '100%' }} />}
               </div>}

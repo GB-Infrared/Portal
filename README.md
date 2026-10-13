@@ -80,6 +80,7 @@ public/textures/    the globe's Earth and sky images
 - **Refresh**: Home, Monitoring and Alarms re-read every 5 minutes by default
   (Refresh menu in the header). Analysis and KPI start with refresh off.
 - **Site Control globe**: `src/pages/siteControl/engine.js` is the mockup's
-  drawing code, converted to a module. Its comments explain the design.
+  drawing code, converted to a module. For the reasoning behind the design,
+  see `plants.html` on the `portal-design-mockup` branch.
 - **npm scripts** call `node` directly. The usual shortcuts break when the folder
   path has an `&` in it (like `Portal & Mobile App`).

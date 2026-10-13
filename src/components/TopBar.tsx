@@ -7,13 +7,6 @@ import { toggleTheme, isDark } from '../lib/theme';
 import { SingleSelect } from './Select';
 import { useToast } from './Toasts';
 
-/* THE HEADER, the same on every portal page.
-
-   Brand, then WHICH SITE - a readout, not a control: the choosing happens once,
-   on Site Control, and every page prints the answer in the same spot. Then the
-   tabs, and on the right the things about the SCREEN rather than the plant:
-   the clock, how often the page re-reads, light/dark, and the account. */
-
 export type Refresh = 'off' | '300' | '600' | '900';
 export const refreshMs = (r: Refresh) => (r === 'off' ? 0 : Number(r) * 1000);
 
@@ -32,7 +25,6 @@ const TABS = [
 
 function ThemeButton() {
   const [dark, setDark] = useState(isDark);
-  /* the button names WHAT IT WILL DO, not where you are */
   const t = dark ? 'Switch to light' : 'Switch to dark';
   return (
     <button className="themebtn" type="button" title={t} aria-label={t} onClick={() => setDark(toggleTheme())}>
@@ -134,8 +126,6 @@ export function TopBar({ refresh, onRefresh }: Props) {
   );
 }
 
-/* Settings' own bar: the mark is the way back, and there are no tabs - Settings
-   is reached from the account menu and left by the wordmark. */
 export function SettingsBar() {
   return (
     <header className="topbar">

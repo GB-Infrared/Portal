@@ -1,63 +1,41 @@
-/* Ported from the design-mockup branch, kpi.html.
-   Every rule is scoped to .pg-kpi so pages cannot restyle each other in the
-   single-page app; the resets and the dark sky behind the glass live once in
-   base.css. Otherwise the stylesheet - comments included - is the mockup's. */
 .pg-kpi{
-  /* ---- LIGHT · UTILITY BLUE (default) · enterprise solar-portal palette ---- */
-  --bg:#f1f4f8;            /* page background            */
-  --panel:#ffffff;         /* card surface               */
-  --panel-2:#f5f8fb;       /* nested surface / inputs    */
-  --line:#dde4ec;          /* card borders               */
-  --line-soft:#e9eef4;     /* gridlines, dividers        */
-  --line-hi:#b5c2d1;       /* hover / active borders     */
-  --text:#152234;          /* primary text               */
-  --muted:#5a6b7f;         /* secondary text             */
-  --faint:#8494a6;         /* tertiary text              */
-  --dim:#aab6c4;           /* dead readouts (offline)    */
-  --elev:#ffffff;          /* tooltips, toasts           */
-  --sel:#e8f0fb;           /* selected card surface      */
+  --bg:#f1f4f8;
+  --panel:#ffffff;
+  --panel-2:#f5f8fb;
+  --line:#dde4ec;
+  --line-soft:#e9eef4;
+  --line-hi:#b5c2d1;
+  --text:#152234;
+  --muted:#5a6b7f;
+  --faint:#8494a6;
+  --dim:#aab6c4;
+  --elev:#ffffff;
+  --sel:#e8f0fb;
   --hover:rgba(11,99,206,.07);
   --hover-soft:rgba(11,99,206,.045);
-  /* the row under the pointer, and only that row */
   --row-hover:rgba(11,99,206,.10);
   --grid-v:rgba(21,34,52,.05);
   --shadow:rgba(19,38,63,.16);
-  --on-accent:#ffffff;     /* text on a filled accent    */
+  --on-accent:#ffffff;
   --topbar:var(--panel);
   --topbar-fg:var(--text);
   --topbar-fg-2:var(--muted);
   --topbar-tab:var(--muted);
   --topbar-hover:var(--hover);
   --topbar-active:var(--green-soft);
-  --green:#12a150;         /* producing / healthy        */
+  --green:#12a150;
   --green-rgb:18,161,80;
   --green-soft:rgba(18,161,80,.12);
   --green-deep:#0b7a3c;
   --blue:#1a73c8;
   --blue-soft:rgba(26,115,200,.12);
-  --red:#d92d20;           /* offline / alarms           */
+  --red:#d92d20;
   --red-soft:rgba(217,45,32,.1);
-  --amber:#dc7a06;         /* yield / deviations         */
+  --amber:#dc7a06;
   --amber-soft:rgba(220,122,6,.12);
-  --brand:#a87b0f;         /* wordmark · gold            */
+  --brand:#a87b0f;
 
-  /* ---------- series palette ----------
-     Four slots, assigned to devices in fixed order and never cycled: a device
-     keeps its colour when another is switched off, so the eye can carry a
-     reading from the chart to the legend to the table.
-
-     Validated, not eyeballed - all-pairs, on this page's own card surface:
-     CVD separation, normal-vision separation, chroma and contrast all clear.
-     RED IS NOT IN THE SET. On this portal red means offline/alarm, and a
-     device that happened to land in slot 4 would be wearing a fault colour
-     while producing normally. Amber is likewise the deviation colour, so the
-     series ochre is pulled well off it in both lightness and hue. */
   --s1:#1a73c8; --s2:#c47a00; --s3:#00806a; --s4:#c569a0;
-  /* BARS, not lines. The --s series is picked so a 2px stroke reads on white,
-     which makes it deep - and a deep tone spread over a 26px-wide filled bar
-     comes out muddy rather than legible. These are the same hues at the same
-     positions, so a plant keeps its identity across every page, lifted in
-     saturation for an area rather than a line. */
   --k1:#2d7ff9; --k2:#f59e0b; --k3:#10b981;
   --k4:#e0559f; --k5:#7c5cf0; --k6:#06b6d4;
 
@@ -66,51 +44,19 @@
   --serif:Georgia,'Times New Roman',serif;
   --r-lg:14px; --r-md:10px; --r-sm:8px;
 }
-/* ---- DARK · the front door's palette, on every page behind it.
-
-   THIS IS THE SIGN-IN'S SKY, not a second design. login.html and the site
-   overview have always stood in the void; the portal stopped at the door and
-   turned white. Somebody who signs in at night now keeps the room they signed
-   in from, and these are that screen's own token values, copied rather than
-   re-picked - two dark palettes that drift apart is exactly the failure the
-   single :root above was written to avoid.
-
-   NOT ONE RULE BELOW THIS BLOCK CHANGES. Only the VALUES are redefined, so
-   every rule on the page - the cards, the tables, the charts, the dialogs -
-   goes dark by reading the same token names it already read. A page re-skinned
-   by rewriting two hundred declarations is a page with two hundred chances to
-   miss one.
-
-   The header tokens are not here because they do not need to be: --topbar and
-   its family are declared as var(--panel), var(--text) and so on, so they
-   follow whatever these say.
-
-   The colours mean here what they mean on the overview: WHITE a fixed fact,
-   EMERALD live, GOLD what has been banked. ---------------------------------- */
 html[data-theme="dark"] .pg-kpi{
-  /* THE BROWSER'S OWN WIDGETS HAVE TO BE TOLD. Radios, tick boxes, the native
-     date popup and the scrollbars are drawn by the UA, not by anything here,
-     and left alone they stay in their light costume - four white discs in a
-     navy menu, and a calendar that opens as a white sheet. One declaration
-     hands the whole set over, which is the only way to reach the parts of a
-     control this stylesheet cannot select. */
   color-scheme:dark;
   accent-color:#3ad998;
-  --bg:#070c14;            /* the void itself            */
-  --panel:rgba(9,16,28,.74);   /* the same glass the overview stands on */
+  --bg:#070c14;
+  --panel:rgba(9,16,28,.74);
   --panel-2:rgba(9,16,28,.62);
   --line:rgba(150,180,220,.16);
   --line-soft:rgba(150,180,220,.10);
   --line-hi:rgba(140,175,215,.30);
-  --text:#e9f1fb;          /* white  - fixed facts, identity */
+  --text:#e9f1fb;
   --muted:#8ba0bb;
   --faint:#7d92ad;
-  --dim:#5d6e83;           /* dead readouts, and they read dead on black */
-  /* OPAQUE, and the one token here that is. The cards are glass because they
-     sit still and the void behind them is meant to show; a dropdown, a tooltip
-     or a toast is drawn OVER something a reader is trying to read, and at 96%
-     the number underneath was still legible through the menu. A floating layer
-     that lets its background through is not a layer. */
+  --dim:#5d6e83;
   --elev:#0d1624;
   --sel:rgba(127,178,238,.14);
   --hover:rgba(150,180,220,.07);
@@ -119,10 +65,8 @@ html[data-theme="dark"] .pg-kpi{
   --shadow:rgba(0,0,0,.62);
   --scrim:rgba(3,7,13,.70);
   --grid-v:rgba(150,180,220,.07);
-  /* text ON a filled accent. White on emerald is unreadable at this weight, and
-     the accents are light here - so the ink goes dark instead. */
   --on-accent:#07121b;
-  --green:#3ad998;         /* emerald - live */
+  --green:#3ad998;
   --green-rgb:58,217,152;
   --green-soft:rgba(58,217,152,.14);
   --green-deep:#3ad998;
@@ -133,92 +77,36 @@ html[data-theme="dark"] .pg-kpi{
   --crit:#ff9d94;
   --amber:#f0b74a;
   --amber-soft:rgba(240,183,74,.15);
-  --brand:#f0b74a;         /* gold - the wordmark, and what the day earns */
+  --brand:#f0b74a;
   --brand-soft:rgba(240,183,74,.14);
   --brand-line:rgba(240,183,74,.34);
-  /* The series hues, lifted. A mid-tone picked to carry on white sinks into
-     navy - #12a150 against #070c14 is a line you have to hunt for - so every
-     one of these is the same hue at the brightness this ground needs. The
-     charts read them as tokens and never learn a theme exists. */
   --s1:#3ad998; --s2:#7fb2ee; --s3:#f0b74a; --s4:#b39cff;
   --s5:#ff8ac0; --s6:#4fd3dd; --s7:#e9a03c; --s8:#9a92ff;
   --s9:#4fd0bd; --s10:#e3c05a; --s11:#ff8ac0; --s12:#5cc0f5;
   --k1:#6aa8ff; --k2:#f7b955; --k3:#3ad998; --k4:#ff8ac0;
   --k5:#a99bff; --k6:#4fd3dd;
 }
-/* The one control that is not a reading: it belongs with the clock and the
-   avatar, at the right of the bar, because it is about the SCREEN rather than
-   about the plant. */
 .pg-kpi .themebtn{width:30px;height:30px;display:grid;place-items:center;flex:none;
   border-radius:8px;border:1px solid var(--line);background:var(--panel-2);
   color:var(--topbar-fg-2,var(--muted));transition:background .12s,border-color .12s,color .12s}
 .pg-kpi .themebtn:hover{border-color:var(--line-hi);background:var(--topbar-hover,var(--hover));
   color:var(--topbar-fg,var(--text))}
 .pg-kpi .themebtn svg{display:block}
-/* the icon shows WHAT YOU WILL GET, not what you are in: a moon on the light
-   page is an offer, a moon on the dark page is a label for a state the whole
-   screen is already stating */
 .pg-kpi .themebtn .moon{display:none}
 html[data-theme="dark"] .pg-kpi .themebtn .moon{display:block}
 html[data-theme="dark"] .pg-kpi .themebtn .sun{display:none}
-/* [global - see base.css] * */
-/* [global - see base.css] html */
-/* [global - see base.css] body */
 
-/* ===================== THE FIELD THE GLASS STANDS ON =====================
-   DARK WAS A FLAT BLACK SLAB, and it should not have been.
-
-   The dark tokens were copied from the sign-in exactly, which was right, but
-   only half of what makes that screen work came across. Over there --panel is
-   rgba(9,16,28,.74) - GLASS - and behind it is a lit sky: a warm wash where the
-   sun is, a wide cold one carrying the rest, a star field and the limb of the
-   Earth. The panel reads as a surface because there is something behind it for
-   it to be in front of.
-
-   Here the same glass was laid on #070c14 and nothing else. 74% of near-black
-   over near-black composites to near-black: card and page came out within a
-   couple of values of each other, every border did the whole job of separating
-   them, and the screen read as one unlit sheet with type on it. The tokens were
-   never the problem - the room was empty.
-
-   So this is the sign-in's own sky, at working strength. Same three washes, same
-   places, same hues; roughly a third of the amplitude, because that screen is a
-   held moment with one panel on it and this one is a working surface covered in
-   tables. Enough to give the glass something to lift off, not enough to be read
-   as data. No stars and no limb: those are the front door's, and a horizon
-   behind a KPI table would be scenery.
-
-   ON html, NOT ON body. The root element's background paints the whole canvas
-   and does not scroll away when a long table does - a wash on body either ends
-   where the content ends or has to be pinned with background-attachment:fixed,
-   which repaints the gradient on every scroll frame. body is handed back to
-   transparent for the same reason: two backgrounds is one background and one
-   piece of dead code.
-
-   LIGHT IS UNTOUCHED. It is a daylit palette on a solid ground and it separates
-   its cards with white against grey, which needs no help from behind. */
 html[data-theme="dark"] .pg-kpi{
   background:
-    /* the sun, off the top right corner */
     radial-gradient(circle 46vmax at 80% -8%,
       rgba(255,216,146,.085) 0%, rgba(240,178,73,.032) 32%, transparent 64%),
-    /* the cold half of the same sky, wide enough to reach the far corner */
     radial-gradient(ellipse 155% 125% at 80% -8%,
       rgba(126,158,214,.115) 0%, rgba(90,120,180,.05) 46%, transparent 80%),
-    /* and the void closing back in under both, so the foot of a long page is
-       the deep end rather than a gradient that simply stops */
     radial-gradient(ellipse 130% 105% at 50% 62%,
       rgba(2,6,14,.34) 0%, rgba(0,1,5,.5) 100%),
     var(--bg);
 }
-/* [global - see base.css] html[data-theme="dark"] body */
-/* [global - see base.css] ::-webkit-scrollbar */
-/* [global - see base.css] ::-webkit-scrollbar-thumb */
-/* [global - see base.css] ::-webkit-scrollbar-track */
-/* [global - see base.css] button */
-/* [global - see base.css] a */
 
-/* ---------- top bar ---------- */
 .pg-kpi .topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:20px;
   height:58px;padding:0 22px;border-bottom:1px solid var(--line);
   background:var(--topbar);color:var(--topbar-fg)}
@@ -230,16 +118,6 @@ html[data-theme="dark"] .pg-kpi{
 .pg-kpi .brand .sub{font-size:9px;letter-spacing:.16em;color:var(--topbar-fg-2);text-transform:uppercase;
   font-weight:600;line-height:1}
 @media (max-width:820px){ .pg-kpi .brand .sub{display:none} }
-/* ---------- which site the portal is on ----------
-   A READOUT, NOT A CONTROL. Every page used to answer "which site am I looking
-   at" with a picker of its own - four of them, four defaults, and nothing
-   keeping them in step: you could walk from Monitoring to Alarms and be reading
-   two different plants without either page saying so. The choosing moved to one
-   place, the Sites tab a little to the right of this, and what is left here is
-   the ANSWER - the same words, the same spot, on every page.
-   A pin and a name, with no "SITE" label in front of it: the wordmark beside it
-   already says SITE OVERVIEW and the tab beside that says Sites, and a third
-   one would be the bar saying the word three times before saying anything. */
 .pg-kpi .sitenow{display:flex;align-items:center;gap:7px;flex:none;white-space:nowrap;
   padding-left:16px;border-left:1px solid var(--line);color:var(--topbar-fg)}
 .pg-kpi .sitenow svg{color:var(--green);flex:none}
@@ -253,24 +131,10 @@ html[data-theme="dark"] .pg-kpi{
 .pg-kpi .topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px}
 .pg-kpi .clock{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--topbar-fg);letter-spacing:.02em}
 .pg-kpi .refresh{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--topbar-fg-2)}
-/* The control beside it is the portal's own dropdown now, not the browser's -
-   see the note on the markup - and these are the few things a header-sized one
-   needs said. Everything else it inherits from .mbtn / .colpanel unchanged. */
-/* The word is a LABEL for the control beside it, so it stops being a link-sized
-   piece of type competing with the value: quieter, letterspaced, and it steps
-   out of the way on a narrow bar where the value is the part that matters. */
 .pg-kpi .refresh .rl{letter-spacing:.04em;white-space:nowrap}
-/* .mbtn was drawn for the filter bar and is already this height, so only the
-   width is stated - "15 min" is the longest thing it ever holds, and a box
-   sized for that stops the header shifting when the value changes. */
 .pg-kpi .refresh .rsel .mbtn{min-width:86px;font-family:var(--mono);font-size:12px;
   justify-content:space-between}
-/* .colpanel hangs from its control's LEFT edge, which is right for a filter bar
-   and wrong here: this is the last control before the theme switch and the
-   avatar, so a list dropped leftward runs off the end of the bar. */
 .pg-kpi .refresh .rsel .colpanel{left:auto;right:0;width:150px}
-/* OFF is a state, not an absence, so the label says it in the same voice the
-   dot does - dimmed, with the pulse stopped. */
 .pg-kpi .refresh .rsel .mbtn .mlab.off{color:var(--muted)}
 @media (max-width:1180px){ .pg-kpi .refresh .rl{display:none} }
 .pg-kpi .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(var(--green-rgb),.55);
@@ -287,10 +151,6 @@ html[data-theme="dark"] .pg-kpi{
 .pg-kpi .avatar{width:30px;height:30px;border-radius:50%;background:var(--panel-2);
   display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--text);
   border:1px solid var(--line)}
-/* ---------- account menu ----------
-   The avatar was a dead circle: it named the signed-in user and offered nothing.
-   It is the only place Settings and Sign out can live without spending a tab on
-   either, and every page carries the same one so the way out is never hunted for. */
 .pg-kpi .acct{position:relative;display:flex}
 .pg-kpi .avatar{padding:0}
 .pg-kpi .avatar:hover,.pg-kpi .acct.open .avatar{border-color:var(--line-hi);background:var(--hover)}
@@ -311,24 +171,15 @@ html[data-theme="dark"] .pg-kpi{
 .pg-kpi .acctitem.out:hover{background:var(--red-soft);color:var(--red)}
 .pg-kpi .acctitem.out:hover svg{color:var(--red)}
 
-
-/* ---------- page shell ----------
-   One column, no rail. Analysis is driven entirely by the bar above it, and a
-   rail would take width from a chart whose whole job is a long time axis. */
 .pg-kpi .wrap{max-width:2400px;margin:0 auto;padding:14px clamp(14px,1.5vw,28px) 34px;
   display:flex;flex-direction:column;gap:14px}
 .pg-kpi .toprow{max-width:2400px;margin:0 auto;padding:16px clamp(14px,1.5vw,28px) 0}
 
-/* ---------- filter bar ---------- */
 .pg-kpi .filters{display:flex;flex-wrap:wrap;align-items:flex-end;gap:9px;padding:0 2px 2px;min-width:0}
 .pg-kpi .field{position:relative;display:flex;flex-direction:column;gap:5px}
 .pg-kpi .field label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
 .pg-kpi .field select,.pg-kpi .field .input,.pg-kpi .field input{height:34px;min-width:116px}
 .pg-kpi .field select{padding-top:0;padding-bottom:0}
-/* Y1 and Y2 are each a PAIR - the category narrows the list the value is
-   picked from - so they are ruled together and read as one control, not four.
-   Without this the bar is eight equal boxes and nothing says which value
-   belongs to which category. */
 .pg-kpi .pair{display:flex;align-items:flex-end;gap:6px;padding:0 9px 0 0;border-right:1px solid var(--line);margin-right:3px}
 .pg-kpi .pair:last-of-type{border-right:none}
 .pg-kpi .axtag{display:inline-flex;align-items:center;gap:5px}
@@ -336,7 +187,6 @@ html[data-theme="dark"] .pg-kpi{
 .pg-kpi .axtag i.solid{border-top-style:solid}
 .pg-kpi .axtag i.dash{border-top-style:dashed}
 
-/* ---------- dropdown panels (one idiom, four uses) ---------- */
 .pg-kpi .msel{position:relative;display:flex}
 .pg-kpi .mbtn{display:flex;align-items:center;width:100%;min-width:150px;height:34px;
   padding:0 28px 0 11px;border-radius:var(--r-sm);border:1px solid var(--line);
@@ -345,7 +195,6 @@ html[data-theme="dark"] .pg-kpi{
 .pg-kpi .mbtn:hover,.pg-kpi .msel.open .mbtn{border-color:var(--line-hi);background-color:var(--hover)}
 .pg-kpi .mbtn .mlab{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pg-kpi .mbtn .mlab.any{color:var(--muted);font-weight:600}
-/* a value control that has nothing to offer yet says so instead of opening empty */
 .pg-kpi .mbtn:disabled{opacity:.5;cursor:default}
 .pg-kpi .mbtn:disabled:hover{border-color:var(--line);background-color:var(--panel-2)}
 .pg-kpi .colpanel{position:absolute;top:calc(100% + 6px);left:0;z-index:80;width:236px;
@@ -365,8 +214,6 @@ html[data-theme="dark"] .pg-kpi{
 .pg-kpi .colrow .req{margin-left:auto;font-size:8px;font-weight:800;letter-spacing:.09em;
   color:var(--faint);background:var(--panel-2);border:1px solid var(--line);
   padding:2px 6px;border-radius:5px}
-/* a device that does not report the chosen parameter is offered but marked -
-   ticking it is allowed, and the column it adds is honestly all dashes */
 .pg-kpi .colrow .noda{margin-left:auto;font-size:8.5px;font-weight:800;letter-spacing:.08em;color:var(--faint)}
 .pg-kpi .colrow .swatch{width:9px;height:9px;border-radius:3px;flex:none}
 .pg-kpi .coldiv{height:1px;background:var(--line-soft);margin:6px 4px}
@@ -375,15 +222,11 @@ html[data-theme="dark"] .pg-kpi{
   background:transparent;color:var(--muted);font-size:11.5px;font-weight:700}
 .pg-kpi .colfoot button:hover{border-color:var(--line-hi);color:var(--text);background:var(--hover)}
 .pg-kpi .mpanel{width:214px;min-width:100%}
-/* The rows are <label>s inside a .field, so the filter bar's own label rule
-   reached them and set every option in tiny faint tracked-out caps - the voice
-   reserved for the name ABOVE a control, printed inside it. Stated back. */
 .pg-kpi .mpanel .colrow{font-size:12.5px;font-weight:600;letter-spacing:0;
   text-transform:none;color:var(--text)}
 .pg-kpi .mpanel .colrow input{min-width:0}
 .pg-kpi .unit{margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--faint)}
 
-/* ---------- plant picker ---------- */
 .pg-kpi .pplant{width:268px;padding:7px;display:flex;flex-direction:column;gap:5px;
   max-height:min(60vh,320px);overflow-y:auto;scrollbar-width:thin}
 .pg-kpi .pcard{display:flex;flex-direction:column;gap:3px;min-width:0;width:100%;
@@ -403,14 +246,10 @@ html[data-theme="dark"] .pg-kpi{
 .pg-kpi .pcard .dv{margin-left:auto;font-size:8.5px;font-weight:800;letter-spacing:.05em;
   color:var(--faint);white-space:nowrap}
 
-/* ---------- card ---------- */
 .pg-kpi .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg)}
 .pg-kpi .card .chead{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:13px 16px 10px}
 .pg-kpi .chead .title{font-size:14.5px;font-weight:700;white-space:nowrap;flex:none}
 .pg-kpi .chead .tools{margin-left:auto;display:flex;align-items:center;gap:8px}
-/* The bucket switch, in the chart's head - the same control Monitoring puts
-   there for its range, at the same size and with the same green for the one in
-   force. A page's controls are read as one set across the app or not at all. */
 .pg-kpi .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}
 .pg-kpi .seg button{padding:6px 11px;font-size:11.5px;font-weight:600;background:transparent;border:none;color:var(--muted);white-space:nowrap}
 .pg-kpi .seg button:hover{color:var(--text);background:var(--hover)}
@@ -418,36 +257,16 @@ html[data-theme="dark"] .pg-kpi{
 .pg-kpi .seg button.on:hover{background:var(--green-soft)}
 .pg-kpi .seg button:not(:last-child){border-right:1px solid var(--line)}
 
-/* ---------- legend ----------
-   Identity is never colour alone: every chip carries the series name, and the
-   SHAPE drawn in the chip is the shape the plot draws with - a square for the
-   bar, a dot, a triangle. This note used to describe solid and dashed rules,
-   which was Analysis's arrangement carried over; the marks here are filled
-   shapes now, so the chips are too. */
 .pg-kpi .legend{display:flex;gap:7px;flex-wrap:wrap;min-width:0}
 .pg-kpi .lg{display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:8px;border:1px solid var(--line);
   background:var(--panel-2);font-size:12px;cursor:pointer;user-select:none;white-space:nowrap;flex:none}
 .pg-kpi .lg:hover{border-color:var(--line-hi)}
 .pg-kpi .lg.off{opacity:.38}
-/* THE CHIP IS AN INLINE SVG, not a styled box. The marks stopped being things
-   CSS can draw the moment simulated became a rule with a hollow dot ON it -
-   that is two shapes in one chip - so the chip draws the same geometry the
-   plot does and there is one place a mark is defined instead of two that have
-   to be kept in step. --mkbg is the surface the hollow dot is cut out of, and
-   each context sets it to whatever it is actually sitting on. */
 .pg-kpi .mk{display:block;width:17px;height:12px;flex:none;overflow:visible;--mkbg:var(--panel-2)}
 .pg-kpi .lg .n{color:var(--text);font-weight:700;font-family:var(--mono);font-size:11.5px}
 .pg-kpi .lg .p{color:var(--muted);font-weight:600;font-size:11px}
 
-/* ---------- chart ---------- */
 .pg-kpi .chartwrap{position:relative;padding:4px 10px 14px}
-/* DIRECT CHILD, not any descendant. This was .chartwrap svg, and it was
-   harmless for as long as the only svg in here was the plot. The moment the
-   tooltip started drawing its marks as inline svg it caught them too - .tip is
-   inside .chartwrap - and width:100%;height:auto blew a 17x12 chip up to the
-   300x150 an svg defaults to, so hovering a bar produced a tooltip the size of
-   the card with two enormous shapes in it. The plot is a direct child; nothing
-   else in here should be sized by this rule. */
 .pg-kpi .chartwrap>svg{width:100%;height:auto;display:block}
 .pg-kpi .gl{stroke:var(--line-soft);stroke-width:1}
 .pg-kpi .gl.v{stroke:var(--grid-v)}
@@ -460,17 +279,9 @@ html[data-theme="dark"] .pg-kpi{
 .pg-kpi .tip .tt{font-family:var(--mono);font-weight:700;font-size:11px;color:var(--muted);margin-bottom:5px}
 .pg-kpi .tip .tr{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);padding:2px 0}
 .pg-kpi .tip .tr b{margin-left:auto;font-family:var(--mono);color:var(--text);font-weight:700}
-/* the state before a query is complete - the plot keeps its frame and says what
-   is missing, rather than collapsing to a bare box */
 .pg-kpi .chartnote{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   pointer-events:none;color:var(--faint);font-family:var(--mono);font-size:12.5px;text-align:center;padding:0 20px}
 
-/* ---------- table ---------- */
-/* Cells are CENTRED. Numbers in a column read fastest right-aligned - the
-   decimal points line up and magnitude is visible without reading a digit -
-   so that is what these tables did. Centred is the house style now; the
-   mono face keeps the digits on a common width, which is what stops a
-   centred column of numbers from going ragged. */
 .pg-kpi .ttools{display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
 .pg-kpi .tbtn{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;
   letter-spacing:.04em;background:transparent;border:1px solid var(--line);color:var(--muted)}
@@ -480,53 +291,24 @@ html[data-theme="dark"] .pg-kpi{
 .pg-kpi thead th{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
   padding:9px 16px;border-bottom:1px solid var(--line-soft);text-align:center;white-space:nowrap}
 .pg-kpi thead .grp th{border-bottom:none;padding-bottom:2px;font-size:11.5px;color:var(--text);letter-spacing:.06em}
-/* the device name spans its parameter columns, so the pairing is structural */
 .pg-kpi thead .grp th.dev{text-align:center;border-bottom:1px solid var(--line-soft)}
-/* the header the table keeps when nothing is ticked - stated, but plainly not a
-   reading, so nobody mistakes the shape for content */
 .pg-kpi thead th.ph{color:var(--faint);font-weight:600}
 .pg-kpi tbody td{padding:9px 16px;font-family:var(--mono);font-size:12.5px;font-weight:600;text-align:center;
   border-bottom:1px solid var(--line-soft);color:var(--text);white-space:nowrap}
 .pg-kpi tbody td.ts{color:var(--muted);font-weight:600}
 .pg-kpi tbody td.nil{color:var(--faint)}
-/* THE ROW UNDER THE POINTER LIFTS OFF THE TABLE. A tint alone was not enough on
-   a table this wide - at 4.5% it was invisible, and even raised it only shaded a
-   band the eye still slips out of. So the row is picked out the way every other
-   raised surface in this portal is: its own ring, and a shadow under it. It
-   reads as one object rather than as a row of separate cells, which is the point
-   when a value has to be carried across ten columns.
-
-   It marks where the POINTER is, so it clears the moment the pointer leaves and
-   can never be mistaken for a selection that persists. The table's borders are
-   separated rather than collapsed for it: a collapsed table draws one shared
-   border between two rows, and a browser will not paint a shadow on a row that
-   does not own its own edges. Only bottom borders are ever set here, so nothing
-   doubles up and the table looks exactly as it did. */
 .pg-kpi table{border-collapse:separate;border-spacing:0}
 .pg-kpi tbody tr{transition:background-color .12s ease,box-shadow .12s ease}
 .pg-kpi tbody tr:hover{background:var(--row-hover);position:relative;z-index:1;
   box-shadow:inset 0 0 0 1px var(--line-hi),0 10px 22px -12px var(--shadow),0 2px 6px -4px var(--shadow)}
-/* the readings come up to full strength with it; a dash stays a dash, because a
-   cell with nothing in it has nothing to bring forward */
 .pg-kpi tbody tr:hover td:not(.nil){color:var(--text)}
-/* the y2 half of a device's pair is ruled off from the y1 half, so a wide table
-   does not read as one undifferentiated block of numbers */
 .pg-kpi thead th.sep, .pg-kpi tbody td.sep{border-left:1px solid var(--line-soft)}
 .pg-kpi .empty-note{display:flex;align-items:center;justify-content:center;
   color:var(--faint);font-size:12.5px;font-family:var(--mono)}
 .pg-kpi .empty-note.tall{min-height:170px}
 .pg-kpi .colpick{position:relative;display:inline-flex}
 
-/* ---------- pager ---------- */
 .pg-kpi .tfoot{display:flex;align-items:center;gap:16px;padding:11px 16px;font-size:12px;color:var(--muted);flex-wrap:wrap}
-/* THE ROWS-PER-PAGE CONTROL IS THE PAGE'S OWN DROPDOWN, not the browser's - the
-   same move the header's refresh control made, for the same reason: this footer
-   sat under a table drawn entirely by the app and then handed its one control to
-   the operating system. These are the few things a footer-sized one needs said.
-
-   IT OPENS UPWARD. .colpanel hangs below its button, which is right in a filter
-   bar at the top of a card and wrong at the bottom of one - a list dropped
-   downward from the last row of the page opens into the window's edge. */
 .pg-kpi .tfoot .psel{flex:none}
 .pg-kpi .tfoot .psel .mbtn{min-width:74px;height:30px;font-family:var(--mono);font-size:12px;
   justify-content:space-between}
@@ -537,7 +319,6 @@ html[data-theme="dark"] .pg-kpi{
 .pg-kpi .pgbtn:disabled{opacity:.35;cursor:default}
 .pg-kpi .tfoot .range{font-family:var(--mono)}
 
-/* ---------- toasts ---------- */
 .pg-kpi #toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:100}
 .pg-kpi .toast{background:var(--elev);border:1px solid var(--line);border-left:3px solid var(--green);border-radius:9px;
   padding:10px 14px;font-size:12.5px;color:var(--text);box-shadow:0 12px 30px -8px var(--shadow);
@@ -551,9 +332,8 @@ html[data-theme="dark"] .pg-kpi{
   .pg-kpi .clock{display:none}
   .pg-kpi .pair{border-right:none;padding-right:0;margin-right:0}
 }
-@media (prefers-reduced-motion:reduce){ /* [global - see base.css] * */ }
+@media (prefers-reduced-motion:reduce){ }
 
-/* ---------- month picker ---------- */
 .pg-kpi .mpick{position:relative;display:inline-flex;flex-direction:column;justify-content:flex-end}
 .pg-kpi .mpick .fl{position:absolute;top:-6px;left:9px;padding:0 4px;background:var(--panel);z-index:1;
   font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
@@ -575,36 +355,15 @@ html[data-theme="dark"] .pg-kpi{
 .pg-kpi .mpick-grid button{padding:9px 0;border-radius:8px;border:1px solid transparent;
   background:transparent;color:var(--text);font-size:12.5px;font-weight:600}
 .pg-kpi .mpick-grid button:hover{border-color:var(--line-hi);background:var(--hover)}
-/* selection is a surface, the same language the plant cards use */
 .pg-kpi .mpick-grid button.on{background:var(--sel);border-color:var(--line-hi);color:var(--text);font-weight:800}
 
-/* the bucket switch is styled with .seg, up beside the card rules, because that
-   is where the control it copies from Monitoring is defined */
-
-/* ---------- the chart's own head ---------- */
 .pg-kpi .chead .metric{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--muted)}
 .pg-kpi .bench{font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--faint);
   display:inline-flex;align-items:center;gap:6px}
 .pg-kpi .bench i{width:14px;height:0;border-top:2px dashed var(--faint);display:inline-block}
 
-/* bars, not lines: the legend and the tooltip carry a square swatch to match
-   what the chart actually draws */
-/* the tooltip is a lifted surface, so a hollow mark inside it is cut out of
-   that and not out of the card two layers down */
 .pg-kpi .tip .tr .mk{--mkbg:var(--elev)}
 
-/* ---------- the row, spelled out in full ----------
-   A table wider than the screen is read by scrolling sideways, and a row read
-   sideways is a row half remembered: by the time the last column is on screen,
-   the device name that started it is not. Hovering a row lifts the WHOLE of it
-   out as a card - every column of that one row, label and value, in one place -
-   so the reading is taken in a glance instead of in two swipes.
-
-   It follows the pointer, it is never clickable, and it goes the moment the
-   pointer leaves. It opens on every row, whether or not the table is currently
-   wider than the screen - the same gesture has to give the same answer on a
-   laptop as on a wall display, and a reader who learns it on one must not find
-   it missing on the other. */
 .pg-kpi .rowpop{position:fixed;z-index:120;pointer-events:none;opacity:0;transition:opacity .12s ease;
   background:var(--elev);border:1px solid var(--line);border-radius:11px;padding:11px 13px;
   box-shadow:0 20px 48px -18px var(--shadow),0 3px 10px -6px var(--shadow);
@@ -618,5 +377,4 @@ html[data-theme="dark"] .pg-kpi{
   color:var(--faint);white-space:nowrap}
 .pg-kpi .rowpop .rp-v{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text);
   text-align:right;white-space:nowrap}
-/* a cell with nothing in it stays a dash, and says so quietly */
 .pg-kpi .rowpop .rp-v.nil{color:var(--faint);font-weight:600}

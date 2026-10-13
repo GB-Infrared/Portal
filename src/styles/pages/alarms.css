@@ -1,97 +1,58 @@
-/* Ported from the design-mockup branch, alarms.html.
-   Every rule is scoped to .pg-alarms so pages cannot restyle each other in the
-   single-page app; the resets and the dark sky behind the glass live once in
-   base.css. Otherwise the stylesheet - comments included - is the mockup's. */
 .pg-alarms{
-  /* ---- LIGHT · UTILITY BLUE (default) · enterprise solar-portal palette ---- */
-  --bg:#f1f4f8;            /* page background            */
-  --panel:#ffffff;         /* card surface               */
-  --panel-2:#f5f8fb;       /* nested surface / inputs    */
-  --line:#dde4ec;          /* card borders               */
-  --line-soft:#e9eef4;     /* gridlines, dividers        */
-  --line-hi:#b5c2d1;       /* hover / active borders     */
-  --text:#152234;          /* primary text               */
-  --muted:#5a6b7f;         /* secondary text             */
-  --faint:#8494a6;         /* tertiary text              */
-  --dim:#aab6c4;           /* dead readouts (offline)    */
-  --elev:#ffffff;          /* tooltips, toasts           */
-  --sel:#e8f0fb;           /* selected card surface      */
+  --bg:#f1f4f8;
+  --panel:#ffffff;
+  --panel-2:#f5f8fb;
+  --line:#dde4ec;
+  --line-soft:#e9eef4;
+  --line-hi:#b5c2d1;
+  --text:#152234;
+  --muted:#5a6b7f;
+  --faint:#8494a6;
+  --dim:#aab6c4;
+  --elev:#ffffff;
+  --sel:#e8f0fb;
   --hover:rgba(11,99,206,.07);
   --hover-soft:rgba(11,99,206,.045);
-  /* the row under the pointer, and only that row */
   --row-hover:rgba(11,99,206,.10);
   --shadow:rgba(19,38,63,.16);
-  --on-accent:#ffffff;     /* text on a filled accent    */
-  /* header bar — same surface family as the cards */
+  --on-accent:#ffffff;
   --topbar:var(--panel);
   --topbar-fg:var(--text);
   --topbar-fg-2:var(--muted);
   --topbar-tab:var(--muted);
   --topbar-hover:var(--hover);
   --topbar-active:var(--green-soft);
-  --green:#12a150;         /* producing / healthy        */
-  --green-rgb:18,161,80;   /* same green, for rgba() glows */
+  --green:#12a150;
+  --green-rgb:18,161,80;
   --green-soft:rgba(18,161,80,.12);
   --green-deep:#0b7a3c;
   --blue:#1a73c8;
   --blue-soft:rgba(26,115,200,.12);
-  --red:#d92d20;           /* offline / alarms           */
+  --red:#d92d20;
   --red-soft:rgba(217,45,32,.1);
-  --crit:#8c1109;          /* critical - the deep red Home uses */
+  --crit:#8c1109;
   --crit-soft:rgba(140,17,9,.1);
-  --amber:#dc7a06;         /* yield / deviations         */
+  --amber:#dc7a06;
   --amber-soft:rgba(220,122,6,.12);
-  --brand:#a87b0f;         /* wordmark · gold            */
+  --brand:#a87b0f;
   --mono:ui-monospace,'SF Mono','Cascadia Code','Roboto Mono',Consolas,monospace;
   --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
   --serif:Georgia,'Times New Roman',serif;
   --r-lg:14px; --r-md:10px; --r-sm:8px;
 }
-/* ---- DARK · the front door's palette, on every page behind it.
-
-   THIS IS THE SIGN-IN'S SKY, not a second design. login.html and the site
-   overview have always stood in the void; the portal stopped at the door and
-   turned white. Somebody who signs in at night now keeps the room they signed
-   in from, and these are that screen's own token values, copied rather than
-   re-picked - two dark palettes that drift apart is exactly the failure the
-   single :root above was written to avoid.
-
-   NOT ONE RULE BELOW THIS BLOCK CHANGES. Only the VALUES are redefined, so
-   every rule on the page - the cards, the tables, the charts, the dialogs -
-   goes dark by reading the same token names it already read. A page re-skinned
-   by rewriting two hundred declarations is a page with two hundred chances to
-   miss one.
-
-   The header tokens are not here because they do not need to be: --topbar and
-   its family are declared as var(--panel), var(--text) and so on, so they
-   follow whatever these say.
-
-   The colours mean here what they mean on the overview: WHITE a fixed fact,
-   EMERALD live, GOLD what has been banked. ---------------------------------- */
 html[data-theme="dark"] .pg-alarms{
-  /* THE BROWSER'S OWN WIDGETS HAVE TO BE TOLD. Radios, tick boxes, the native
-     date popup and the scrollbars are drawn by the UA, not by anything here,
-     and left alone they stay in their light costume - four white discs in a
-     navy menu, and a calendar that opens as a white sheet. One declaration
-     hands the whole set over, which is the only way to reach the parts of a
-     control this stylesheet cannot select. */
   color-scheme:dark;
   accent-color:#3ad998;
-  --bg:#070c14;            /* the void itself            */
-  --panel:rgba(9,16,28,.74);   /* the same glass the overview stands on */
+  --bg:#070c14;
+  --panel:rgba(9,16,28,.74);
   --panel-2:rgba(9,16,28,.62);
   --line:rgba(150,180,220,.16);
   --line-soft:rgba(150,180,220,.10);
   --line-hi:rgba(140,175,215,.30);
-  --text:#e9f1fb;          /* white  - fixed facts, identity */
+  --text:#e9f1fb;
   --muted:#8ba0bb;
   --faint:#7d92ad;
-  --dim:#5d6e83;           /* dead readouts, and they read dead on black */
-  /* OPAQUE, and the one token here that is. The cards are glass because they
-     sit still and the void behind them is meant to show; a dropdown, a tooltip
-     or a toast is drawn OVER something a reader is trying to read, and at 96%
-     the number underneath was still legible through the menu. A floating layer
-     that lets its background through is not a layer. */
+  --dim:#5d6e83;
   --elev:#0d1624;
   --sel:rgba(127,178,238,.14);
   --hover:rgba(150,180,220,.07);
@@ -100,10 +61,8 @@ html[data-theme="dark"] .pg-alarms{
   --shadow:rgba(0,0,0,.62);
   --scrim:rgba(3,7,13,.70);
   --grid-v:rgba(150,180,220,.07);
-  /* text ON a filled accent. White on emerald is unreadable at this weight, and
-     the accents are light here - so the ink goes dark instead. */
   --on-accent:#07121b;
-  --green:#3ad998;         /* emerald - live */
+  --green:#3ad998;
   --green-rgb:58,217,152;
   --green-soft:rgba(58,217,152,.14);
   --green-deep:#3ad998;
@@ -111,97 +70,41 @@ html[data-theme="dark"] .pg-alarms{
   --blue-soft:rgba(127,178,238,.16);
   --red:#ff6b5e;
   --red-soft:rgba(255,107,94,.14);
-  --crit:#ff9d94;          /* as on Home: deep red vanishes on the void */
+  --crit:#ff9d94;
   --crit-soft:rgba(255,157,148,.14);
   --crit:#ff9d94;
   --amber:#f0b74a;
   --amber-soft:rgba(240,183,74,.15);
-  --brand:#f0b74a;         /* gold - the wordmark, and what the day earns */
+  --brand:#f0b74a;
   --brand-soft:rgba(240,183,74,.14);
   --brand-line:rgba(240,183,74,.34);
-  /* The series hues, lifted. A mid-tone picked to carry on white sinks into
-     navy - #12a150 against #070c14 is a line you have to hunt for - so every
-     one of these is the same hue at the brightness this ground needs. The
-     charts read them as tokens and never learn a theme exists. */
   --s1:#3ad998; --s2:#7fb2ee; --s3:#f0b74a; --s4:#b39cff;
   --s5:#ff8ac0; --s6:#4fd3dd; --s7:#e9a03c; --s8:#9a92ff;
   --s9:#4fd0bd; --s10:#e3c05a; --s11:#ff8ac0; --s12:#5cc0f5;
   --k1:#6aa8ff; --k2:#f7b955; --k3:#3ad998; --k4:#ff8ac0;
   --k5:#a99bff; --k6:#4fd3dd;
 }
-/* The one control that is not a reading: it belongs with the clock and the
-   avatar, at the right of the bar, because it is about the SCREEN rather than
-   about the plant. */
 .pg-alarms .themebtn{width:30px;height:30px;display:grid;place-items:center;flex:none;
   border-radius:8px;border:1px solid var(--line);background:var(--panel-2);
   color:var(--topbar-fg-2,var(--muted));transition:background .12s,border-color .12s,color .12s}
 .pg-alarms .themebtn:hover{border-color:var(--line-hi);background:var(--topbar-hover,var(--hover));
   color:var(--topbar-fg,var(--text))}
 .pg-alarms .themebtn svg{display:block}
-/* the icon shows WHAT YOU WILL GET, not what you are in: a moon on the light
-   page is an offer, a moon on the dark page is a label for a state the whole
-   screen is already stating */
 .pg-alarms .themebtn .moon{display:none}
 html[data-theme="dark"] .pg-alarms .themebtn .moon{display:block}
 html[data-theme="dark"] .pg-alarms .themebtn .sun{display:none}
-/* [global - see base.css] * */
-/* [global - see base.css] html */
-/* [global - see base.css] body */
 
-/* ===================== THE FIELD THE GLASS STANDS ON =====================
-   DARK WAS A FLAT BLACK SLAB, and it should not have been.
-
-   The dark tokens were copied from the sign-in exactly, which was right, but
-   only half of what makes that screen work came across. Over there --panel is
-   rgba(9,16,28,.74) - GLASS - and behind it is a lit sky: a warm wash where the
-   sun is, a wide cold one carrying the rest, a star field and the limb of the
-   Earth. The panel reads as a surface because there is something behind it for
-   it to be in front of.
-
-   Here the same glass was laid on #070c14 and nothing else. 74% of near-black
-   over near-black composites to near-black: card and page came out within a
-   couple of values of each other, every border did the whole job of separating
-   them, and the screen read as one unlit sheet with type on it. The tokens were
-   never the problem - the room was empty.
-
-   So this is the sign-in's own sky, at working strength. Same three washes, same
-   places, same hues; roughly a third of the amplitude, because that screen is a
-   held moment with one panel on it and this one is a working surface covered in
-   tables. Enough to give the glass something to lift off, not enough to be read
-   as data. No stars and no limb: those are the front door's, and a horizon
-   behind a KPI table would be scenery.
-
-   ON html, NOT ON body. The root element's background paints the whole canvas
-   and does not scroll away when a long table does - a wash on body either ends
-   where the content ends or has to be pinned with background-attachment:fixed,
-   which repaints the gradient on every scroll frame. body is handed back to
-   transparent for the same reason: two backgrounds is one background and one
-   piece of dead code.
-
-   LIGHT IS UNTOUCHED. It is a daylit palette on a solid ground and it separates
-   its cards with white against grey, which needs no help from behind. */
 html[data-theme="dark"] .pg-alarms{
   background:
-    /* the sun, off the top right corner */
     radial-gradient(circle 46vmax at 80% -8%,
       rgba(255,216,146,.085) 0%, rgba(240,178,73,.032) 32%, transparent 64%),
-    /* the cold half of the same sky, wide enough to reach the far corner */
     radial-gradient(ellipse 155% 125% at 80% -8%,
       rgba(126,158,214,.115) 0%, rgba(90,120,180,.05) 46%, transparent 80%),
-    /* and the void closing back in under both, so the foot of a long page is
-       the deep end rather than a gradient that simply stops */
     radial-gradient(ellipse 130% 105% at 50% 62%,
       rgba(2,6,14,.34) 0%, rgba(0,1,5,.5) 100%),
     var(--bg);
 }
-/* [global - see base.css] html[data-theme="dark"] body */
-/* [global - see base.css] ::-webkit-scrollbar */
-/* [global - see base.css] ::-webkit-scrollbar-thumb */
-/* [global - see base.css] ::-webkit-scrollbar-track */
-/* [global - see base.css] button */
-/* [global - see base.css] a */
 
-/* ---------- top bar ---------- */
 .pg-alarms .topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:20px;
   height:58px;padding:0 22px;border-bottom:1px solid var(--line);
   background:var(--topbar);color:var(--topbar-fg)}
@@ -213,16 +116,6 @@ html[data-theme="dark"] .pg-alarms{
 .pg-alarms .brand .sub{font-size:9px;letter-spacing:.16em;color:var(--topbar-fg-2);text-transform:uppercase;
   font-weight:600;line-height:1}
 @media (max-width:820px){ .pg-alarms .brand .sub{display:none} }
-/* ---------- which site the portal is on ----------
-   A READOUT, NOT A CONTROL. Every page used to answer "which site am I looking
-   at" with a picker of its own - four of them, four defaults, and nothing
-   keeping them in step: you could walk from Monitoring to Alarms and be reading
-   two different plants without either page saying so. The choosing moved to one
-   place, the Sites tab a little to the right of this, and what is left here is
-   the ANSWER - the same words, the same spot, on every page.
-   A pin and a name, with no "SITE" label in front of it: the wordmark beside it
-   already says SITE OVERVIEW and the tab beside that says Sites, and a third
-   one would be the bar saying the word three times before saying anything. */
 .pg-alarms .sitenow{display:flex;align-items:center;gap:7px;flex:none;white-space:nowrap;
   padding-left:16px;border-left:1px solid var(--line);color:var(--topbar-fg)}
 .pg-alarms .sitenow svg{color:var(--green);flex:none}
@@ -236,24 +129,10 @@ html[data-theme="dark"] .pg-alarms{
 .pg-alarms .topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px}
 .pg-alarms .clock{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--topbar-fg);letter-spacing:.02em}
 .pg-alarms .refresh{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--topbar-fg-2)}
-/* The control beside it is the portal's own dropdown now, not the browser's -
-   see the note on the markup - and these are the few things a header-sized one
-   needs said. Everything else it inherits from .mbtn / .colpanel unchanged. */
-/* The word is a LABEL for the control beside it, so it stops being a link-sized
-   piece of type competing with the value: quieter, letterspaced, and it steps
-   out of the way on a narrow bar where the value is the part that matters. */
 .pg-alarms .refresh .rl{letter-spacing:.04em;white-space:nowrap}
-/* .mbtn was drawn for the filter bar and is already this height, so only the
-   width is stated - "15 min" is the longest thing it ever holds, and a box
-   sized for that stops the header shifting when the value changes. */
 .pg-alarms .refresh .rsel .mbtn{min-width:86px;font-family:var(--mono);font-size:12px;
   justify-content:space-between}
-/* .colpanel hangs from its control's LEFT edge, which is right for a filter bar
-   and wrong here: this is the last control before the theme switch and the
-   avatar, so a list dropped leftward runs off the end of the bar. */
 .pg-alarms .refresh .rsel .colpanel{left:auto;right:0;width:150px}
-/* OFF is a state, not an absence, so the label says it in the same voice the
-   dot does - dimmed, with the pulse stopped. */
 .pg-alarms .refresh .rsel .mbtn .mlab.off{color:var(--muted)}
 @media (max-width:1180px){ .pg-alarms .refresh .rl{display:none} }
 .pg-alarms .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(var(--green-rgb),.55);
@@ -262,9 +141,6 @@ html[data-theme="dark"] .pg-alarms{
 .pg-alarms select{appearance:none;background:var(--panel-2) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="%238d99a6" stroke-width="1.6" stroke-linecap="round"/></svg>') no-repeat right 10px center;
   border:1px solid var(--line);color:var(--text);border-radius:var(--r-sm);
   padding:8px 28px 8px 11px;font-size:13px;font-family:inherit;outline:none}
-/* Controls answer in NEUTRAL. Green on this portal means producing/healthy;
-   a pointer resting on a dropdown is neither, and a green wash there competes
-   with every reading that uses the colour to mean something. */
 .pg-alarms select:hover{border-color:var(--line-hi);background-color:var(--hover)}
 .pg-alarms select:focus{border-color:var(--line-hi);background-color:var(--hover)}
 .pg-alarms .iconbtn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;
@@ -273,10 +149,6 @@ html[data-theme="dark"] .pg-alarms{
 .pg-alarms .avatar{width:30px;height:30px;border-radius:50%;background:var(--panel-2);
   display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--text);
   border:1px solid var(--line)}
-/* ---------- account menu ----------
-   The avatar was a dead circle: it named the signed-in user and offered nothing.
-   It is the only place Settings and Sign out can live without spending a tab on
-   either, and every page carries the same one so the way out is never hunted for. */
 .pg-alarms .acct{position:relative;display:flex}
 .pg-alarms .avatar{padding:0}
 .pg-alarms .avatar:hover,.pg-alarms .acct.open .avatar{border-color:var(--line-hi);background:var(--hover)}
@@ -297,30 +169,15 @@ html[data-theme="dark"] .pg-alarms{
 .pg-alarms .acctitem.out:hover{background:var(--red-soft);color:var(--red)}
 .pg-alarms .acctitem.out:hover svg{color:var(--red)}
 
-
-/* ---------- page shell ----------
-   One column, not two. Monitoring needs a rail because its chart is driven by a
-   device you pick; an alarm list is driven by the filter bar above it, and every
-   pixel a rail took would come out of the columns. */
 .pg-alarms .wrap{max-width:2400px;margin:0 auto;padding:14px clamp(14px,1.5vw,28px) 34px;
   display:flex;flex-direction:column;gap:14px}
 .pg-alarms .toprow{max-width:2400px;margin:0 auto;padding:16px clamp(14px,1.5vw,28px) 0}
 
-/* ---------- filter bar ---------- */
-/* bare toolbar — no card around the controls, keeps the page open */
 .pg-alarms .filters{display:flex;flex-wrap:wrap;align-items:flex-end;gap:9px;padding:0 2px 2px;min-width:0}
 .pg-alarms .field{position:relative;display:flex;flex-direction:column;gap:5px}
 .pg-alarms .field label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
 .pg-alarms .field select,.pg-alarms .field .input,.pg-alarms .field input{height:34px;min-width:116px}
-/* height alone sets this box. The base rule's 8px vertical padding on top of it
-   left a 16px content box for 13px text, which clipped descenders. */
 .pg-alarms .field select{padding-top:0;padding-bottom:0}
-/* ---------- one window, two controls ----------
-   A datetime-local field looks tidy until it is opened: the browser answers it
-   with a calendar AND two spinner columns in a single popup, wide enough to
-   land across the field beside it - which is the thing that reads as broken.
-   A date input and a time input sharing one box open the two compact pickers
-   this portal already uses elsewhere, and the field still says one thing. */
 .pg-alarms .dt{position:relative;display:flex;align-items:stretch;height:34px;background:var(--panel-2);
   border:1px solid var(--line);border-radius:var(--r-sm)}
 .pg-alarms .dt:hover{border-color:var(--line-hi)}
@@ -331,32 +188,17 @@ html[data-theme="dark"] .pg-alarms{
 .pg-alarms .dt input[type=time]{min-width:92px;border-left:1px solid var(--line)}
 .pg-alarms .field input::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.55}
 .pg-alarms .field input:hover::-webkit-calendar-picker-indicator{opacity:1}
-/* The date half reads as a button, so it must not look like text to be dragged
-   over. user-select handles a real drag-selection, but the blue block on the
-   day is NOT that - it is the date input's own segment highlight, drawn inside
-   the control's shadow DOM, which user-select cannot reach. Each segment has to
-   be told separately not to paint it. The time half keeps its highlight: there
-   you are editing a number, and you need to see which one. */
 .pg-alarms .dt input[type=date]{user-select:none;-webkit-user-select:none;cursor:pointer}
 .pg-alarms .dt input[type=date]::selection{background:transparent}
 .pg-alarms .dt input[type=date]::-webkit-datetime-edit-day-field,
 .pg-alarms .dt input[type=date]::-webkit-datetime-edit-month-field,
 .pg-alarms .dt input[type=date]::-webkit-datetime-edit-year-field{
   background:transparent;color:inherit;outline:none;padding:0}
-/* :focus wins over the rule above in the UA sheet, so it is repeated for it */
 .pg-alarms .dt input[type=date]::-webkit-datetime-edit-day-field:focus,
 .pg-alarms .dt input[type=date]::-webkit-datetime-edit-month-field:focus,
 .pg-alarms .dt input[type=date]::-webkit-datetime-edit-year-field:focus{
   background:transparent;color:inherit;outline:none}
 
-/* ---------- the time half ----------
-   Hours and minutes are two separate dropdowns, not two columns of one panel.
-   The browser's time popup lays its columns out independently, so they drift
-   out of step as you scroll and open a ragged gap down the middle - and a
-   custom panel only moves that problem indoors, since two lists side by side
-   have to be kept in step by hand. Two dropdowns that are never open together
-   cannot be out of step with each other: the alignment problem is removed
-   rather than solved. It is also the idiom the rest of this bar already uses. */
 .pg-alarms .tpick{display:flex;align-items:center;gap:2px;padding:0 7px;border-left:1px solid var(--line)}
 .pg-alarms .tbit{position:relative;height:26px;min-width:31px;padding:0 5px;border-radius:6px;
   border:1px solid transparent;background:transparent;color:var(--text);
@@ -376,12 +218,6 @@ html[data-theme="dark"] .pg-alarms{
 .pg-alarms .tlist button:hover{background:var(--hover)}
 .pg-alarms .tlist button.on{background:var(--sel);border-color:var(--line-hi)}
 
-/* ---------- plant picker ----------
-   The same cards the home header opens, in a dropdown: a site is chosen on its
-   state, not just on its name, so each card carries what is open on it. It is
-   the panel idiom the rest of this bar already uses - the native <select> next
-   to three styled dropdowns was the odd one out, and it could not have shown a
-   count anyway. */
 .pg-alarms .pplant{width:212px;padding:7px;display:flex;flex-direction:column;gap:5px;
   max-height:min(60vh,320px);overflow-y:auto;scrollbar-width:thin}
 .pg-alarms .pcard{display:flex;flex-direction:column;gap:3px;min-width:0;width:100%;
@@ -389,33 +225,20 @@ html[data-theme="dark"] .pg-alarms{
   background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-sm);
   padding:7px 10px;color:var(--text)}
 .pg-alarms .pcard:hover{background:var(--hover);border-color:var(--line-hi)}
-/* the plant already on screen is marked by surface, not by colour - a green
-   "current" would read as a health light rather than as a selection */
 .pg-alarms .pcard.on{background:var(--sel);border-color:var(--line-hi)}
 .pg-alarms .pcard .top,.pg-alarms .pcard .row{display:flex;align-items:baseline;gap:6px;min-width:0}
 .pg-alarms .pcard .nm{font-family:var(--serif);font-size:12.5px;font-weight:700;color:var(--text);
   line-height:1.15;white-space:nowrap}
-/* a dot, not the word: at this size CURRENT would take a third of the line */
 .pg-alarms .pcard.on .nm::after{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;
   margin-left:6px;vertical-align:middle;background:var(--line-hi)}
-/* flex:1 1 0 with min-width:0 is what actually lets it ellipsis - a flex item
-   will not shrink below its content width otherwise */
 .pg-alarms .pcard .ad{flex:1 1 0;min-width:0;text-align:right;font-size:9px;color:var(--faint);
   line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* the open count is the other half of the decision, so it is stated on every
-   card - including the ones with nothing open, which is itself the answer */
 .pg-alarms .pcard .alm{display:inline-flex;align-items:center;gap:4px;
   font-size:8.5px;font-weight:800;letter-spacing:.05em;white-space:nowrap}
 .pg-alarms .pcard .alm::before{content:"";width:5px;height:5px;border-radius:50%;flex:none}
 .pg-alarms .pcard .alm.hot{color:var(--red)}    .pg-alarms .pcard .alm.hot::before{background:var(--red)}
 .pg-alarms .pcard .alm.cold{color:var(--faint)} .pg-alarms .pcard .alm.cold::before{background:var(--green)}
 
-/* ---------- multi-select filter ----------
-   One alarm question is rarely one value: "INV03 and INV07", "alarms and
-   warnings". A native <select multiple> answers that with a scrolling box that
-   needs a modifier key to add the second value and looks different on every
-   OS. This is the column picker's panel with a different list in it - one
-   idiom on the page for "tick several", not two. */
 .pg-alarms .msel{position:relative;display:flex}
 .pg-alarms .mbtn{display:flex;align-items:center;width:100%;min-width:158px;height:34px;
   padding:0 28px 0 11px;border-radius:var(--r-sm);border:1px solid var(--line);
@@ -423,31 +246,12 @@ html[data-theme="dark"] .pg-alarms{
   background:var(--panel-2) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="%238d99a6" stroke-width="1.6" stroke-linecap="round"/></svg>') no-repeat right 10px center}
 .pg-alarms .mbtn:hover,.pg-alarms .msel.open .mbtn{border-color:var(--line-hi);background-color:var(--hover)}
 .pg-alarms .mbtn .mlab{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* "nothing chosen" is a real state, not a value - it is said in the muted voice
-   so a set filter is legible at a glance across the whole bar */
 .pg-alarms .mbtn .mlab.any{color:var(--muted);font-weight:600}
 .pg-alarms .mpanel{width:214px;min-width:100%}
-/* The rows are <label>s and they sit inside a .field, so the filter bar's own
-   label rule reached them and set the device names in tiny faint tracked-out
-   caps - the voice reserved for the name ABOVE a control, printed inside it.
-   Stated back explicitly; a value reads as a value. */
 .pg-alarms .mpanel .colrow{font-size:12.5px;font-weight:600;letter-spacing:0;
   text-transform:none;color:var(--text)}
-/* and the same rule's min-width:116px reached the tick boxes, which width:14px
-   cannot undo - a min-width is not overridden by a width - so every checkbox
-   was a 116px box with a 14px tick painted in it, and each device name sat a
-   filter-field away from the box that selects it */
 .pg-alarms .mpanel .colrow input{min-width:0}
 
-/* ---------- summary bar ----------
-   The table answers "which alarms"; this answers "how bad, right now", which is
-   the question you arrive with.
-
-   One bar, not four cards. Four cards on a grid stretch to a quarter of the
-   viewport each - a 2-digit count in a 370px box, which is the airiness the KPI
-   strip was already trimmed for. Segments in a single bar size to their own text
-   instead, and the bar costs 26px less height than the cards did, which a page
-   that scrolls a long table can spend better elsewhere. */
 .pg-alarms .sumbar{display:flex;align-items:stretch;flex-wrap:wrap;
   background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:1px}
 .pg-alarms .sum{display:flex;flex-direction:column;justify-content:center;gap:2px;
@@ -462,14 +266,10 @@ html[data-theme="dark"] .pg-alarms{
 .pg-alarms .sum.event .v{color:var(--muted)}
 .pg-alarms .sum.all .v{color:var(--text)}
 
-/* ---------- card + table ---------- */
 .pg-alarms .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg)}
 .pg-alarms .card .chead{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:13px 16px 10px}
 .pg-alarms .chead .title{font-size:14.5px;font-weight:700;white-space:nowrap;flex:none}
 .pg-alarms .chead .tools{margin-left:auto;display:flex;align-items:center;gap:8px}
-/* the rule under the head is the one the toolbar row used to draw; the row
-   went when EXPORT CSV moved up beside the title, the line it put between the
-   card's head and its table did not need to */
 .pg-alarms .card .chead{border-bottom:1px solid var(--line-soft)}
 .pg-alarms .tbtn{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;
   letter-spacing:.04em;background:transparent;border:1px solid var(--line);color:var(--muted)}
@@ -478,45 +278,12 @@ html[data-theme="dark"] .pg-alarms{
 .pg-alarms table{width:100%;min-width:820px}
 .pg-alarms thead th{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
   padding:9px 14px;border-bottom:1px solid var(--line-soft);text-align:center;white-space:nowrap}
-/* THE COLUMNS NO LONGER SORT. Every heading was click-to-sort, with a triangle
-   on the active one, so the log could be read by "worst" or "which device" as
-   well as by "newest". It went with the day headings below: the log is now
-   read down the clock, newest first, and a day only stays under its heading
-   while the rows stay in time order. Severity and device are still narrowed in the bar
-   above, which answers "worst" and "which device" without reordering anything.
-   The triangle and the click went together - a heading that still reordered
-   the table with no mark saying so would be worse than either. */
-/* the header the table keeps before data arrives - stated, but plainly not a
-   reading, so nobody mistakes the shape for content */
 .pg-alarms thead th.ph{color:var(--faint);font-weight:600}
 .pg-alarms tbody td{padding:8px 14px;font-family:var(--mono);font-size:12.5px;font-weight:600;text-align:center;
   border-bottom:1px solid var(--line-soft);color:var(--text);white-space:nowrap}
-/* the message is the one column that is prose, so it is the one that may wrap
-   out of the mono grid and the one given room to be long */
 .pg-alarms tbody td.msg{font-family:var(--sans);font-weight:600;white-space:normal;min-width:210px}
 .pg-alarms tbody td.dim{color:var(--faint);font-weight:600}
-/* THE ROW UNDER THE POINTER LIFTS OFF THE TABLE. A tint alone was not enough on
-   a table this wide - at 4.5% it was invisible, and even raised it only shaded a
-   band the eye still slips out of. So the row is picked out the way every other
-   raised surface in this portal is: its own ring, and a shadow under it. It
-   reads as one object rather than as a row of separate cells, which is the point
-   when a value has to be carried across ten columns.
-
-   It marks where the POINTER is, so it clears the moment the pointer leaves and
-   can never be mistaken for a selection that persists. The table's borders are
-   separated rather than collapsed for it: a collapsed table draws one shared
-   border between two rows, and a browser will not paint a shadow on a row that
-   does not own its own edges. Only bottom borders are ever set here, so nothing
-   doubles up and the table looks exactly as it did. */
 .pg-alarms table{border-collapse:separate;border-spacing:0}
-/* ONE HEADING PER DAY - "Mon · 27 Jul", and how many alarms that day holds.
-   The day is the unit an operator talks about ("what came in yesterday"), so
-   it is the one that gets a heading. The count is the whole day's under the
-   current filters, not the page's - a day that runs over a page break repeats
-   its heading at the top of the next page with the same number.
-
-   A heading is not a reading, so it does not lift under the pointer, and the
-   row popover skips it (it is one cell, which that script already passes over). */
 .pg-alarms tbody tr.dh td{padding:16px 14px 7px;text-align:left;border-bottom:1px solid var(--line);
   font-family:var(--mono);white-space:nowrap}
 .pg-alarms tbody tr.dh:first-child td{padding-top:11px}
@@ -525,15 +292,11 @@ html[data-theme="dark"] .pg-alarms{
 .pg-alarms tbody tr{transition:background-color .12s ease,box-shadow .12s ease}
 .pg-alarms tbody tr:not(.dh):hover{background:var(--row-hover);position:relative;z-index:1;
   box-shadow:inset 0 0 0 1px var(--line-hi),0 10px 22px -12px var(--shadow),0 2px 6px -4px var(--shadow)}
-/* the readings come up to full strength with it; a dash stays a dash, because a
-   cell with nothing in it has nothing to bring forward */
 .pg-alarms tbody tr:not(.dh):hover td:not(.nil){color:var(--text)}
 .pg-alarms .empty-note{display:flex;align-items:center;justify-content:center;
   color:var(--faint);font-size:12.5px;font-family:var(--mono)}
 .pg-alarms .empty-note.tall{min-height:190px}
 
-/* severity and status read as state, not as text: colour carries the first
-   glance and the word carries the certainty */
 .pg-alarms .sev{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:20px;
   font-family:var(--sans);font-size:9.5px;font-weight:800;letter-spacing:.08em}
 .pg-alarms .sev::before{content:"";width:6px;height:6px;border-radius:50%;flex:none}
@@ -545,10 +308,6 @@ html[data-theme="dark"] .pg-alarms{
 .pg-alarms .stt.active{color:var(--red)}
 .pg-alarms .stt.resolved{color:var(--green)}
 
-/* ---------- column picker ---------- */
-/* The column picker is the filter: what is ticked here is what the table shows
-   AND what the CSV carries. Received time is not optional - an alarm without
-   when it arrived is not an alarm. */
 .pg-alarms .colpanel{position:absolute;top:calc(100% + 6px);left:0;z-index:80;width:250px;
   background:var(--elev);border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:0 18px 44px -16px var(--shadow);padding:8px;
@@ -561,22 +320,12 @@ html[data-theme="dark"] .pg-alarms{
   border:none;color:inherit;text-align:left}
 .pg-alarms .colrow:hover{background:var(--hover)}
 .pg-alarms .colrow input{width:14px;height:14px;accent-color:var(--green);flex:none}
-/* the received-time row is stated, not offered - it cannot be switched off */
 .pg-alarms .colfoot{display:flex;gap:6px;padding:8px 4px 2px;border-top:1px solid var(--line-soft);margin-top:6px}
 .pg-alarms .colfoot button{flex:1;padding:6px 0;border-radius:7px;border:1px solid var(--line);
   background:transparent;color:var(--muted);font-size:11.5px;font-weight:700}
 .pg-alarms .colfoot button:hover{border-color:var(--line-hi);color:var(--text);background:var(--hover)}
 
-/* ---------- pager ---------- */
 .pg-alarms .tfoot{display:flex;align-items:center;gap:16px;padding:11px 16px;font-size:12px;color:var(--muted);flex-wrap:wrap}
-/* THE ROWS-PER-PAGE CONTROL IS THE PAGE'S OWN DROPDOWN, not the browser's - the
-   same move the header's refresh control made, for the same reason: this footer
-   sat under a table drawn entirely by the app and then handed its one control to
-   the operating system. These are the few things a footer-sized one needs said.
-
-   IT OPENS UPWARD. .colpanel hangs below its button, which is right in a filter
-   bar at the top of a card and wrong at the bottom of one - a list dropped
-   downward from the last row of the page opens into the window's edge. */
 .pg-alarms .tfoot .psel{flex:none}
 .pg-alarms .tfoot .psel .mbtn{min-width:74px;height:30px;font-family:var(--mono);font-size:12px;
   justify-content:space-between}
@@ -587,7 +336,6 @@ html[data-theme="dark"] .pg-alarms{
 .pg-alarms .pgbtn:disabled{opacity:.35;cursor:default}
 .pg-alarms .tfoot .range{font-family:var(--mono)}
 
-/* ---------- toasts ---------- */
 .pg-alarms #toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:100}
 .pg-alarms .toast{background:var(--elev);border:1px solid var(--line);border-left:3px solid var(--green);border-radius:9px;
   padding:10px 14px;font-size:12.5px;color:var(--text);box-shadow:0 12px 30px -8px var(--shadow);
@@ -600,20 +348,8 @@ html[data-theme="dark"] .pg-alarms{
   .pg-alarms .toprow{padding:12px 14px 0}
   .pg-alarms .clock{display:none}
 }
-@media (prefers-reduced-motion:reduce){ /* [global - see base.css] * */ }
+@media (prefers-reduced-motion:reduce){ }
 
-/* ---------- the row, spelled out in full ----------
-   A table wider than the screen is read by scrolling sideways, and a row read
-   sideways is a row half remembered: by the time the last column is on screen,
-   the device name that started it is not. Hovering a row lifts the WHOLE of it
-   out as a card - every column of that one row, label and value, in one place -
-   so the reading is taken in a glance instead of in two swipes.
-
-   It follows the pointer, it is never clickable, and it goes the moment the
-   pointer leaves. It opens on every row, whether or not the table is currently
-   wider than the screen - the same gesture has to give the same answer on a
-   laptop as on a wall display, and a reader who learns it on one must not find
-   it missing on the other. */
 .pg-alarms .rowpop{position:fixed;z-index:120;pointer-events:none;opacity:0;transition:opacity .12s ease;
   background:var(--elev);border:1px solid var(--line);border-radius:11px;padding:11px 13px;
   box-shadow:0 20px 48px -18px var(--shadow),0 3px 10px -6px var(--shadow);
@@ -627,5 +363,4 @@ html[data-theme="dark"] .pg-alarms{
   color:var(--faint);white-space:nowrap}
 .pg-alarms .rowpop .rp-v{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text);
   text-align:right;white-space:nowrap}
-/* a cell with nothing in it stays a dash, and says so quietly */
 .pg-alarms .rowpop .rp-v.nil{color:var(--faint);font-weight:600}

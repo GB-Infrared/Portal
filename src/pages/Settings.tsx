@@ -2,7 +2,7 @@ import { useEffect, useState, type JSX } from 'react';
 import * as api from '../api/portal';
 import { useAuth } from '../auth/AuthContext';
 import { useSite } from '../auth/SiteContext';
-import { Failed, Waiting } from '../components/DataState';
+import { NoSite } from '../components/DataState';
 import { SettingsBar } from '../components/TopBar';
 import { useApi } from '../hooks/useApi';
 import { AccessCtlPane, AlarmsConfigPane, RolePane, UserPane } from './settings/AccessPanes';
@@ -10,13 +10,6 @@ import { AskProvider } from './settings/common';
 import { CompanyPane, UserProfilePane } from './settings/ProfilePanes';
 import { DevicesPane, OffsetPane, RatePane } from './settings/SitePanes';
 import '../styles/pages/settings.css';
-
-/* SETTINGS - ten panes in four groups, reached from the account menu and left by
-   the wordmark. Ported from design-mockup/settings.html; every record on it is
-   read from and written to the backend, and after a write the pane re-reads
-   its list, so what it shows is what the server holds.
-
-   The hash carries the pane, so a link to one section lands on that section. */
 
 const GROUPS: { id: string; t: string; icon: JSX.Element; items: { p: string; t: string }[] }[] = [
   { id: 'g-profile', t: 'Profile Management',
@@ -28,7 +21,6 @@ const GROUPS: { id: string; t: string; icon: JSX.Element; items: { p: string; t:
   { id: 'g-system', t: 'System Configuration',
     icon: <svg className="gi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14.2 6.4a3.6 3.6 0 0 1 4.9-3.3l-2.4 2.4 1.8 1.8 2.4-2.4a3.6 3.6 0 0 1-4.5 4.6L6.6 19.7a1.9 1.9 0 0 1-2.7-2.7l10.2-10.2a3.6 3.6 0 0 1 .1-.4z" /></svg>,
     items: [{ p: 'emission-rate', t: 'Emission Rate' }, { p: 'electricity-rate', t: 'Electricity Rate' }, { p: 'energy-offset', t: 'Energy Offset' }, { p: 'alarms-config', t: 'Alarms config' }] },
-  /* Role first: a role has to exist before anybody can hold one */
   { id: 'g-access', t: 'Access Management',
     icon: <svg className="gi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3.2 5 6v5.4c0 4.2 2.9 7.6 7 9.4 4.1-1.8 7-5.2 7-9.4V6l-7-2.8z" /></svg>,
     items: [{ p: 'access-role', t: 'Role' }, { p: 'access-user', t: 'User' }, { p: 'access-ctl', t: 'Access Control' }] },
@@ -39,10 +31,9 @@ const fromHash = () => (ALL.find(i => i.p === window.location.hash.slice(1)) ?? 
 const CHEV = <svg className="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"><path d="M5 15l7-7 7 7" /></svg>;
 
 export default function Settings() {
-  const { site, sites, error: siteErr, reloadSites } = useSite();
+  const { site, sites, error: siteErr, loading: siteLoading, reloadSites } = useSite();
   const { patchUser } = useAuth();
   const [cur, setCur] = useState(fromHash);
-  /* every group open on arrival: someone who came to find one thing should see all the names */
   const [shut, setShut] = useState<Record<string, boolean>>({});
   const item = ALL.find(i => i.p === cur) ?? ALL[0];
 
@@ -54,7 +45,6 @@ export default function Settings() {
   useEffect(() => {
     document.title = 'ENEROPS OS · ' + item.t;
     if (window.location.hash.slice(1) !== item.p) window.history.replaceState(null, '', '#' + item.p);
-    /* a group cannot hold the current screen and be shut */
     setShut(s => (s[item.gid] ? { ...s, [item.gid]: false } : s));
     return () => { document.title = 'ENEROPS OS'; };
   }, [item]);
@@ -84,11 +74,9 @@ export default function Settings() {
           </aside>
 
           <main className="main">
-            {/* the heading names the GROUP, the card names the item */}
             <h1 className="pagehead">{item.g}</h1>
             <UserProfilePane on={is('user-profile')} onSaved={(name, email) => patchUser({ name, email })} />
             <CompanyPane on={is('company-profile')} />
-            {/* the per-site panes follow the site chosen on Site Control */}
             {site ? (
               <>
                 <DevicesPane on={is('customer-devices')} site={site} />
@@ -98,7 +86,7 @@ export default function Settings() {
               </>
             ) : ['customer-devices', 'emission-rate', 'electricity-rate', 'energy-offset'].includes(cur) && (
               <section className="panel card on">
-                {siteErr ? <Failed error={siteErr} what="your sites" onRetry={reloadSites} /> : <Waiting what="Loading sites" />}
+                <NoSite loading={siteLoading} error={siteErr} onRetry={reloadSites} />
               </section>
             )}
             <AlarmsConfigPane on={is('alarms-config')} users={users.data} />

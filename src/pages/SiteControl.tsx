@@ -10,14 +10,6 @@ import { toDate } from '../lib/format';
 import { startGlobe, type GlobePortfolio, type GlobeSite } from './siteControl/engine';
 import '../styles/pages/plants.css';
 
-/* SITE CONTROL - which site. The whole planet, falling to wherever the fleet
-   is, landing on terrain with the sites labelled on the ground; one click on a
-   name opens that site.
-
-   Ported from design-mockup/plants.html. The drawing is the mockup's own engine
-   (siteControl/engine.js); this wrapper gives it the backend's sites and the
-   portfolio's day, keeps both fresh every five minutes, and routes the click. */
-
 const REFRESH_MS = 5 * 60 * 1000;
 
 function toGlobe(s: Site): GlobeSite {
@@ -42,19 +34,15 @@ export default function SiteControl() {
   const sites = useApi(s => api.getSites({ signal: s }), [], REFRESH_MS);
   const pf = useApi(s => api.getPortfolioToday({ signal: s }), [], REFRESH_MS);
 
-  /* the void: Site Control has no theme switch and paints its own sky */
   useEffect(() => {
     document.documentElement.classList.add('void');
     document.title = 'ENEROPS OS · Site Overview';
     return () => { document.documentElement.classList.remove('void'); document.title = 'ENEROPS OS'; };
   }, []);
 
-  /* only a site with coordinates can stand on the globe */
   const located = useMemo(() => (sites.data ?? []).filter(s => Number.isFinite(s.lat) && Number.isFinite(s.lng)), [sites.data]);
   const idsKey = located.map(s => s.id).join('|');
 
-  /* the portfolio's day, as the engine's strip draws it: hours, kW, against the
-     fleet's nameplate */
   const setPortfolio = (p: PortfolioToday | null, list: Site[]) => {
     if (!p) { portfolio.current = null; return; }
     const cap = list.reduce((t, s) => t + (s.acCapacityKw ?? 0), 0);
@@ -63,13 +51,13 @@ export default function SiteControl() {
     portfolio.current = { hours, kw, cap: Math.max(cap, ...kw.map(v => v ?? 0), 1), revenue: p.revenue, co2: p.co2AvoidedKg };
   };
 
-  /* start the globe once the sites are known; restart only if WHICH sites changed */
   useEffect(() => {
-    if (!located.length || !root.current) return;
+    const el = root.current;
+    if (!located.length || !el) return;
     plants.current = located.map(toGlobe);
     setPortfolio(pf.data, located);
     engine.current = startGlobe({
-      root: root.current,
+      root: el,
       sites: plants.current,
       portfolio: () => portfolio.current,
       operator: (user?.email || '').split('@')[0] || 'operator',
@@ -77,15 +65,12 @@ export default function SiteControl() {
     });
     return () => {
       engine.current?.stop(); engine.current = null;
-      /* the engine builds the fleet rows and the card itself; take them with it,
-         or a restart would list every site twice */
-      root.current?.querySelectorAll('#rows .rrow, #flist .frow').forEach(n => n.remove());
-      const card = root.current?.querySelector('#card'); if (card) { card.innerHTML = ''; card.className = 'card'; }
+      el.querySelectorAll('#rows .rrow, #flist .frow').forEach(n => n.remove());
+      const card = el.querySelector('#card'); if (card) { card.innerHTML = ''; card.className = 'card'; }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idsKey]);
 
-  /* fresh figures: written into the same objects the engine is drawing from */
   useEffect(() => {
     if (!engine.current) return;
     for (const s of located) {
@@ -157,7 +142,6 @@ export default function SiteControl() {
         </div>
       </aside>
 
-      {/* the same sites, without the picture, for narrow screens */}
       <div className="fallback"><div className="flist" id="flist" /></div>
     </div>
   );

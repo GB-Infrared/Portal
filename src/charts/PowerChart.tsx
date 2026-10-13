@@ -3,32 +3,16 @@ import type { DayPowerSeries } from '../api/types';
 import { hourLabel, time12, toDate, MONL } from '../lib/format';
 import { areaPath, hourOfDay, lastIndexWithValue, linePath, niceMax } from './util';
 
-/* HOME · PLANT POWER VS IRRADIANCE, dual axis.
-
-   Geometry is measured, not fixed: the parent passes the container's size and
-   1 viewBox unit is 1 CSS px. Power on the left, cut to the peak of whatever is
-   on show (a hidden series does not hold the axis open); irradiance on the
-   right, 0-1000 W/m². The frame is the daylight window plus an hour either
-   side, taken from the data itself - a third of a 24 h axis is dark every day
-   of the year, and that third used to show as empty plot.
-
-   Two views. 'plant': the plant total, filled, against irradiance. 'inverter':
-   the inverters the fleet strip selected, one line each, in the colour their
-   rail card is ringed in. */
-
 const L = 46, R = 58, T = 14, B = 34, IMAX = 1000;
 
 export interface PowerChartProps {
   data: DayPowerSeries;
   width: number;
   height: number;
-  /** empty = plant view; otherwise those inverters */
   selected: string[];
-  /** hidden series: 'power', 'irradiance', or a device id */
   off: Record<string, boolean>;
   colorOf: (id: string) => string;
   warnIds: Set<string>;
-  /** draw the "now" rule and live dot - only when the day shown is today */
   live: boolean;
 }
 
@@ -41,18 +25,14 @@ export function PowerChart({ data, width: W, height: H, selected, off, colorOf, 
 
   const g = useMemo(() => {
     const hrs = data.times.map(t => { const d = toDate(t); return d ? hourOfDay(d) : NaN; });
-    /* the window: first and last reading of anything, an hour of margin each side */
     const has = (i: number) => data.plantKw[i] != null || data.irradianceWm2[i] != null ||
       data.devices.some(d => d.kw[i] != null);
     let lo = Infinity, hi = -Infinity;
     hrs.forEach((h, i) => { if (Number.isFinite(h) && has(i)) { lo = Math.min(lo, h); hi = Math.max(hi, h); } });
     if (!Number.isFinite(lo)) { lo = 6; hi = 19; }
-    /* never narrower than 5 AM - 8 PM, so a live day's curve grows across a
-       fixed frame instead of the axis re-cutting itself every refresh */
     const day0 = Math.max(0, Math.min(5, Math.floor(lo) - 1)), day1 = Math.min(24, Math.max(20, Math.ceil(hi) + 1));
     const span = Math.max(1, day1 - day0);
 
-    /* the peak of what is on show */
     let peak = 0;
     const consider = (ys: (number | null)[]) => ys.forEach(v => { if (v != null && v > peak) peak = v; });
     if (plant) { if (!off.power) consider(data.plantKw); }
@@ -70,7 +50,6 @@ export function PowerChart({ data, width: W, height: H, selected, off, colorOf, 
   const day = toDate(data.date + 'T00:00:00');
   const dayLabel = day ? (day.getDate() + ' ' + MONL[day.getMonth()] + ' ' + day.getFullYear()).toUpperCase() : '';
 
-  /* axes */
   const axes: JSX.Element[] = [];
   for (let v = 0; v <= g.pmax + 1e-9; v += g.pstep) {
     const y = Y(v);
@@ -87,7 +66,6 @@ export function PowerChart({ data, width: W, height: H, selected, off, colorOf, 
       <text key={'h' + h} className="axt" x={x} y={H - 14} textAnchor="middle">{hourLabel(h)}</text>);
   }
 
-  /* the live end: the last reading on show */
   const lastPlant = lastIndexWithValue(data.plantKw);
   const lastAny = Math.max(lastPlant, lastIndexWithValue(data.irradianceWm2));
   const xe = lastAny >= 0 ? xs[lastAny] : NaN;
@@ -107,7 +85,6 @@ export function PowerChart({ data, width: W, height: H, selected, off, colorOf, 
     multi = <g id="pw-multi">{areas}{lines}{dots}</g>;
   }
 
-  /* hover: the reading under the pointer, for every series on show */
   const onMove = (e: MouseEvent) => {
     const svg = svgRef.current; if (!svg) return;
     const r = svg.getBoundingClientRect();

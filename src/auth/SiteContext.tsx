@@ -2,15 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import * as api from '../api/portal';
 import type { Site } from '../api/types';
 import { useAuth } from './AuthContext';
-
-/* WHICH SITE THE PORTAL IS ON. One site, chosen once, on Site Control.
-
-   Every page used to carry a picker of its own - four answers to a question
-   that has one. Now: ?plant= in the address wins, because a link that names a
-   site is explicit; otherwise the last choice stands (localStorage, so it
-   carries from page to page and visit to visit); otherwise the first site the
-   backend lists. An id the portfolio does not contain is ignored, so a stale
-   bookmark still lands somewhere readable. */
+import { ignoreErrors } from '../lib/ignoreErrors';
 
 const KEY = 'enerops-plant';
 
@@ -57,7 +49,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   }, [sites, wanted]);
 
   useEffect(() => {
-    if (site) { try { localStorage.setItem(KEY, site.id); } catch { /* optional */ } }
+    if (site) ignoreErrors(() => localStorage.setItem(KEY, site.id));
   }, [site]);
 
   const setSiteId = useCallback((id: string) => setWanted(id), []);

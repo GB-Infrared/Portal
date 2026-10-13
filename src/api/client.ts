@@ -1,11 +1,6 @@
 import { API_BASE_URL, AUTH_MODE, REQUEST_TIMEOUT_MS } from './config';
+import { ignoreErrors } from '../lib/ignoreErrors';
 
-/* The one function every call to the backend goes through. It knows the base
-   URL, attaches the session, turns HTTP failures into ApiError, and announces a
-   401 so the app can send the user back to sign in. Nothing else in the portal
-   calls fetch. */
-
-/** Why a request failed, in the words the sign-in ledger already uses. */
 export type FailureKind = 'NO ROUTE' | 'NO RESPONSE' | 'REFUSED' | 'TIMED OUT' | 'NOT FOUND' | 'SERVER ERROR' | 'BAD REPLY';
 
 export class ApiError extends Error {
@@ -27,13 +22,12 @@ export function getToken(): string | null {
   try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
 }
 export function setToken(token: string | null): void {
-  try {
+  ignoreErrors(() => {
     if (token) localStorage.setItem(TOKEN_KEY, token);
     else localStorage.removeItem(TOKEN_KEY);
-  } catch { /* storage blocked: the session lasts as long as the tab */ }
+  });
 }
 
-/** Fired when the backend says the session is no longer valid. */
 export const UNAUTHORIZED_EVENT = 'enerops:unauthorized';
 
 export type Query = Record<string, string | number | boolean | null | undefined | (string | number)[]>;
@@ -43,7 +37,6 @@ export interface RequestOptions {
   query?: Query;
   body?: unknown;
   signal?: AbortSignal;
-  /** sign-in itself must not bounce to sign-in on a 401 */
   skipAuthRedirect?: boolean;
 }
 
@@ -72,7 +65,6 @@ export async function request<T>(path: string, opts: RequestOptions = {}): Promi
     if (token) headers.Authorization = 'Bearer ' + token;
   }
 
-  /* one controller for both the caller's cancel and our own deadline */
   const ctl = new AbortController();
   let timedOut = false;
   const timer = setTimeout(() => { timedOut = true; ctl.abort(); }, REQUEST_TIMEOUT_MS);
@@ -89,7 +81,7 @@ export async function request<T>(path: string, opts: RequestOptions = {}): Promi
       credentials: AUTH_MODE === 'cookie' ? 'include' : 'same-origin',
     });
   } catch (e) {
-    if (opts.signal?.aborted) throw e;               /* the caller moved on; not a failure */
+    if (opts.signal?.aborted) throw e;
     if (timedOut) throw new ApiError('TIMED OUT', 0, 'The server did not answer in time.');
     throw new ApiError('NO ROUTE', 0, 'The server could not be reached.');
   } finally {

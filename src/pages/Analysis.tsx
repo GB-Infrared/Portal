@@ -4,7 +4,7 @@ import type { Device, TimeSeries } from '../api/types';
 import { useSite } from '../auth/SiteContext';
 import { AnalysisChart, fmtNum, stampMs, type ALine, type ARow } from '../charts/AnalysisChart';
 import { DateInput } from '../components/DateInput';
-import { Failed, Waiting } from '../components/DataState';
+import { Failed, Waiting, NoSite } from '../components/DataState';
 import { RowPopover } from '../components/RowPopover';
 import { SingleSelect, usePanelOpen } from '../components/Select';
 import { TableFooter } from '../components/TableFooter';
@@ -16,26 +16,14 @@ import { useApi } from '../hooks/useApi';
 import { downloadCsv } from '../lib/csv';
 import { DASH, isoDay } from '../lib/format';
 import '../styles/pages/analysis.css';
-
-/* ANALYSIS - several devices, one or two parameters, any window.
-
-   Ported from design-mockup/analysis.html. Every reading on the page comes from
-   one set of rows, built from the backend's time series, so the chart and the
-   table can never be drawn from different data. No APPLY: the bar applies
-   itself. Saved views stay in this browser (localStorage), as in the mockup -
-   swap viewsRead/viewsWrite for an endpoint and nothing else changes. */
+import { ignoreErrors } from '../lib/ignoreErrors';
 
 const NONE = '— None —';
 const SLOTS = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(--s5)', 'var(--s6)', 'var(--s7)', 'var(--s8)'];
-/* FOUR SERIES, AND IT IS A COLOUR CAP: in one frame only hue keeps two curves
-   apart, and past four there is no fifth that stays clear of the others for a
-   colour-blind reader. A fifth device is selected, and in the table. */
 const PLOTCAP = 4;
 const catOf = (k: string) => CATEGORIES.find(c => c.k === k);
 const tagsOf = (k: string) => catOf(k)?.vals.map(v => v.tag) ?? [];
 
-/* The window sets the resolution, not a control: climb the ladder until the
-   point count fits. A month at five minutes is nine thousand points of ink. */
 const LADDER = [1, 5, 15, 30, 60, 180, 360, 720, 1440];
 const MAXPTS = 1100;
 function intervalFor(spanMs: number): string {
@@ -44,14 +32,13 @@ function intervalFor(spanMs: number): string {
   return m >= 1440 ? m / 1440 + 'd' : m >= 60 ? m / 60 + 'h' : m + 'm';
 }
 
-/* ---------- saved views ---------- */
 interface Query { dev: string[]; y1c: string; y1v: string; y2c: string; y2v: string }
 interface View { n: string; q: Query }
 const VKEY = 'enerops-analysis-views';
 function viewsRead(): View[] {
   try { const v = JSON.parse(localStorage.getItem(VKEY) || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
 }
-function viewsWrite(v: View[]) { try { localStorage.setItem(VKEY, JSON.stringify(v)); } catch { /* lasts the tab */ } }
+function viewsWrite(v: View[]) { ignoreErrors(() => localStorage.setItem(VKEY, JSON.stringify(v))); }
 const same = (a: Query, b: Query) => a.y1c === b.y1c && a.y1v === b.y1v && a.y2c === b.y2c && a.y2v === b.y2v &&
   a.dev.length === b.dev.length && a.dev.every((d, i) => d === b.dev[i]);
 const say = (q: Query) => q.dev.length + (q.dev.length === 1 ? ' device' : ' devices') + ' · ' + (q.y2c === NONE ? q.y1v : q.y1v + ' / ' + q.y2v);
@@ -89,26 +76,20 @@ function DevicePick({ devices, sel, onSel }: { devices: Device[]; sel: string[];
 }
 
 export default function Analysis() {
-  const { site, error: siteErr, reloadSites } = useSite();
+  const { site, error: siteErr, loading: siteLoading, reloadSites } = useSite();
   const toast = useToast();
-  /* a closed historical window does not move while you read it: refresh starts Off */
   const [refresh, setRefresh] = useState<Refresh>('off');
   const siteId = site?.id ?? null;
 
   const devices = useApi(siteId ? s => api.getSiteDevices(siteId, { signal: s }) : null, [siteId]);
-  const fleet = devices.data ?? [];
+  const fleet = useMemo(() => devices.data ?? [], [devices.data]);
   const kindOf = useCallback((id: string) => fleet.find(d => d.id === id)?.kind ?? id.slice(0, 3), [fleet]);
   const rep = useCallback((id: string, tag: string) => !!tag && reports(kindOf(id), tag), [kindOf]);
   const nameOf = (id: string) => fleet.find(d => d.id === id)?.name ?? id;
 
-  /* -------- the query -------- */
   const [sel, setSel] = useState<string[] | null>(null);
   const [y1c, setY1c] = useState('AC Power'), [y1v, setY1v] = useState('P_AC');
   const [y2c, setY2c] = useState('Irradiance'), [y2v, setY2v] = useState('POA');
-  /* The page opens on the canonical solar question: two inverters' power against
-     the irradiance that drove it. The weather station is in the selection
-     because it is the device that reports POA - without it the second axis
-     would open empty, and read as a broken control. */
   const SEL = useMemo(() => sel ?? [
     ...fleet.filter(d => d.kind === 'INV' && d.status !== 'down').slice(0, 2).map(d => d.id),
     ...fleet.filter(d => d.kind === 'WMS').slice(0, 1).map(d => d.id),
@@ -132,7 +113,6 @@ export default function Analysis() {
     ? s => api.getTimeSeries(siteId, { devices: d2, param: y2, from: new Date(win.from).toISOString(), to: new Date(win.to).toISOString(), interval }, { signal: s })
     : null, [siteId, d2.join(','), y2, win?.from, win?.to, interval], every);
 
-  /* the rows the query resolves to: both series merged on their timestamps */
   const rows: ARow[] = useMemo(() => {
     const byT = new Map<number, ARow>();
     const put = (ts: TimeSeries | null, which: 1 | 2) => {
@@ -150,7 +130,6 @@ export default function Analysis() {
   const loading = (d1.length > 0 && !s1.data && !s1.error) || (d2.length > 0 && !s2.data && !s2.error);
   const failed = s1.error || s2.error;
 
-  /* -------- legend toggles, colour by plotted slot -------- */
   const [off, setOff] = useState<Record<string, boolean>>({});
   const plotted = SEL.slice(0, PLOTCAP);
   const colorOf = (id: string) => SLOTS[plotted.indexOf(id)] || 'var(--dim)';
@@ -161,7 +140,6 @@ export default function Analysis() {
     lines.push({ id, name: nameOf(id), which, color: colorOf(id), tag, unit: unitOf(tag) });
   }
 
-  /* -------- the chart keeps its proportions -------- */
   const card = useRef<HTMLDivElement>(null);
   const [sz, setSz] = useState({ w: 1000, h: 300 });
   const fit = useCallback(() => {
@@ -176,7 +154,6 @@ export default function Analysis() {
     return () => ro.disconnect();
   }, [fit, site]);
 
-  /* -------- the table: device names across the top, each parameter it reports beneath -------- */
   const [cols, setCols] = useState<string[] | null>(null);
   const COLS = useMemo(() => (cols ?? SEL).filter(id => SEL.includes(id)), [cols, SEL]);
   useEffect(() => { setCols(c => (c ? [...c.filter(id => SEL.includes(id)), ...SEL.filter(id => !c.includes(id))] : c)); }, [SEL.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -196,7 +173,6 @@ export default function Analysis() {
     return () => { document.removeEventListener('click', click); document.removeEventListener('keydown', key); };
   }, [colOpen]);
 
-  /* -------- saved views -------- */
   const [views, setViews] = useState<View[]>(viewsRead);
   const [cur, setCur] = useState('');
   const [vwOpen, setVwOpen] = useState(false);
@@ -220,7 +196,6 @@ export default function Analysis() {
     const n = vwName.trim();
     if (!n) { setVwErr('A view needs a name.'); return; }
     const had = views.find(v => v.n === n);
-    /* saving over a name REPLACES it - two views called the same thing is a list you cannot read */
     const next = (had ? views.map(v => (v.n === n ? { n, q: snap } : v)) : [...views, { n, q: snap }])
       .sort((a, b) => (a.n.toLowerCase() < b.n.toLowerCase() ? -1 : 1));
     setViews(next); viewsWrite(next); setCur(n); setVwOpen(false);
@@ -229,7 +204,7 @@ export default function Analysis() {
   const delView = (v: View) => {
     const next = views.filter(x => x !== v);
     setViews(next); viewsWrite(next);
-    if (cur === v.n) setCur('');      /* the bar is LEFT WHERE IT IS */
+    if (cur === v.n) setCur('');
     toast('“' + v.n + '” deleted');
   };
 
@@ -238,7 +213,7 @@ export default function Analysis() {
       <div className="pg-analysis">
         <TopBar refresh={refresh} onRefresh={setRefresh} />
         <div className="wrap"><div className="card">
-          {siteErr ? <Failed error={siteErr} what="your sites" onRetry={reloadSites} /> : <Waiting what="Loading sites" />}
+          <NoSite loading={siteLoading} error={siteErr} onRetry={reloadSites} />
         </div></div>
       </div>
     );
@@ -268,12 +243,8 @@ export default function Analysis() {
     <div className="pg-analysis">
       <TopBar refresh={refresh} onRefresh={setRefresh} />
 
-      {/* ======================= FILTER BAR ======================= */}
       <div className="toprow">
         <div className="filters">
-          {/* SAVED VIEWS: a view is the WHOLE query - devices, both categories,
-              both values - and NOT the window: reopening one asks the same thing
-              about a different day. */}
           <div className="field">
             <label>Profile</label>
             <div className={'vw' + (curView ? ' on' : '') + (vwOpen ? ' open' : '')} id="vw">
@@ -281,7 +252,6 @@ export default function Analysis() {
                       onClick={e => { e.stopPropagation(); setVwOpen(!vwOpen); setVwName(cur); setVwErr(''); }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M6.5 3.8h11a1 1 0 0 1 1 1V20l-6.5-3.6L5.5 20V4.8a1 1 0 0 1 1-1z" /></svg>
                 <span className={'t' + (curView ? '' : ' none')}>{curView ? curView.n : 'Unsaved view'}</span>
-                {/* EDITED, said out loud: a view changed since it was opened is not that view any more */}
                 {dirty && <span className="edit">EDITED</span>}
               </button>
               {vwOpen && (
@@ -312,7 +282,6 @@ export default function Analysis() {
             </div>
           </div>
 
-          {/* Device is the ONE control that takes several values: analysis is comparison */}
           <div className="field"><label>Device</label>
             <DevicePick devices={fleet} sel={SEL} onSel={v => setSel(v)} /></div>
 
@@ -324,7 +293,6 @@ export default function Analysis() {
               <SingleSelect head="Y1 value" value={y1v} options={valOpts(y1c)} onChange={v => { setY1v(v); toast('Y1 · ' + labelWithUnit(v)); }} /></div>
           </div>
           <div className="pair">
-            {/* Y2 offers None first: a second scale you did not ask for is one you have to discount */}
             <div className="field"><label><span className="axtag"><i className="dash" />Y2 category</span></label>
               <SingleSelect head="Y2 category" value={y2c} options={[NONE, ...CATEGORIES.map(c => c.k)].map(k => ({ v: k, t: k }))}
                             onChange={v => {
@@ -356,14 +324,12 @@ export default function Analysis() {
       </div>
 
       <div className="wrap">
-        {/* ======================= ANALYSIS DATA ======================= */}
         <div className="card" ref={card}>
           <div className="chead">
             <div className="title">Analysis Data</div>
             <div className="legend" id="legend">
               {plotted.flatMap(id => ([1, 2] as const).map(which => {
                 const p = which === 1 ? y1v : y2;
-                /* a device is only paired with a parameter it actually reports */
                 if (!p || !rep(id, p)) return null;
                 const k = id + '|' + which;
                 return (
@@ -386,7 +352,6 @@ export default function Analysis() {
                          width={sz.w} height={sz.h} note={note} />
         </div>
 
-        {/* ======================= TABLE ======================= */}
         <div className="card">
           <div className="ttools">
             <div className="colpick" id="colpick" ref={colpick}>
