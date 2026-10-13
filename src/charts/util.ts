@@ -16,6 +16,12 @@ export function niceSteps(max: number, bands: number): { max: number; step: numb
   return { max: step * bands, step };
 }
 
+export function stepDecimals(step: number): number {
+  const t = step.toFixed(6).replace(/0+$/, '');
+  const dot = t.indexOf('.');
+  return dot < 0 ? 0 : t.length - dot - 1;
+}
+
 export function linePath(xs: number[], ys: (number | null)[], fy: (v: number) => number): string {
   let d = '', pen = false;
   for (let i = 0; i < xs.length; i++) {

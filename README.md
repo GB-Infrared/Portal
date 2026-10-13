@@ -5,6 +5,11 @@ to a backend. It has no sample data. Every number on screen comes from the API.
 
 The mockup branch is still the reference for how things look and behave.
 
+**Status:** all eight screens are done, and they match the mockup in light and
+dark mode. The portal is not yet connected to the real sunhub.in backend. The
+API in [docs/API.md](docs/API.md) was designed from the screens, so expect to
+change paths and field names when connecting it (see below).
+
 
 ## Run it
 
@@ -24,6 +29,16 @@ npm run build                  # output in dist/
 
 `dist/` is a static site. Serve it from any web server, and send every unknown
 path back to `index.html` (the portal does its own routing).
+
+Without a backend this is what you see, and it is expected:
+
+- The sign-in screen works, but signing in stops at "connecting" with
+  NOT FOUND and a RETRY button, because nothing answers at `/api`.
+- A panel whose call fails shows "Could not load ..." and a "Try again" button.
+- An account with no sites shows "No sites".
+
+The repo has no sample data on purpose, so nothing on screen can be mistaken
+for real readings.
 
 
 ## Connect it to the backend
@@ -84,3 +99,20 @@ public/textures/    the globe's Earth and sky images
   see `plants.html` on the `portal-design-mockup` branch.
 - **npm scripts** call `node` directly. The usual shortcuts break when the folder
   path has an `&` in it (like `Portal & Mobile App`).
+- **No comments in the code**, on purpose. Explanations live in this file,
+  in `docs/API.md`, and in the mockup HTML on the `portal-design-mockup` branch.
+- **Errors ignored on purpose** (for example the browser blocking storage in a
+  private window) go through `ignoreErrors()` in `src/lib/ignoreErrors.ts`, so
+  an empty `catch {}` never appears.
+
+
+## Repository
+
+```
+GitHub ......... github.com/GB-Infrared/UI-Design   (was Portal-UI)
+this app ....... branch portal-design          folder design-backend/
+mockups ........ branch portal-design-mockup   folder design-mockup/
+```
+
+When the design changes, change the mockup first, then carry the change over
+to this app.

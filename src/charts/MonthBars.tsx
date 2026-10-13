@@ -1,5 +1,6 @@
 import { useRef, useState, type JSX, type MouseEvent } from 'react';
 import { MON, MONL } from '../lib/format';
+import { stepDecimals } from './util';
 
 export interface BarSeries {
   key: string;
@@ -38,7 +39,7 @@ export function MonthBars({ idp, year, month, series, yMax, yStep, yDecimals = 0
   for (let v = 0; v <= yMax + 1e-9; v += yStep) {
     const y = Y(v);
     axes.push(<line key={'g' + v} className="gl" x1={L} y1={y} x2={W - R} y2={y} />,
-      <text key={'t' + v} className="axt" x={L - 8} y={y + 3.5} textAnchor="end">{v.toFixed(yDecimals)}</text>);
+      <text key={'t' + v} className="axt" x={L - 8} y={y + 3.5} textAnchor="end">{v.toFixed(Math.max(yDecimals, stepDecimals(yStep)))}</text>);
   }
   const gStep = PW < 560 ? 4 : 2;
   const lStep = SLOT >= 13 ? 1 : (SLOT >= 8.5 ? 2 : 4);
