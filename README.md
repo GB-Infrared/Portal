@@ -7,11 +7,11 @@
 
         O P E R A T I N G   S Y S T E M  ·  S I T E   C O N T R O L
         ─────────────────────────────────────────────────────────────
-        design-mockup — the eight screens, and the reasoning inside them
+        portal-design-mockup — the eight screens, and the reasoning inside them
 ```
 
 ```
-[ 0.000 ]  branch ............................ design-mockup
+[ 0.000 ]  branch ............................ portal-design-mockup
 [ 0.001 ]  screens ........................... 8
 [ 0.002 ]  build step ........................ NONE
 [ 0.003 ]  dependencies ...................... NONE
@@ -46,12 +46,12 @@ no toolchain on it.
 |---|------|------:|-----:|------------|
 | 1 | `login.html` | 1,603 | 150 KB | The front door. A void with 8,920 real stars and the Earth's limb across the foot. |
 | 2 | `plants.html` | 3,488 | **2.24 MB** | Site Control. The globe — the whole planet, falling to the fleet, landing on terrain. |
-| 3 | `home.html` | 2,352 | 130 KB | Portfolio dashboard: KPI tiles, power-vs-irradiance, energy, plant KPI. |
-| 4 | `monitoring.html` | 2,087 | 111 KB | Device rail, live power curve, gauge, history table. |
-| 5 | `alarms.html` | 1,496 | 78 KB | The alarm log, newest first under a heading per day, with device / severity / status filters and a window. |
-| 6 | `analysis.html` | 2,367 | 118 KB | Multi-device parameter comparison. **One frame, four series.** |
-| 7 | `kpi.html` | 1,710 | 89 KB | One site, one metric, examined closely: actual vs simulated vs forecast. |
-| 8 | `settings.html` | 3,268 | 162 KB | Ten panes: profile, assets, system config, access management. |
+| 3 | `home.html` | 2,402 | 134 KB | Portfolio dashboard: KPI tiles, power-vs-irradiance, energy, plant KPI. |
+| 4 | `monitoring.html` | 2,090 | 111 KB | Device rail, live power curve, gauge, history table. |
+| 5 | `alarms.html` | 1,537 | 81 KB | The alarm log, newest first under a heading per day, with device / severity / status filters and a window. Tiles: All, Active, Resolved, Alarm, Event, Warning, Critical. |
+| 6 | `analysis.html` | 2,370 | 118 KB | Multi-device parameter comparison. **One frame, four series.** |
+| 7 | `kpi.html` | 1,713 | 89 KB | One site, one metric, examined closely: actual vs simulated vs forecast. |
+| 8 | `settings.html` | 3,267 | 162 KB | Ten panes: profile, assets, system config, access management. |
 
 `plants.html` is 2.24 MB because the planet is **photographs, not gradients** —
 NASA Blue Marble for the day side, Black Marble (VIIRS day/night band) for the
@@ -523,14 +523,16 @@ Recorded so they are not re-discovered.
 ## Repository
 
 ```
-remote ....... github.com/GB-Infrared/Portal-UI
-branch ....... design-mockup
-nested ....... design-mockup/ is its own git repository,
-               separate from the tree that contains it
+remote ....... github.com/GB-Infrared/UI-Design   (was Portal-UI)
+branch ....... portal-design-mockup
+folder ....... design-mockup/
 ```
 
-`portal-react/` **no longer exists** and should not be recreated. The mockups in
-this folder are the source of truth for all design and interaction work.
+The React version of these screens, with the demo data removed and ready to
+connect to the real backend, is on the **`portal-design`** branch (folder
+`design-backend/`). The mockups in this folder stay the source of truth for all
+design and interaction work: change a screen here first, then carry the change
+over to the React app.
 
 ---
 
