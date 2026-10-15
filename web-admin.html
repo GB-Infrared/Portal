@@ -1,0 +1,1949 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ENEROPS OS · Web admin</title>
+<link rel="icon" href="logo/favicon.png">
+<style>
+/* THE CUSTOMER PANEL'S STYLESHEET. Everything up to the WEB ADMIN block below is
+   settings.html's own rules, copied without its notes, so the internal panel and
+   the customer panel are one design: same tokens, same light and dark, same
+   tables, dialogs and pickers. Change a shared rule in settings.html first, then
+   here. The reasoning behind each rule is written up there. */
+:root{
+
+  --bg:#f1f4f8;
+  --panel:#ffffff;
+  --panel-2:#f5f8fb;
+  --line:#dde4ec;
+  --line-soft:#e9eef4;
+  --line-hi:#b5c2d1;
+  --text:#152234;
+  --muted:#5a6b7f;
+  --faint:#8494a6;
+  --dim:#aab6c4;
+  --elev:#ffffff;
+  --sel:#e8f0fb;
+  --hover:rgba(11,99,206,.07);
+  --hover-soft:rgba(11,99,206,.045);
+
+  --row-hover:rgba(11,99,206,.10);
+  --shadow:rgba(19,38,63,.16);
+  --on-accent:#ffffff;
+
+  --topbar:var(--panel);
+  --topbar-fg:var(--text);
+  --topbar-fg-2:var(--muted);
+  --topbar-tab:var(--muted);
+  --topbar-hover:var(--hover);
+  --topbar-active:var(--green-soft);
+  --green:#12a150;
+  --green-rgb:18,161,80;
+  --green-soft:rgba(18,161,80,.12);
+  --green-deep:#0b7a3c;
+  --blue:#1a73c8;
+  --blue-soft:rgba(26,115,200,.12);
+  --red:#d92d20;
+  --crit:#8c1109;
+  --red-soft:rgba(217,45,32,.1);
+  --amber:#dc7a06;
+  --amber-soft:rgba(220,122,6,.12);
+  --brand:#a87b0f;
+  --mono:ui-monospace,'SF Mono','Cascadia Code','Roboto Mono',Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Roboto,'Helvetica Neue',sans-serif;
+  --serif:Georgia,'Times New Roman',serif;
+  --r-lg:14px; --r-md:10px; --r-sm:8px;
+}
+
+html[data-theme="dark"]{
+
+  color-scheme:dark;
+  accent-color:#3ad998;
+  --bg:#070c14;
+  --panel:rgba(9,16,28,.74);
+  --panel-2:rgba(9,16,28,.62);
+  --line:rgba(150,180,220,.16);
+  --line-soft:rgba(150,180,220,.10);
+  --line-hi:rgba(140,175,215,.30);
+  --text:#e9f1fb;
+  --muted:#8ba0bb;
+  --faint:#7d92ad;
+  --dim:#5d6e83;
+
+  --elev:#0d1624;
+  --sel:rgba(127,178,238,.14);
+  --hover:rgba(150,180,220,.07);
+  --hover-soft:rgba(150,180,220,.045);
+  --row-hover:rgba(150,180,220,.09);
+  --shadow:rgba(0,0,0,.62);
+  --scrim:rgba(3,7,13,.70);
+  --grid-v:rgba(150,180,220,.07);
+
+  --on-accent:#07121b;
+  --green:#3ad998;
+  --green-rgb:58,217,152;
+  --green-soft:rgba(58,217,152,.14);
+  --green-deep:#3ad998;
+  --blue:#7fb2ee;
+  --blue-soft:rgba(127,178,238,.16);
+  --red:#ff6b5e;
+  --red-soft:rgba(255,107,94,.14);
+  --crit:#ff9d94;
+  --amber:#f0b74a;
+  --amber-soft:rgba(240,183,74,.15);
+  --brand:#f0b74a;
+  --brand-soft:rgba(240,183,74,.14);
+  --brand-line:rgba(240,183,74,.34);
+
+  --s1:#3ad998; --s2:#7fb2ee; --s3:#f0b74a; --s4:#b39cff;
+  --s5:#ff8ac0; --s6:#4fd3dd; --s7:#e9a03c; --s8:#9a92ff;
+  --s9:#4fd0bd; --s10:#e3c05a; --s11:#ff8ac0; --s12:#5cc0f5;
+  --k1:#6aa8ff; --k2:#f7b955; --k3:#3ad998; --k4:#ff8ac0;
+  --k5:#a99bff; --k6:#4fd3dd;
+}
+
+.themebtn{width:30px;height:30px;display:grid;place-items:center;flex:none;
+  border-radius:8px;border:1px solid var(--line);background:var(--panel-2);
+  color:var(--topbar-fg-2,var(--muted));transition:background .12s,border-color .12s,color .12s}
+.themebtn:hover{border-color:var(--line-hi);background:var(--topbar-hover,var(--hover));
+  color:var(--topbar-fg,var(--text))}
+.themebtn svg{display:block}
+
+.themebtn .moon{display:none}
+html[data-theme="dark"] .themebtn .moon{display:block}
+html[data-theme="dark"] .themebtn .sun{display:none}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scrollbar-color:var(--line-hi) transparent}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.45;
+     -webkit-font-smoothing:antialiased}
+
+html[data-theme="dark"]{
+  background:
+
+    radial-gradient(circle 46vmax at 80% -8%,
+      rgba(255,216,146,.085) 0%, rgba(240,178,73,.032) 32%, transparent 64%),
+
+    radial-gradient(ellipse 155% 125% at 80% -8%,
+      rgba(126,158,214,.115) 0%, rgba(90,120,180,.05) 46%, transparent 80%),
+
+    radial-gradient(ellipse 130% 105% at 50% 62%,
+      rgba(2,6,14,.34) 0%, rgba(0,1,5,.5) 100%),
+    var(--bg);
+}
+html[data-theme="dark"] body{background:transparent}
+::-webkit-scrollbar{height:8px;width:8px}
+::-webkit-scrollbar-thumb{background:var(--line-hi);border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+button{font-family:inherit;cursor:pointer}
+a{color:inherit;text-decoration:none}
+
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:20px;
+  height:58px;padding:0 22px;border-bottom:1px solid var(--line);
+  background:var(--topbar);color:var(--topbar-fg)}
+.brand{display:flex;align-items:center;gap:8px;white-space:nowrap;border-radius:9px;padding:3px 8px;margin-left:-12px;
+  cursor:pointer}
+.brand .logo{height:34px;width:auto;display:block;flex:none}
+.brand .btext{display:flex;flex-direction:column;justify-content:center;gap:1px}
+.brand .word{font-family:var(--serif);font-weight:700;font-size:20px;color:var(--brand);
+  letter-spacing:.2px;line-height:1.05}
+.brand .sub{font-size:9px;letter-spacing:.16em;color:var(--topbar-fg-2);text-transform:uppercase;
+  font-weight:600;line-height:1}
+@media (max-width:820px){ .brand .sub{display:none} }
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.iconbtn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;
+  background:transparent;border:1px solid transparent;color:var(--muted)}
+.iconbtn:hover{color:var(--text);background:var(--hover);border-color:var(--line)}
+
+.acct{position:relative;display:flex}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--panel-2);
+  display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--text);
+  border:1px solid var(--line);padding:0}
+.avatar:hover,.acct.open .avatar{border-color:var(--line-hi);background:var(--hover)}
+.acctmenu{position:absolute;top:calc(100% + 8px);right:0;z-index:90;width:224px;
+  background:var(--elev);border:1px solid var(--line);border-radius:var(--r-md);
+  box-shadow:0 18px 44px -16px var(--shadow);padding:6px;display:none}
+.acct.open .acctmenu{display:block}
+.acctwho{padding:9px 10px 10px}
+.acctwho .nm{font-size:13px;font-weight:700;color:var(--text);line-height:1.3}
+.acctwho .em{font-size:11.5px;color:var(--muted);line-height:1.35;word-break:break-all}
+.acctdiv{height:1px;background:var(--line-soft);margin:4px}
+.acctitem{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;
+  font-size:12.5px;font-weight:600;color:var(--text);width:100%;
+  border:none;background:transparent;text-align:left;font-family:inherit}
+.acctitem:hover{background:var(--hover)}
+.acctitem svg{flex:none;color:var(--faint)}
+.acctitem:hover svg{color:var(--muted)}
+.acctitem.out:hover{background:var(--red-soft);color:var(--red)}
+.acctitem.out:hover svg{color:var(--red)}
+
+.shell{display:grid;grid-template-columns:250px 1fr;align-items:start;
+  min-height:calc(100vh - 58px)}
+
+.side{position:sticky;top:58px;align-self:start;height:calc(100vh - 58px);overflow-y:auto;
+  border-right:1px solid var(--line);background:var(--panel);padding:0 0 24px}
+.sidehead{display:flex;align-items:center;justify-content:center;gap:10px;
+  height:76px;border-bottom:1px solid var(--line-soft);color:var(--text)}
+.sidehead .t{font-size:19px;font-weight:600;letter-spacing:-.01em}
+.sidehead svg{color:var(--green)}
+
+.grp{padding:6px 10px 0}
+.grpbtn{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:9px;
+  border:none;background:transparent;color:var(--text);font-family:inherit;
+  font-size:13px;font-weight:600;text-align:left}
+.grpbtn:hover{background:var(--hover)}
+.grpbtn svg.gi{flex:none;color:var(--green)}
+
+.grpbtn .chev{margin-left:auto;flex:none;color:var(--faint);transition:transform .16s ease}
+.grp.shut .chev{transform:rotate(180deg)}
+.grpitems{display:flex;flex-direction:column;gap:1px;padding:2px 0 4px 12px}
+.grp.shut .grpitems{display:none}
+
+.grp[hidden],.item[hidden]{display:none}
+
+.item{display:block;padding:7px 12px;border-radius:8px;font-size:12.5px;font-weight:500;
+  color:var(--muted);width:100%;border:none;background:transparent;text-align:left;font-family:inherit}
+.item:hover{color:var(--text);background:var(--hover)}
+
+.item.on{color:var(--text);font-weight:700;background:var(--green-soft);
+  box-shadow:inset 2px 0 0 var(--green)}
+
+.main{padding:22px clamp(16px,2vw,30px) 40px;min-width:0}
+.pagehead{font-size:20px;font-weight:600;letter-spacing:-.01em;margin-bottom:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg)}
+.card .chead{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:15px 20px 13px;
+  border-bottom:1px solid var(--line-soft)}
+.chead .title{font-size:14.5px;font-weight:700}
+.chead .tools{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tbtn{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;
+  letter-spacing:.04em;background:transparent;border:1px solid var(--line);color:var(--muted);font-family:inherit}
+.tbtn:hover:not(:disabled){color:var(--text);border-color:var(--line-hi);background:var(--hover)}
+
+.panel{display:none}
+.panel.on{display:block}
+
+.who{display:flex;align-items:center;gap:18px;padding:24px 20px 22px}
+.who .big{width:78px;height:78px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;font-weight:700;color:var(--muted);flex:none}
+.who .nm{font-size:20px;font-weight:700;letter-spacing:-.01em}
+.who .ro{font-size:12px;color:var(--muted);margin-top:2px}
+
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 32px;
+  padding:4px 20px 24px}
+@media (max-width:760px){ .fields{grid-template-columns:1fr} }
+.f .k{display:block;font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:3px}
+.f .v{font-size:13px;color:var(--muted);word-break:break-word}
+.f .v.none{color:var(--dim);font-style:italic}
+
+.cfoot{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:15px 20px;border-top:1px solid var(--line-soft)}
+.cfoot .k{font-size:12.5px;font-weight:700}
+.cfoot .sp{margin-left:auto}
+.linkbtn{border:none;background:transparent;font-family:inherit;
+  font-size:12.5px;font-weight:600;color:var(--green-deep);padding:2px 0}
+.linkbtn:hover{text-decoration:underline}
+
+.sitepin{display:inline-flex;align-items:center;gap:6px;color:var(--text)}
+.sitepin svg{color:var(--green);flex:none}
+.sitepin .n{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.02em}
+.chead .count{font-size:11.5px;color:var(--faint)}
+select{appearance:none;background:var(--panel-2) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="%238d99a6" stroke-width="1.6" stroke-linecap="round"/></svg>') no-repeat right 10px center;
+  border:1px solid var(--line);color:var(--text);border-radius:var(--r-sm);
+  padding:0 28px 0 11px;font-size:13px;font-family:inherit;outline:none}
+select:hover,select:focus{border-color:var(--line-hi);background-color:var(--hover)}
+
+.mbtn{display:flex;align-items:center;width:100%;min-width:150px;height:34px;
+  padding:0 28px 0 11px;border-radius:var(--r-sm);border:1px solid var(--line);
+  color:var(--text);font-family:inherit;font-size:13px;font-weight:600;text-align:left;
+  background:var(--panel-2) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="%238d99a6" stroke-width="1.6" stroke-linecap="round"/></svg>') no-repeat right 10px center}
+.mbtn:hover,.mbtn[aria-expanded=true]{border-color:var(--line-hi);background-color:var(--hover)}
+.mbtn:focus-visible{outline:none;border-color:var(--line-hi);box-shadow:0 0 0 3px var(--hover-soft)}
+.mbtn .mlab{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.mbtn .mlab.any{color:var(--muted);font-weight:600}
+.fld.bad .mbtn{border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+
+.mbtn.mini{width:auto;min-width:158px;height:30px;font-size:12.5px;
+  padding:0 26px 0 9px;background-position:right 9px center}
+
+.mbtn.mini.perbtn{min-width:70px;font-family:var(--mono);font-size:12px;
+  justify-content:space-between}
+
+.colpanel{position:fixed;z-index:200;display:none;flex-direction:column;
+  background:var(--elev);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 18px 44px -16px var(--shadow);padding:8px;overflow-y:auto}
+.colpanel.on{display:flex}
+.colhead{font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint);padding:4px 8px 8px}
+.colrow{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;
+  font-size:12.5px;font-weight:600;cursor:pointer;width:100%;background:transparent;
+  border:none;color:var(--text);text-align:left}
+.colrow:hover{background:var(--hover)}
+.colrow input{width:14px;height:14px;min-width:0;accent-color:var(--green);flex:none}
+.mpanel{min-width:212px}
+
+.colrow.here{background:var(--row-hover)}
+.colrow .t{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.colrow .s{flex:none;font-size:11px;font-weight:600;color:var(--faint)}
+.colrow.none .t{color:var(--muted)}
+.colnone{padding:9px;font-size:12px;color:var(--faint)}
+
+.tablewrap{overflow-x:auto}
+table{width:100%;min-width:820px;border-collapse:separate;border-spacing:0}
+thead th{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+  padding:9px 14px;border-bottom:1px solid var(--line-soft);text-align:left;white-space:nowrap}
+
+tbody td{padding:9px 14px;font-size:12.5px;border-bottom:1px solid var(--line-soft);
+  color:var(--muted);white-space:nowrap}
+
+tbody td.nm{font-weight:700;color:var(--text)}
+tbody td.mono{font-family:var(--mono);font-weight:600}
+
+tbody td.dim{color:var(--dim)}
+tbody tr{transition:background-color .12s ease,box-shadow .12s ease}
+tbody tr:hover{background:var(--row-hover);position:relative;z-index:1;
+  box-shadow:inset 0 0 0 1px var(--line-hi),0 10px 22px -12px var(--shadow),0 2px 6px -4px var(--shadow)}
+tbody tr:hover td:not(.dim){color:var(--text)}
+
+tbody tr.gone td{color:var(--dim)}
+tbody tr.gone td.nm{color:var(--muted)}
+.empty-note{display:flex;align-items:center;justify-content:center;min-height:170px;
+  color:var(--faint);font-size:12.5px}
+
+.rowacts{display:flex;align-items:center;justify-content:flex-end;gap:4px}
+.rowbtn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
+  border-radius:7px;border:1px solid transparent;background:transparent;color:var(--faint)}
+.rowbtn:hover{color:var(--text);border-color:var(--line);background:var(--panel-2)}
+.rowbtn.warn:hover{color:var(--red);border-color:var(--red-soft);background:var(--red-soft)}
+
+.tfoot{display:flex;align-items:center;gap:14px;padding:11px 20px;font-size:12px;
+  color:var(--muted);flex-wrap:wrap;border-top:1px solid var(--line-soft)}
+.tfoot select{height:30px;min-width:0;font-size:12px;padding:0 26px 0 9px}
+.tfoot .sp{margin-left:auto}
+.tfoot .range{font-family:var(--mono)}
+.pgbtn{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);
+  background:transparent;color:var(--muted)}
+.pgbtn:hover:not(:disabled){color:var(--text);border-color:var(--line-hi)}
+.pgbtn:disabled{opacity:.35;cursor:default}
+
+.mwho{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:var(--r-sm);
+  background:var(--panel-2);border:1px solid var(--line-soft)}
+.mwho .r{display:flex;gap:8px;font-size:12px}
+.mwho .r b{font-weight:700;color:var(--text);min-width:74px}
+.mwho .r span{color:var(--muted);font-family:var(--mono);font-weight:600}
+.mtext{font-size:12px;color:var(--muted);line-height:1.55}
+.mtext b{color:var(--text);font-weight:700}
+.btn.danger{background:var(--red);border-color:var(--red);color:var(--on-accent)}
+.btn.danger:hover{filter:brightness(.93)}
+.pill.gone{color:var(--faint);background:var(--panel-2)}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;
+  color:var(--muted);background:var(--panel-2);border:1px solid var(--line)}
+.chip.all{color:var(--green-deep);background:var(--green-soft);border-color:transparent}
+
+tbody td.pad{padding-top:6px;padding-bottom:6px}
+#p-access-role table{min-width:660px}
+#p-access-user table{min-width:820px}
+#p-access-ctl table{min-width:700px}
+
+.subdot{display:inline-block;width:10px;height:10px;border-radius:50%}
+.subdot.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line-hi)}
+.subdot.on.critical{background:var(--crit)}
+.subdot.on.alarm{background:var(--red)}
+.subdot.on.warn{background:var(--amber)}
+.subdot.on.event{background:var(--faint)}
+thead th.sev-h{text-align:center}
+tbody td.sev-c{text-align:center}
+
+thead th.sev-h.critical{color:var(--crit)}
+thead th.sev-h.alarm{color:var(--red)}
+thead th.sev-h.warn{color:var(--amber)}
+#p-alarms-config table{min-width:800px}
+.subrow{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.subbox{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;cursor:pointer}
+.subbox input{width:15px;height:15px;accent-color:var(--green);flex:none}
+
+tbody td.why{white-space:normal;min-width:230px;font-size:12px}
+#p-energy-offset table{min-width:980px}
+
+.who.co{padding-bottom:18px}
+.cfoot .n{font-size:11.5px;color:var(--faint);line-height:1.45}
+
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;
+  font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.pill.live{color:var(--green-deep);background:var(--green-soft)}
+
+.pill.held{color:var(--red);background:var(--red-soft)}
+
+thead th .u{font-weight:600;letter-spacing:.03em;text-transform:none;color:var(--faint)}
+
+.f .in{display:none}
+.card.editing .f .v{display:none}
+.card.editing .f .in{display:block}
+.card.editing .tbtn.edit{display:none}
+.in input{width:100%;padding:8px 11px;border-radius:var(--r-sm);border:1px solid var(--line);
+  background:var(--panel-2);color:var(--text);font-family:inherit;font-size:13px}
+.in input:hover{border-color:var(--line-hi)}
+
+.in input:focus{outline:none;border-color:var(--line-hi);background-color:var(--hover);
+  box-shadow:0 0 0 3px var(--hover-soft)}
+
+.in .hint{font-size:11.5px;color:var(--faint);margin-top:4px;line-height:1.4}
+.in .err{display:none;font-size:11.5px;font-weight:600;color:var(--red);margin-top:4px;line-height:1.4}
+.f.bad .in input{border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+.f.bad .in .err{display:block}
+.f.bad .in .hint{display:none}
+
+.editing-tag{display:none;font-size:8.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--green-deep);background:var(--green-soft);padding:3px 8px;border-radius:5px}
+.card.editing .editing-tag{display:inline-block}
+
+.editbar{display:none;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:15px 20px;border-top:1px solid var(--line-soft)}
+.card.editing .editbar{display:flex}
+.card.editing .cfoot{display:none}
+.editbar .note{font-size:11.5px;color:var(--faint)}
+.editbar .sp{margin-left:auto}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:8px;
+  font-size:12.5px;font-weight:700;font-family:inherit;
+  border:1px solid var(--line);background:var(--panel);color:var(--text)}
+.btn:hover{border-color:var(--line-hi);background:var(--hover)}
+.btn.primary{background:var(--green);border-color:var(--green);color:var(--on-accent)}
+.btn.primary:hover{background:var(--green-deep);border-color:var(--green-deep)}
+
+body.locked{overflow:hidden}
+.scrim{position:fixed;inset:0;z-index:120;background:rgba(19,38,63,.42);
+  display:none;align-items:center;justify-content:center;padding:20px}
+.scrim.on{display:flex}
+.modal{width:100%;max-width:430px;max-height:calc(100vh - 40px);overflow-y:auto;
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 30px 70px -20px var(--shadow);animation:min .16s ease-out}
+@keyframes min{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.mhead{display:flex;align-items:center;gap:12px;padding:16px 20px 14px;border-bottom:1px solid var(--line-soft)}
+.mhead .t{font-size:14.5px;font-weight:700}
+.mhead .x{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:7px;border:none;background:transparent;color:var(--faint)}
+.mhead .x:hover{color:var(--text);background:var(--hover)}
+.mbody{display:flex;flex-direction:column;gap:14px;padding:18px 20px 4px}
+.mfoot{display:flex;align-items:center;gap:10px;padding:16px 20px;border-top:1px solid var(--line-soft)}
+.mfoot .sp{margin-left:auto}
+.lab{display:block;font-size:12.5px;font-weight:700;margin-bottom:5px}
+
+.fld input:not([type=checkbox]){width:100%;padding:8px 11px;border-radius:var(--r-sm);
+  border:1px solid var(--line);background:var(--panel-2);color:var(--text);
+  font-family:inherit;font-size:13px}
+.fld input:not([type=checkbox]):hover{border-color:var(--line-hi)}
+.fld input:not([type=checkbox]):focus{outline:none;border-color:var(--line-hi);
+  background-color:var(--hover);box-shadow:0 0 0 3px var(--hover-soft)}
+.fld.bad input:not([type=checkbox]){border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+.fld input::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.55}
+.fld input:hover::-webkit-calendar-picker-indicator{opacity:1}
+
+.mrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:470px){ .mrow{grid-template-columns:1fr} }
+
+.pw{position:relative}
+.pw input{width:100%;padding:8px 40px 8px 11px;border-radius:var(--r-sm);border:1px solid var(--line);
+  background:var(--panel-2);color:var(--text);font-family:inherit;font-size:13px}
+.pw input:hover{border-color:var(--line-hi)}
+.pw input:focus{outline:none;border-color:var(--line-hi);background-color:var(--hover);
+  box-shadow:0 0 0 3px var(--hover-soft)}
+.eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;
+  border:none;background:transparent;color:var(--faint)}
+.eye:hover{color:var(--text);background:var(--hover)}
+.eye .e2{display:none}
+.eye.on .e1{display:none}
+.eye.on .e2{display:block}
+.fld .err{display:none;font-size:11.5px;font-weight:600;color:var(--red);margin-top:5px;line-height:1.4}
+.fld.bad .err{display:block}
+.fld.bad .pw input{border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+.fld .hint{font-size:11.5px;color:var(--faint);margin-top:5px;line-height:1.45}
+.fld.bad .hint{display:none}
+
+.mband{display:none;align-items:flex-start;gap:8px;padding:9px 11px;border-radius:8px;
+  background:var(--red-soft);color:var(--red);font-size:12px;font-weight:600;line-height:1.45}
+.mband.on{display:flex}
+
+.rules{display:flex;flex-direction:column;gap:5px;padding:8px 0 1px}
+.rule{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--faint)}
+.rule svg{flex:none}
+.rule .tick{display:none}
+.rule.ok{color:var(--green)}
+.rule.ok .dot{display:none}
+.rule.ok .tick{display:block}
+
+.todo{display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:44px 24px 48px;max-width:520px}
+.todo .badge{font-size:8.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--faint);background:var(--panel-2);border:1px solid var(--line);padding:3px 8px;border-radius:5px}
+.todo .h{font-size:15px;font-weight:700}
+.todo .p{font-size:13px;color:var(--muted);line-height:1.6}
+
+#toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:140}
+.toast{background:var(--elev);border:1px solid var(--line);border-left:3px solid var(--green);border-radius:9px;
+  padding:10px 14px;font-size:12.5px;color:var(--text);box-shadow:0 12px 30px -8px var(--shadow);
+  animation:tin .18s ease-out}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)}
+  .sidehead{height:60px}
+}
+
+/* ===================== WEB ADMIN · what this page adds =====================
+   Everything above is settings.html's stylesheet, copied so the two panels are
+   one design. What follows is only what the web admin needs and Settings never
+   did: filters over a table, an Add button in the card head, and a form wide
+   enough for a plant. */
+
+/* the panel is named under the wordmark, in the wordmark's gold, so nobody
+   mistakes the internal panel for a customer's */
+.brand .sub.adm{color:var(--brand)}
+
+/* Filters sit in a strip under the card head: the table below them is the
+   answer to the question they ask, so they belong to the card, not the page. */
+.filters{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 12px;padding:12px 20px;
+  border-bottom:1px solid var(--line-soft)}
+.filt{display:flex;flex-direction:column;gap:4px;width:220px}
+.filt .fl{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.chead .sub{font-size:11.5px;color:var(--faint)}
+
+/* Add is the one filled button in a card head: it is the action the card is for */
+.tbtn.add{color:var(--on-accent);background:var(--green);border-color:var(--green)}
+.tbtn.add:hover:not(:disabled){color:var(--on-accent);background:var(--green-deep);border-color:var(--green-deep)}
+.tbtn.add svg{flex:none}
+
+/* the account menu names the signed-in role, in plain bold text */
+.acctwho .lv{margin-top:6px;font-size:12.5px;font-weight:700;color:var(--text)}
+.acctwho .lv[hidden]{display:none}
+/* a control this person's role may not use is not drawn */
+.tbtn[hidden]{display:none}
+/* the word for "reaches no customer", quieter than a name */
+.none-t{color:var(--faint)}
+
+tbody td.wrap{white-space:normal;min-width:220px}
+/* Edit and Delete stay pinned to the right edge, so a wide table that scrolls
+   sideways never hides the actions of the row being read */
+tbody td:has(> .rowacts),thead th.acts{position:sticky;right:0;z-index:2;background:var(--elev)}
+tbody td:has(> .rowacts){box-shadow:-10px 0 12px -12px var(--shadow)}
+tbody td.num{font-family:var(--mono);font-weight:600;text-align:right}
+thead th.num{text-align:right}
+
+/* ---------- forms ----------
+   One form builder for every dialog on the page, so a field looks and behaves
+   the same in Add customer as it does in Add plant. Fields flow into a grid of
+   two or three columns; a section heading always takes the full width. */
+.modal.w600{max-width:600px}
+.modal.w1000{max-width:1000px}
+.modal.w1100{max-width:1100px}
+/* a value the panel makes itself, such as an ID: shown where it belongs in the
+   form, but plainly not a box to type in */
+.fld input[readonly]{color:var(--muted);background:transparent;border-style:dashed;cursor:default;font-family:var(--mono);font-weight:600}
+.fld input[readonly]:hover{border-color:var(--line)}
+.fld input[readonly]:focus{box-shadow:none;background:transparent;border-color:var(--line)}
+.fgrid{display:grid;grid-template-columns:repeat(var(--cols,2),minmax(0,1fr));gap:14px 14px}
+.fgrid .span{grid-column:1/-1}
+@media (max-width:760px){ .fgrid{grid-template-columns:1fr} }
+.msec{grid-column:1/-1;font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--faint);padding-top:14px;border-top:1px solid var(--line-soft)}
+.msec:first-child{padding-top:0;border-top:none}
+.lab .opt{font-weight:600;font-size:11px;color:var(--faint);margin-left:6px}
+.fld textarea{width:100%;min-height:62px;resize:vertical;padding:8px 11px;border-radius:var(--r-sm);
+  border:1px solid var(--line);background:var(--panel-2);color:var(--text);font-family:inherit;font-size:13px}
+.fld textarea:hover{border-color:var(--line-hi)}
+.fld textarea:focus{outline:none;border-color:var(--line-hi);background-color:var(--hover);
+  box-shadow:0 0 0 3px var(--hover-soft)}
+.fld.bad textarea{border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+.fld.bad .subrow{outline:1px solid var(--red);outline-offset:4px;border-radius:6px}
+.fld.off{opacity:.45;pointer-events:none}
+/* a list of tick-boxes sits on a grid, so the boxes and their names line up in
+   columns however long each name is */
+.subrow.checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px 18px}
+.subrow.checks .subbox{min-width:0}
+.mbody.form{padding-bottom:18px}
+/* In dark the cards are glass on purpose, but a dialog is read OVER the table
+   behind it, and through glass that table's rows showed between the fields.
+   A dialog is solid, like a dropdown or a toast. */
+html[data-theme="dark"] .modal{background:var(--elev)}
+/* the box naming the record a dialog is about, shown only when there is one */
+.mwho[hidden]{display:none}
+</style>
+<script>
+/* the theme, applied before the first paint - the same script and the same key
+   as the customer panel, so a choice made in one is kept in the other */
+(function(){
+  var KEY='enerops-theme', root=document.documentElement;
+  try{ if(localStorage.getItem(KEY)==='dark') root.setAttribute('data-theme','dark'); }catch(e){}
+  function say(){
+    var b=document.getElementById('themebtn');
+    if(!b) return;
+    /* the button names WHAT IT WILL DO, not where you are */
+    var t = root.getAttribute('data-theme')==='dark' ? 'Switch to light' : 'Switch to dark';
+    b.title=t; b.setAttribute('aria-label',t);
+  }
+  window.toggleTheme=function(){
+    var dark = root.getAttribute('data-theme')==='dark';
+    if(dark) root.removeAttribute('data-theme'); else root.setAttribute('data-theme','dark');
+    try{ localStorage.setItem(KEY, dark?'light':'dark'); }catch(e){}
+    say();
+  };
+  document.addEventListener('DOMContentLoaded', say);
+})();
+</script>
+</head>
+<body>
+
+<!-- ======================= TOP BAR =======================
+     The web admin panel is the internal one: the team that sets customers up
+     works here, and customers never see it. Same bar as the customer panel's
+     Settings, with WEB ADMIN under the wordmark so the two are never confused. -->
+<header class="topbar">
+  <!-- the mark goes to the customer panel's dashboard -->
+  <a class="brand" href="home.html" title="Go to the customer dashboard" aria-label="Go to the customer dashboard">
+    <img class="logo" src="logo/logo-mark.png" alt="EnerOps Data Systems Pvt Ltd">
+    <span class="btext"><span class="word">ENEROPS OS</span><span class="sub adm">Web admin</span></span>
+  </a>
+  <div class="right">
+    <button class="themebtn" type="button" id="themebtn" onclick="toggleTheme()"
+            title="Switch to dark" aria-label="Switch to dark">
+      <svg class="sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4"/>
+        <path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6"/></svg>
+      <svg class="moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.5 14.2A8.6 8.6 0 0 1 9.8 3.5a8.6 8.6 0 1 0 10.7 10.7z"/></svg>
+    </button>
+    <div class="acct" id="acct">
+      <button class="avatar" onclick="toggleAcct(event)" aria-haspopup="menu" aria-expanded="false"
+              id="acctbtn" title="Account">R</button>
+      <div class="acctmenu" role="menu">
+        <div class="acctwho">
+          <div class="nm" id="acct-nm">Ravi Goyal</div>
+          <div class="em" id="acct-em">admin@enerops.in</div>
+          <div class="lv" id="acct-lv">Super Admin</div>
+        </div>
+        <div class="acctdiv"></div>
+        <a class="acctitem out" role="menuitem" href="login.html" onclick="try{localStorage.removeItem('enerops-seat')}catch(e){}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15.5 16.5v1.8a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V5.7a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v1.8"/>
+            <path d="M19.8 12H9.4m10.4 0-3.2-3.2M19.8 12l-3.2 3.2"/></svg>
+          Sign out
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- ======================= SIDEBAR =======================
+       The live panel lists ten screens in one column. They are grouped here by
+       what they are about, in the order the work is done: a customer first, then
+       its plants, the loggers at a plant, and the devices on a logger. My
+       Profile comes first and is the one group open on arrival, because the
+       panel opens on it; every other group starts closed. -->
+  <aside class="side">
+    <div class="sidehead">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2 5 6v5.4c0 4.2 2.9 7.6 7 9.4 4.1-1.8 7-5.2 7-9.4V6l-7-2.8z"/><path d="M9.2 12.2l2 2 3.8-4"/></svg>
+      <span class="t">Web admin</span>
+    </div>
+
+    <div class="grp" id="g-me">
+      <button class="grpbtn" onclick="toggleGrp('g-me')">
+        <svg class="gi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></svg>
+        My Profile
+        <svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l7-7 7 7"/></svg>
+      </button>
+      <div class="grpitems">
+        <button class="item" data-p="profile">User Profile</button>
+      </div>
+    </div>
+
+    <div class="grp shut" id="g-ops">
+      <button class="grpbtn" onclick="toggleGrp('g-ops')">
+        <svg class="gi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 4.8a3.3 3.3 0 0 1 0 6.4M18 14.4a6 6 0 0 1 3 5.6"/></svg>
+        Account Management
+        <svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l7-7 7 7"/></svg>
+      </button>
+      <div class="grpitems">
+        <button class="item" data-p="customers">Customer Management</button>
+        <button class="item" data-p="operators">Users</button>
+        <button class="item" data-p="roles"    >Role</button>
+        <button class="item" data-p="assign"   >Access Control</button>
+      </div>
+    </div>
+
+    <div class="grp shut" id="g-plant">
+      <button class="grpbtn" onclick="toggleGrp('g-plant')">
+        <svg class="gi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round"><path d="M4 15.5 7 6.5h10l3 9z"/><path d="M5.5 11h13M12 6.5v9M8.5 15.5 7.5 20M15.5 15.5l1 4.5M6 20h12"/></svg>
+        Plants &amp; hardware
+        <svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l7-7 7 7"/></svg>
+      </button>
+      <div class="grpitems">
+        <button class="item" data-p="assets"  >Asset Management</button>
+        <button class="item" data-p="loggers" >Logger Management</button>
+        <button class="item" data-p="cdevices">Customer Device Management</button>
+      </div>
+    </div>
+
+    <div class="grp shut" id="g-cat">
+      <button class="grpbtn" onclick="toggleGrp('g-cat')">
+        <svg class="gi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+        Device catalogue
+        <svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l7-7 7 7"/></svg>
+      </button>
+      <div class="grpitems">
+        <button class="item" data-p="devices">Devices List</button>
+        <button class="item" data-p="sensors">Sensors List</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======================= MAIN ======================= -->
+  <main class="main">
+    <h1 class="pagehead" id="pagehead">User Profile</h1>
+
+    <!-- ---------- CUSTOMERS ----------
+         A customer is a company and the person who runs its account. Adding one
+         gives that person the customer admin panel, which is where they create
+         their own users - so the admin email is the field that matters most. -->
+    <section class="panel card" id="p-customers">
+      <div class="chead">
+        <div class="tools">
+          <button class="tbtn add" type="button" id="cu-add" onclick="cuAdd()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            ADD CUSTOMER</button>
+        </div>
+      </div>
+      <div class="tablewrap"><table><thead id="cu-head"></thead><tbody id="cu-body"></tbody></table></div>
+      <div class="tfoot" id="cu-foot"></div>
+    </section>
+
+    <!-- ---------- ASSETS ----------
+         A plant. The form is the largest on the page because a plant is where
+         everything the customer panel computes comes from: its capacity, where the
+         sun is, which sensor reads it, and which meter or inverters its energy is
+         counted from. -->
+    <section class="panel card" id="p-assets">
+      <div class="chead">
+        <div class="tools">
+          <button class="tbtn add" type="button" id="as-add" onclick="asAdd()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            ADD PLANT</button>
+        </div>
+      </div>
+      <div class="filters" id="as-filt"></div>
+      <div class="tablewrap"><table><thead id="as-head"></thead><tbody id="as-body"></tbody></table></div>
+      <div class="tfoot" id="as-foot"></div>
+    </section>
+
+    <!-- ---------- LOGGERS ---------- -->
+    <section class="panel card" id="p-loggers">
+      <div class="chead">
+        <div class="tools">
+          <button class="tbtn add" type="button" id="lg-add" onclick="lgAdd()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            ADD LOGGER</button>
+        </div>
+      </div>
+      <div class="filters" id="lg-filt"></div>
+      <div class="tablewrap"><table><thead id="lg-head"></thead><tbody id="lg-body"></tbody></table></div>
+      <div class="tfoot" id="lg-foot"></div>
+    </section>
+
+    <!-- ---------- CUSTOMER DEVICES ----------
+         The customer's own devices, each one a model from the catalogue wired to
+         a logger. The name given here is the name the customer panel shows
+         everywhere: INV01 on Monitoring is the row added on this screen. -->
+    <section class="panel card" id="p-cdevices">
+      <div class="chead">
+        <div class="tools">
+          <button class="tbtn add" type="button" id="cd-add" onclick="cdAdd()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            ADD DEVICE</button>
+        </div>
+      </div>
+      <div class="filters" id="cd-filt"></div>
+      <div class="tablewrap"><table><thead id="cd-head"></thead><tbody id="cd-body"></tbody></table></div>
+      <div class="tfoot" id="cd-foot"></div>
+    </section>
+
+    <!-- ---------- DEVICES (the catalogue) ----------
+         Every model the platform can read, and how it reads it. Read-only here,
+         as in the live panel: a model and its register map are added with the
+         firmware, not typed into a form. -->
+    <section class="panel card" id="p-devices">
+      <div class="tablewrap"><table><thead id="dv-head"></thead><tbody id="dv-body"></tbody></table></div>
+      <div class="tfoot" id="dv-foot"></div>
+    </section>
+
+    <!-- ---------- SENSORS ----------
+         What one model reports: each data point, the register it is read from,
+         the tag the portal knows it by, and its unit. The tag is the name
+         Monitoring and Analysis offer - P_AC here is P_AC there. -->
+    <section class="panel card" id="p-sensors">
+      <div class="filters" id="se-filt"></div>
+      <div class="tablewrap"><table><thead id="se-head"></thead><tbody id="se-body"></tbody></table></div>
+      <div class="tfoot" id="se-foot"></div>
+    </section>
+
+    <!-- ---------- THE TEAM: USERS, ROLE, ACCESS CONTROL ----------
+         The team inside EnerOps who look after customers (the live panel calls
+         them operators): Admins and Plant Admins in one list, with the level
+         picked when a user is added. Only the Super Admin sees Account
+         Management, so only they add or delete users. The Super Admin is not in
+         the list - their own record is User Profile. Which customers someone
+         reaches is their Role, set on Access Control. -->
+    <!-- ---------- USERS ---------- -->
+    <section class="panel card" id="p-operators">
+      <div class="chead">
+        <div class="tools">
+          <button class="tbtn add" type="button" id="op-add" onclick="opAdd()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            ADD USER</button>
+        </div>
+      </div>
+      <div class="tablewrap"><table><thead id="op-head"></thead><tbody id="op-body"></tbody></table></div>
+      <div class="tfoot" id="op-foot"></div>
+    </section>
+
+    <!-- ---------- ROLE ---------- -->
+    <section class="panel card" id="p-roles">
+      <div class="chead">
+        <div class="tools">
+          <button class="tbtn add" type="button" id="ro-add" onclick="roAdd()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            ADD ROLE</button>
+        </div>
+      </div>
+      <div class="tablewrap"><table><thead id="ro-head"></thead><tbody id="ro-body"></tbody></table></div>
+      <div class="tfoot" id="ro-foot"></div>
+    </section>
+
+    <!-- ---------- ACCESS CONTROL ---------- -->
+    <section class="panel card" id="p-assign">
+      <div class="tablewrap"><table><thead id="ra-head"></thead><tbody id="ra-body"></tbody></table></div>
+      <div class="tfoot" id="ra-foot"></div>
+    </section>
+
+    <!-- ---------- USER PROFILE ----------
+         The signed-in web admin's own card, the same card as on the customer
+         panel. -->
+    <section class="panel card" id="p-profile">
+      <div class="chead">
+        <span class="editing-tag">Editing</span>
+        <div class="tools">
+          <button class="tbtn edit" id="editbtn" type="button" onclick="startEdit()">EDIT</button>
+        </div>
+      </div>
+      <div class="who">
+        <div class="big" id="me-big">N</div>
+        <div>
+          <div class="nm" id="me-nm">Ravi Goyal</div>
+          <div class="ro" id="me-ro">Super Admin</div>
+        </div>
+      </div>
+      <form id="pform" onsubmit="return saveProfile(event)">
+        <div class="fields" id="me-fields"></div>
+        <div class="editbar">
+          <span class="note">Nothing changes until you save.</span>
+          <span class="sp"></span>
+          <button class="btn" type="button" onclick="cancelEdit()">Cancel</button>
+          <button class="btn primary" type="submit">Save changes</button>
+        </div>
+      </form>
+      <div class="cfoot">
+        <span class="k">Password</span>
+        <span class="sp"></span>
+        <button class="linkbtn" type="button" onclick="pwOpen()">Change password</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ======================= ONE FORM DIALOG =======================
+     Every Add and Edit on this page is this dialog, filled from a list of
+     fields. Ten pages with their own dialogs would be ten chances for the same
+     field to look different. -->
+<div class="scrim" id="fdlg" role="dialog" aria-modal="true" aria-labelledby="f-title">
+  <div class="modal" id="f-modal">
+    <div class="mhead">
+      <div class="t" id="f-title">Add</div>
+      <button class="x" type="button" onclick="fShut()" title="Close" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <form onsubmit="return fSave(event)" novalidate>
+      <div class="mbody form">
+        <div class="mwho" id="f-who" hidden></div>
+        <div class="fgrid" id="f-grid"></div>
+      </div>
+      <div class="mfoot">
+        <span class="sp"></span>
+        <button class="btn" type="button" onclick="fShut()">Cancel</button>
+        <button class="btn primary" type="submit" id="f-go">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ======================= ARE YOU SURE ======================= -->
+<div class="scrim" id="askdlg" role="dialog" aria-modal="true" aria-labelledby="ask-title">
+  <div class="modal">
+    <div class="mhead">
+      <div class="t" id="ask-title">Are you sure</div>
+      <button class="x" type="button" onclick="askShut()" title="Close" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="mbody">
+      <div class="mwho" id="ask-who"></div>
+      <div class="mtext" id="ask-text"></div>
+    </div>
+    <div class="mfoot">
+      <span class="sp"></span>
+      <button class="btn" type="button" onclick="askShut()">Cancel</button>
+      <button class="btn danger" type="button" id="ask-go" onclick="askYes()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+window.T=function(msg){
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  $('toasts').appendChild(t);setTimeout(()=>t.remove(),2600);return false;
+};
+function esc(v){
+  return String(v==null?'':v).replace(/[&<>"]/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  });
+}
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDate(iso){ if(!iso) return '—'; const q=iso.split('-'); return q[2]+' '+MON[+q[1]-1]+' '+q[0]; }
+const dash=v=>(v===''||v==null)?'—':v;
+const EMAIL=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+let seq=500;
+
+/* ======================= THE DEMO RECORDS =======================
+   Constants, as on every mockup page. ONE customer, on purpose, so the panel is
+   easy to test: Sangria Renewables, the customer the customer panel is drawn
+   for - Vikram Sethi, three plants, the same device names and ids - so the two
+   panels describe one account from both sides. */
+const CUSTOMERS=[
+  {id:'48210375',first:'Vikram',last:'Sethi',name:'Sangria Renewables',legal:'Sangria Renewables Pvt Ltd',
+   cmail:'accounts@sangriarenewables.example',phone:'+91 141 4002 118',amail:'vikram.sethi@enerops.example',
+   addr:'2 DLP, Kikarwali Road, Nathwana, Sangria 335073'}
+];
+const ALL_PAGES=['Home','Monitoring','Alarms','Analysis','KPI'];
+/* every plant shows these three; only Analysis and KPI are a choice */
+const FIXED_PAGES=['Home','Monitoring','Alarms'], CHOICE_PAGES=['Analysis','KPI'];
+const METRICS=[['pr','Performance Ratio'],['cuf','CUF'],['grid','Grid Availability'],['plant','Plant Availability'],['yield','Specific Yield'],['loss','Energy Loss']];
+const noMeters=()=>({pr:'',cuf:'',grid:'',plant:'',yield:'',loss:''});
+const allMeter=m=>({pr:m,cuf:m,grid:m,plant:m,yield:m,loss:m});
+const hpDefault=()=>({power:{src:'inverter',meter:''},energy:{src:'inverter',meter:''},gen:{src:'inverter',meter:''}});
+const kpiCfg=()=>({pr:{bar:'no',aux:'no',poi:'no'},cuf:{bar:'no',aux:'no',poi:'no'},grid:{bar:'no',aux:'no',poi:'no'},
+  plant:{bar:'no',aux:'no',poi:'no'},yield:{bar:'no',aux:'no',poi:'no'},loss:{bar:'no',aux:'no',poi:'no'}});
+const ASSETS=[
+  {id:'52807316',cust:'48210375',name:'Sangria',area:'Nathwana',city:'Hanumangarh',state:'Rajasthan',country:'India',zip:'335073',
+   lat:'29.80',lng:'74.47',addr:'2 DLP, Kikarwali Road, Nathwana',desc:'Ground-mount, fixed tilt',ac:'2500',dc:'2500',pstc:'2500',
+   mod:'540',minIrr:'50',inst:'2021-03-12',sensors:['WMS01'],irr:'inclined',pages:ALL_PAGES.slice(),src:'meter',meter:'MET01',metrics:allMeter('MET01'),tz:'Asia/Kolkata',kpiHome:'pr',kcfg:kpiCfg(),hp:hpDefault()},
+  {id:'60374921',cust:'48210375',name:'Rioja',area:'Gajner Road',city:'Bikaner',state:'Rajasthan',country:'India',zip:'334001',
+   lat:'28.02',lng:'73.31',addr:'Plot 14, Bikaner Road, Bikaner',desc:'Ground-mount, single-axis tracker',ac:'1800',dc:'1885',pstc:'1885',
+   mod:'545',minIrr:'50',inst:'2021-11-02',sensors:['WMS01'],irr:'inclined',pages:ALL_PAGES.slice(),src:'inverter',meter:'',metrics:noMeters(),tz:'Asia/Kolkata',kpiHome:'pr',kcfg:kpiCfg(),hp:hpDefault()},
+  {id:'73158402',cust:'48210375',name:'Mendoza',area:'Pokhran',city:'Jaisalmer',state:'Rajasthan',country:'India',zip:'345021',
+   lat:'26.91',lng:'70.92',addr:'NH-52, Pokhran Road, Jaisalmer',desc:'Ground-mount, fixed tilt',ac:'3200',dc:'3360',pstc:'3360',
+   mod:'550',minIrr:'50',inst:'2022-06-20',sensors:['WMS01'],irr:'horizontal',pages:ALL_PAGES.slice(),src:'inverter',meter:'',metrics:noMeters(),tz:'Asia/Kolkata',kpiHome:'pr',kcfg:kpiCfg(),hp:hpDefault()}
+];
+const LOGGERS=[
+  {id:'46283917',asset:'52807316',name:'Sangria logger 1',desc:'Inverter block A, control room'},
+  {id:'58302714',asset:'52807316',name:'Sangria logger 2',desc:'Meters and weather station'},
+  {id:'64819053',asset:'60374921',name:'Rioja logger',desc:'All devices'},
+  {id:'70245618',asset:'73158402',name:'Mendoza logger 1',desc:'Inverters'},
+  {id:'83561920',asset:'73158402',name:'Mendoza logger 2',desc:'Weather station'}
+];
+/* the catalogue: every model the platform can read */
+const CATALOG=[
+  {id:'DV-INV-350',name:'HVERTER SI-350K-NO',cat:'Inverter',model:'SI-350K-NO',map:'v2.1'},
+  {id:'DV-INV-110',name:'Sungrow SG110CX',cat:'Inverter',model:'SG110CX',map:'v1.4'},
+  {id:'DV-INV-100',name:'Huawei SUN2000-100KTL-M1',cat:'Inverter',model:'SUN2000-100KTL-M1',map:'v1.3'},
+  {id:'DV-MFM-440',name:'Secure Elite 440',cat:'MFM',model:'Elite 440',map:'v1.0'},
+  {id:'DV-MFM-556',name:'Schneider PM5560',cat:'MFM',model:'PM5560',map:'v1.1'},
+  {id:'DV-WMS-K10',name:'Kipp & Zonen SMP10 station',cat:'WMS',model:'SMP10',map:'v1.2'}
+];
+const CATS=['Inverter','MFM','WMS'];
+/* the category said in plain words wherever a person reads it */
+const CAT_NAME={Inverter:'Inverter',MFM:'Meter',WMS:'Weather station'};
+const catName=c=>CAT_NAME[c]||c||'';
+/* a model's type: its category and model number, in small letters -
+   inverter_si-350k-no, meter_elite440 */
+const CAT_CODE={Inverter:'inverter',MFM:'meter',WMS:'wms'};
+const typeOf=d=>(CAT_CODE[d.cat]||String(d.cat).toLowerCase())+'_'+String(d.model).toLowerCase().replace(/\s+/g,'');
+/* what each kind of model reports. The tags are the portal's own - Monitoring
+   and Analysis offer exactly these names. */
+const SENSOR_SETS={
+  Inverter:[['P_AC','Active power','kW','AC Power'],['S_AC','Apparent power','kVA','AC Power'],['Q_AC','Reactive power','kVAR','AC Power'],
+    ['COS_PHI','Power factor','','AC Power'],['V_AC','AC voltage','V','AC Electrical'],['I_AC','AC current','A','AC Electrical'],
+    ['F_AC','Frequency','Hz','AC Electrical'],['P_DC','DC power','kW','DC Input'],['V_DC','DC voltage','V','DC Input'],
+    ['I_DC','DC current','A','DC Input'],['E_TODAY','Energy today','kWh','Energy'],['E_TOTAL','Lifetime energy','kWh','Energy'],
+    ['T_INT','Internal temperature','°C','Temperature']],
+  MFM:[['P_AC','Active power','kW','AC Power'],['S_AC','Apparent power','kVA','AC Power'],['Q_AC','Reactive power','kVAR','AC Power'],
+    ['COS_PHI','Power factor','','AC Power'],['V_AC','AC voltage','V','AC Electrical'],['I_AC','AC current','A','AC Electrical'],
+    ['F_AC','Frequency','Hz','AC Electrical'],['E_EXPORT','Total Active Energy Export','kWh','Energy'],['E_IMPORT','Total Active Energy Import','kWh','Energy']],
+  WMS:[['GHI','Global horizontal irradiance','W/m²','Irradiance'],['POA','Plane-of-array irradiance','W/m²','Irradiance'],
+    ['T_MOD','Module temperature','°C','Temperature'],['T_AMB','Ambient temperature','°C','Temperature']]
+};
+const REG_BASE={'DV-INV-350':30001,'DV-INV-110':5001,'DV-INV-100':32064,'DV-MFM-440':3000,'DV-MFM-556':2700,'DV-WMS-K10':100};
+function sensorsOf(devId){
+  const d=CATALOG.filter(x=>x.id===devId)[0]; if(!d) return [];
+  return (SENSOR_SETS[d.cat]||[]).map(function(s,i){
+    return {name:s[1],code:String(REG_BASE[d.id]+i*2),tag:s[0],unit:s[2],cat:s[3]};
+  });
+}
+const CDEV=[
+  {uuid:'u1',logger:'46283917',dev:'DV-INV-350',name:'INV01',cid:'31076873',serial:'HV350-2103-0441'},
+  {uuid:'u2',logger:'46283917',dev:'DV-INV-350',name:'INV02',cid:'72578863',serial:'HV350-2103-0442'},
+  {uuid:'u3',logger:'46283917',dev:'DV-INV-350',name:'INV03',cid:'87408079',serial:'HV350-2103-0443'},
+  {uuid:'u4',logger:'46283917',dev:'DV-INV-350',name:'INV04',cid:'22592824',serial:'HV350-2103-0444'},
+  {uuid:'u5',logger:'46283917',dev:'DV-INV-350',name:'INV05',cid:'95312461',serial:'HV350-2103-0458'},
+  {uuid:'u6',logger:'46283917',dev:'DV-INV-350',name:'INV06',cid:'17865686',serial:'HV350-2103-0459'},
+  {uuid:'u7',logger:'46283917',dev:'DV-INV-350',name:'INV07',cid:'98649459',serial:'HV350-2103-0460'},
+  {uuid:'u8',logger:'58302714',dev:'DV-MFM-440',name:'MET01',cid:'77332195',serial:'SE440-2102-1187'},
+  {uuid:'u9',logger:'58302714',dev:'DV-MFM-440',name:'MET02',cid:'23638739',serial:'SE440-2102-1188'},
+  {uuid:'u10',logger:'58302714',dev:'DV-WMS-K10',name:'WMS01',cid:'61190452',serial:'KZ10-2101-0093'},
+  {uuid:'u11',logger:'64819053',dev:'DV-INV-110',name:'INV01',cid:'40417720',serial:'SG110-2110-7731'},
+  {uuid:'u12',logger:'64819053',dev:'DV-INV-110',name:'INV02',cid:'40417721',serial:'SG110-2110-7732'},
+  {uuid:'u13',logger:'64819053',dev:'DV-WMS-K10',name:'WMS01',cid:'61190455',serial:'KZ10-2109-0140'},
+  {uuid:'u14',logger:'70245618',dev:'DV-INV-100',name:'INV01',cid:'52230981',serial:'HW100-2205-3310'},
+  {uuid:'u15',logger:'70245618',dev:'DV-INV-100',name:'INV02',cid:'52230982',serial:'HW100-2205-3311'},
+  {uuid:'u16',logger:'83561920',dev:'DV-WMS-K10',name:'WMS01',cid:'61190461',serial:'KZ10-2205-0207'}
+];
+/* THE INTERNAL TEAM, at three levels. The Super Admin is the original web
+   admin login and the only one who adds Admins and Plant Admins. An Admin can
+   do everything except add a customer. A Plant Admin reads everything and can
+   only add a plant for an existing customer and set it up - its loggers and
+   devices. The Role on Role / Access Control is a separate thing: it decides
+   which customers someone reaches, not what they may do there. */
+const COMPANY='EnerOps Data Systems Pvt. Ltd.';
+const OPERATORS=[
+  {id:'op0',first:'Ravi',last:'Goyal',email:'admin@enerops.in',phone:'6350307882',level:'super',role:null,
+   company:COMPANY,address:'85- DENIDA ROAD, NEW COLONY ROAD, SHIVPURI, KARERA, MADHYA PRADESH \u2013 473660'},
+  {id:'op1',first:'Rahul',last:'Verma',email:'rahul.verma@enerops.in',phone:'+91 98290 11402',level:'admin',role:'ro-all',company:COMPANY,address:''},
+  {id:'op2',first:'Anita',last:'Desai',email:'anita.desai@enerops.in',phone:'+91 98200 63318',level:'plant',role:'ro-all',company:COMPANY,address:''},
+  {id:'op3',first:'Sana',last:'Qureshi',email:'sana.qureshi@enerops.in',phone:'+91 99250 40711',level:'plant',role:'ro-north',company:COMPANY,address:''},
+  {id:'op4',first:'Karan',last:'Mehta',email:'karan.mehta@enerops.in',phone:'',level:'admin',role:null,company:COMPANY,address:''}
+];
+const LEVELS={super:'Super Admin',admin:'Admin',plant:'Plant Admin'};
+const ROLES=[
+  {id:'ro-all',name:'All customers',cust:['48210375']},
+  {id:'ro-north',name:'North India',cust:['48210375']},
+  {id:'ro-audit',name:'Audit',cust:['48210375']}
+];
+
+const byId=(list,id)=>list.filter(x=>x.id===id)[0]||null;
+const custOf=id=>byId(CUSTOMERS,id);
+const assetOf=id=>byId(ASSETS,id);
+const loggerOf=id=>byId(LOGGERS,id);
+const catOf=id=>byId(CATALOG,id);
+const roleOf=id=>byId(ROLES,id);
+const assetsOf=c=>ASSETS.filter(a=>a.cust===c);
+const loggersOf=a=>LOGGERS.filter(l=>l.asset===a);
+const devicesOf=l=>CDEV.filter(d=>d.logger===l);
+const opName=o=>(o.first+' '+o.last).trim();
+
+/* ---------- account menu ---------- */
+window.toggleAcct=function(e){
+  e.stopPropagation();
+  const a=$('acct'), open=a.classList.toggle('open');
+  $('acctbtn').setAttribute('aria-expanded', open?'true':'false');
+};
+document.addEventListener('click',function(){
+  $('acct').classList.remove('open'); $('acctbtn').setAttribute('aria-expanded','false');
+});
+
+/* ---------- who is signed in ----------
+   login.html leaves the seat - level, name, email - in one key that the
+   customer pages read as well. Opened without signing in, the panel is the
+   Super Admin's. The profile edits the person's own record, and the seat is
+   rewritten when it changes, so the customer pages always name them right.
+   Sign out clears it. */
+function readSeat(){
+  let raw=null; try{ raw=localStorage.getItem('enerops-seat'); }catch(e){}
+  try{ return JSON.parse(raw); }catch(e){ return null; }
+}
+const SEAT=readSeat();
+const SELF=(SEAT && OPERATORS.filter(o=>o.email===String(SEAT.email||'').toLowerCase())[0]) || OPERATORS[0];
+const LEVEL=SELF.level;
+const ME=SELF;
+function writeSeat(){
+  try{ localStorage.setItem('enerops-seat',JSON.stringify({level:SELF.level,first:SELF.first,last:SELF.last,email:SELF.email})); }catch(e){}
+}
+writeSeat();
+/* what this level may change. Account Management - customers, and the Admins
+   and Plant Admins with their roles - is the Super Admin's alone; for now the
+   other two levels do not see it at all. A Plant Admin does not see the
+   Device catalogue either (their device form still offers its models). A Plant Admin
+   works only with the customers their role gives them: they see those
+   customers' plants, add plants only for them, and may change a plant only if
+   they added it, and with it that plant's loggers and devices. */
+const myCustomers=()=>LEVEL!=='plant'?CUSTOMERS:CUSTOMERS.filter(c=>((roleOf(SELF.role)||{}).cust||[]).indexOf(c.id)>=0);
+const CAN={
+  account: LEVEL==='super',
+  catalogue: LEVEL!=='plant',
+  addCustomer: LEVEL==='super',
+  editCustomer: LEVEL==='super',
+  deleteCustomer: LEVEL==='super',
+  manageUsers: LEVEL==='super',
+  manageRoles: LEVEL==='super',
+  editProfile: LEVEL!=='plant',
+  plant: a => !!a && (LEVEL!=='plant' || a.by===SELF.email)
+};
+
+/* ---------- groups and pages ----------
+   The hash carries the page, and with no hash the panel opens on User
+   Profile. On arrival My Profile is open and every other group is closed,
+   whichever page a link opens on; after that, a page reached by a link opens
+   its group, so the highlighted item is never hidden. */
+window.toggleGrp=function(id){ $(id).classList.toggle('shut'); };
+const items=[].slice.call(document.querySelectorAll('.item'));
+const DRAW={};
+let arrived=false;
+function show(name,push){
+  const it=items.filter(function(x){return x.dataset.p===name && !x.closest('[hidden]');})[0] || items[0];
+  items.forEach(function(x){ x.classList.toggle('on', x===it); });
+  [].slice.call(document.querySelectorAll('.panel')).forEach(function(p){
+    p.classList.toggle('on', p.id==='p-'+it.dataset.p);
+  });
+  $('pagehead').textContent=it.textContent.trim();
+  document.title='ENEROPS OS · Web admin · '+it.textContent.trim();
+  const grp=it.closest('.grp'); if(grp && arrived) grp.classList.remove('shut');
+  if(push && location.hash.slice(1)!==it.dataset.p) history.replaceState(null,'','#'+it.dataset.p);
+  if(DRAW[it.dataset.p]) DRAW[it.dataset.p]();
+}
+items.forEach(function(it){ it.addEventListener('click',function(){ show(it.dataset.p,true); }); });
+window.addEventListener('hashchange',function(){ show(location.hash.slice(1),false); });
+
+function scrimOn(id){ $(id).classList.add('on'); document.body.classList.add('locked'); }
+function scrimOff(id){ $(id).classList.remove('on'); document.body.classList.remove('locked'); }
+
+/* ---------- one confirm, asked the same way every time ---------- */
+let askThen=null;
+window.ask=function(o){
+  $('ask-title').textContent=o.title;
+  $('ask-who').innerHTML=o.rows.map(function(r){ return '<div class="r"><b>'+r[0]+'</b><span>'+esc(r[1])+'</span></div>'; }).join('');
+  $('ask-text').innerHTML=o.text;
+  $('ask-go').textContent=o.go;
+  askThen=o.then;
+  scrimOn('askdlg');
+  requestAnimationFrame(function(){ $('ask-go').focus(); });
+};
+window.askShut=function(){ scrimOff('askdlg'); askThen=null; };
+window.askYes=function(){ const f=askThen; askShut(); if(f) f(); };
+
+/* ======================= ONE-OF-MANY =======================
+   The customer panel's picker, unchanged: a .mbtn carrying data-ss, one panel
+   lent to whichever button is open, radios for one-of-many. */
+const SSK={};
+let ssPan=null, ssBtn=null, ssRows=[], ssHere=-1, ssTyped='', ssTypeAt=0;
+function ssKind(btn){ return btn&&btn.dataset ? SSK[btn.dataset.ss] : null; }
+function ssPanel(){
+  if(ssPan) return ssPan;
+  ssPan=document.createElement('div');
+  ssPan.className='colpanel mpanel'; ssPan.id='sspanel';
+  document.body.appendChild(ssPan);
+  ssPan.addEventListener('mousedown',function(e){ e.preventDefault(); });
+  ssPan.addEventListener('change',function(e){
+    const r=e.target; if(!r) return;
+    if(r.type==='radio') ssPick(+r.dataset.i);
+    else if(r.type==='checkbox') ssToggle(+r.dataset.i,r.checked);
+  });
+  ssPan.addEventListener('mousemove',function(e){ const r=e.target.closest('.colrow'); if(r) ssMark(+r.dataset.i,false); });
+  return ssPan;
+}
+function ssShow(btn,o){
+  const lab=btn.querySelector('.mlab');
+  btn.value = o ? String(o.v) : '';
+  lab.textContent = o ? o.t : (btn.dataset.any||'Choose');
+  lab.classList.toggle('any', !o || o.v==='');
+}
+function ssOpen(btn){
+  const k=ssKind(btn); if(!k) return;
+  const pan=ssPanel();
+  ssBtn=btn; ssRows=k.list(btn); ssTyped='';
+  const rows=ssRows.map(function(o,i){
+    const on=k.multi ? k.on(btn,o.v) : String(o.v)===String(btn.value);
+    return '<label class="colrow'+(o.none?' none':'')+'" id="ssrow'+i+'" data-i="'+i+'">'
+      +'<input type="'+(k.multi?'checkbox':'radio')+'" name="ss-'+btn.dataset.ss+'" data-i="'+i+'"'+(on?' checked':'')+'>'
+      +'<span class="t">'+esc(o.t)+'</span>'+(o.s?'<span class="s">'+esc(o.s)+'</span>':'')+'</label>';
+  }).join('');
+  pan.innerHTML='<div class="colhead">'+esc(k.label?k.label(btn):'Options')+'</div>'
+    +(rows || '<div class="colnone">'+esc(k.empty||'Nothing to choose from')+'</div>');
+  pan.classList.add('on');
+  btn.setAttribute('aria-expanded','true');
+  ssPlace();
+  let at=-1;
+  ssRows.forEach(function(o,i){ if(at<0 && String(o.v)===String(btn.value)) at=i; });
+  ssMark(at,true);
+}
+function ssPlace(){
+  if(!ssBtn) return;
+  const r=ssBtn.getBoundingClientRect(), gap=6, edge=10;
+  ssPan.style.minWidth=Math.max(r.width,150)+'px';
+  ssPan.style.maxWidth=Math.max(r.width,320)+'px';
+  ssPan.style.maxHeight='none';
+  const want=ssPan.offsetHeight, under=window.innerHeight-r.bottom-edge, over=r.top-edge;
+  const up = want>under && over>under;
+  ssPan.style.maxHeight=Math.max(96,(up?over:under)-gap)+'px';
+  const h=ssPan.offsetHeight, w=ssPan.offsetWidth;
+  ssPan.style.top=(up ? Math.max(edge, r.top-gap-h) : r.bottom+gap)+'px';
+  ssPan.style.left=Math.max(edge, Math.min(r.left, window.innerWidth-edge-w))+'px';
+}
+function ssClose(back){
+  if(!ssBtn) return;
+  const btn=ssBtn;
+  ssPan.classList.remove('on');
+  btn.setAttribute('aria-expanded','false');
+  btn.removeAttribute('aria-activedescendant');
+  ssBtn=null; ssRows=[]; ssHere=-1;
+  if(back && btn.isConnected) btn.focus();
+}
+function ssMark(i,scroll){
+  if(!ssPan) return;
+  [].slice.call(ssPan.querySelectorAll('.colrow.here')).forEach(function(el){ el.classList.remove('here'); });
+  ssHere=(i==null||i<0)?-1:i;
+  const el=ssHere>=0 ? ssPan.querySelector('#ssrow'+ssHere) : null;
+  if(!el){ if(ssBtn) ssBtn.removeAttribute('aria-activedescendant'); return; }
+  el.classList.add('here');
+  if(ssBtn) ssBtn.setAttribute('aria-activedescendant',el.id);
+  if(scroll!==false) el.scrollIntoView({block:'nearest'});
+}
+function ssStep(dir){ const i=(ssHere<0?(dir>0?-1:ssRows.length):ssHere)+dir; if(i>=0&&i<ssRows.length) ssMark(i,true); }
+function ssToggle(i,on){
+  const o=ssRows[i], k=ssKind(ssBtn); if(!o||!k) return;
+  k.toggle(ssBtn,o.v,on);
+}
+function ssPick(i){
+  const o=ssRows[i]; if(!o) return;
+  const btn=ssBtn, k=ssKind(btn);
+  if(k && k.multi){
+    const cb=ssPan.querySelector('#ssrow'+i+' input');
+    if(cb){ cb.checked=!cb.checked; ssToggle(i,cb.checked); }
+    return;
+  }
+  ssShow(btn,o); ssClose(true);
+  if(k&&k.pick) k.pick(btn,o.v,o);
+}
+function ssType(ch){
+  const now=Date.now();
+  ssTyped=((now-ssTypeAt<900?ssTyped:'')+ch).toLowerCase(); ssTypeAt=now;
+  const n=ssRows.length, from=(ssHere<0?0:ssHere)+(ssTyped.length>1?0:1);
+  for(let hop=0;hop<n;hop++){ const i=((from+hop)%n+n)%n; if(String(ssRows[i].t).toLowerCase().indexOf(ssTyped)===0){ ssMark(i,true); return; } }
+}
+document.addEventListener('click',function(e){
+  const b=e.target.closest ? e.target.closest('.mbtn') : null;
+  if(!b) return;
+  e.stopPropagation();
+  if(ssBtn===b) ssClose(true); else ssOpen(b);
+});
+document.addEventListener('mousedown',function(e){
+  if(!ssBtn) return;
+  if(ssPan && ssPan.contains(e.target)) return;
+  if(e.target.closest && e.target.closest('.mbtn')===ssBtn) return;
+  ssClose(false);
+},true);
+document.addEventListener('keydown',function(e){
+  const f=document.activeElement;
+  const btn=ssBtn || (f && f.classList && f.classList.contains('mbtn') ? f : null);
+  if(!btn){
+    if(e.key==='Escape'){
+      if($('fdlg').classList.contains('on')) fShut();
+      else if($('askdlg').classList.contains('on')) askShut();
+      else $('acct').classList.remove('open');
+    }
+    return;
+  }
+  if(!ssBtn){ if(e.key==='ArrowDown'||e.key==='ArrowUp'||e.key==='Enter'||e.key===' '){ e.preventDefault(); ssOpen(btn); } return; }
+  if(e.key==='Escape'||e.key==='Tab'){ if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); } ssClose(e.key==='Escape'); return; }
+  if(e.key==='Enter'||e.key===' '){ e.preventDefault(); e.stopPropagation(); ssPick(ssHere); return; }
+  if(e.key==='ArrowDown'){ e.preventDefault(); ssStep(1); return; }
+  if(e.key==='ArrowUp'){ e.preventDefault(); ssStep(-1); return; }
+  if(e.key.length===1 && !e.ctrlKey && !e.metaKey && !e.altKey){ e.preventDefault(); ssType(e.key); }
+},true);
+window.addEventListener('resize',function(){ if(ssBtn) ssPlace(); });
+window.addEventListener('scroll',function(){ if(ssBtn) ssPlace(); },true);
+
+function mbtn(id,kind,value,text,extra){
+  return '<button class="mbtn" type="button" id="'+id+'" data-ss="'+kind+'" value="'+esc(value)+'"'
+    +(extra||'')+' aria-haspopup="true" aria-expanded="false"><span class="mlab'+(value===''?' any':'')+'">'+esc(text)+'</span></button>';
+}
+
+/* ======================= TABLES =======================
+   One table drawer for every list on the page: columns, rows, row actions,
+   and the same pager the customer panel uses. */
+const PG={};
+SSK.per={label:()=>'Rows per page',list:()=>[25,50,100].map(n=>({v:n,t:String(n)})),
+  pick:function(btn,v){ PG[btn.dataset.t].per=+v; PG[btn.dataset.t].pg=0; DRAW[btn.dataset.page](); }};
+const I_PEN='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>';
+const I_BIN='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+function rowBtns(edit,del){
+  return '<div class="rowacts">'
+    +(edit?'<button class="rowbtn" type="button" title="Edit" aria-label="Edit" onclick="'+edit+'">'+I_PEN+'</button>':'')
+    +(del?'<button class="rowbtn warn" type="button" title="Delete" aria-label="Delete" onclick="'+del+'">'+I_BIN+'</button>':'')
+    +'</div>';
+}
+function grid(t,page,cols,rows,cell,empty){
+  if(!PG[t]) PG[t]={pg:0,per:25};
+  const st=PG[t], per=st.per, pages=Math.max(1,Math.ceil(rows.length/per));
+  if(st.pg>=pages) st.pg=pages-1;
+  const from=st.pg*per, slice=rows.slice(from,from+per);
+  $(t+'-head').innerHTML='<tr>'+cols.map(function(c){ return '<th'+(c.num?' class="num"':(c.t===''?' class="acts"':''))+'>'+c.t+'</th>'; }).join('')+'</tr>';
+  $(t+'-body').innerHTML = slice.length ? slice.map(function(r){ return cell(r); }).join('')
+    : '<tr><td colspan="'+cols.length+'"><div class="empty-note">'+esc(empty)+'</div></td></tr>';
+  $(t+'-foot').innerHTML='<span>Rows per page</span>'
+    +'<button class="mbtn mini perbtn" type="button" data-ss="per" data-t="'+t+'" data-page="'+page+'" value="'+per+'" aria-haspopup="true" aria-expanded="false"><span class="mlab">'+per+'</span></button>'
+    +'<span class="sp"></span><span class="range">'+(rows.length?(from+1)+'-'+Math.min(from+per,rows.length)+' of '+rows.length:'0-0 of 0')+'</span>'
+    +'<button class="pgbtn" type="button"'+(st.pg<=0?' disabled':'')+' onclick="pgGo(\''+t+'\',\''+page+'\',-1)">&lsaquo;</button>'
+    +'<button class="pgbtn" type="button"'+(st.pg>=pages-1?' disabled':'')+' onclick="pgGo(\''+t+'\',\''+page+'\',1)">&rsaquo;</button>';
+}
+window.pgGo=function(t,page,n){ PG[t].pg+=n; DRAW[page](); };
+const count=(n,one,many)=>n+' '+(n===1?one:(many||one+'s'));
+
+/* ======================= FILTERS =======================
+   Customer, plant and logger are chosen once and shared by the three pages
+   that need them, so moving from Assets to Loggers keeps the customer in view. */
+const F={cust:'48210375',asset:'52807316',logger:'46283917',sdev:'DV-INV-350'};
+function fixFilters(){
+  const mc=myCustomers(); if(!mc.some(c=>c.id===F.cust)) F.cust=mc.length?mc[0].id:'';
+  const as=assetsOf(F.cust); if(!as.some(a=>a.id===F.asset)) F.asset=as.length?as[0].id:'';
+  const ls=loggersOf(F.asset); if(!ls.some(l=>l.id===F.logger)) F.logger=ls.length?ls[0].id:'';
+  if(!catOf(F.sdev)) F.sdev=CATALOG.length?CATALOG[0].id:'';
+}
+SSK.filt={
+  label:btn=>({cust:'Customer',asset:'Plant',logger:'Logger',sdev:'Device'})[btn.dataset.f],
+  empty:'Nothing here yet',
+  list:function(btn){
+    const f=btn.dataset.f;
+    if(f==='cust') return myCustomers().map(c=>({v:c.id,t:c.name,s:c.id}));
+    if(f==='asset') return assetsOf(F.cust).map(a=>({v:a.id,t:a.name,s:a.id}));
+    if(f==='logger') return loggersOf(F.asset).map(l=>({v:l.id,t:l.name,s:l.id}));
+    return CATALOG.map(d=>({v:d.id,t:d.name,s:catName(d.cat)}));
+  },
+  pick:function(btn,v){ F[btn.dataset.f]=v; fixFilters(); DRAW[btn.dataset.page](); }
+};
+function filters(box,page,which){
+  fixFilters();
+  const name={cust:c=>custOf(c),asset:a=>assetOf(a),logger:l=>loggerOf(l),sdev:d=>catOf(d)};
+  const lab={cust:'Customer',asset:'Plant',logger:'Logger',sdev:'Device'};
+  $(box).innerHTML=which.map(function(f){
+    const r=name[f](F[f]);
+    return '<div class="filt"><span class="fl">'+lab[f]+'</span>'
+      +mbtn('fl-'+page+'-'+f,'filt',F[f],r?r.name:'None',' data-f="'+f+'" data-page="'+page+'" data-any="None"')+'</div>';
+  }).join('');
+}
+
+/* ======================= ONE FORM DIALOG =======================
+   A form is a list of fields. Types: text, email, tel, number, date, password,
+   area, select (a .mbtn), checks (several of a list) and choice (one of a few,
+   as radios). A field can depend on others: opts and show are worked out from
+   the values so far, and picking a value redraws the form. */
+let FS=null, FV={};
+SSK.fsel={
+  label:btn=>fieldOf(btn.dataset.k).label,
+  empty:'Nothing to choose from',
+  list:btn=>optsOf(fieldOf(btn.dataset.k)),
+  pick:function(btn,v){ FV[btn.dataset.k]=v; fRender(); }
+};
+function fieldOf(k){ return FS.fields.filter(f=>f.k===k)[0]; }
+function anyOf(f){ return typeof f.any==='function' ? f.any(FV) : (f.any||'Choose'); }
+/* what a several-of-many button says: the names chosen, All when every one
+   is, and the field's own empty word when none are */
+function multiText(f){
+  const sel=(FV[f.k]||[]).map(String), o=optsOf(f);
+  if(!o.length) return f.none||'Nothing to choose from';
+  if(!sel.length) return anyOf(f);
+  return o.filter(x=>sel.indexOf(String(x.v))>=0).map(x=>x.t).join(', ');
+}
+SSK.fmulti={
+  multi:true,
+  label:btn=>fieldOf(btn.dataset.k).label,
+  empty:'Nothing to choose from',
+  list:btn=>optsOf(fieldOf(btn.dataset.k)),
+  on:(btn,v)=>(FV[btn.dataset.k]||[]).map(String).indexOf(String(v))>=0,
+  toggle:function(btn,v,on){
+    const k=btn.dataset.k, f=fieldOf(k);
+    const a=(FV[k]||[]).map(String).filter(x=>x!==String(v));
+    if(on) a.push(String(v));
+    const order=optsOf(f).map(x=>String(x.v));
+    FV[k]=a.sort((p,q)=>order.indexOf(p)-order.indexOf(q));
+    const lab=btn.querySelector('.mlab');
+    lab.textContent=multiText(f); lab.classList.toggle('any',!FV[k].length);
+    btn.value=FV[k].length?'x':'';
+  }
+};
+function optsOf(f){ const o=typeof f.opts==='function'?f.opts(FV):f.opts; return (o||[]).map(x=>typeof x==='string'?{v:x,t:x}:x); }
+function fOpen(spec,values){
+  FS=spec; FV=Object.assign({},values||{});
+  spec.fields.forEach(function(f){
+    if(!f.k || FV[f.k]!==undefined) return;
+    FV[f.k]=f.def!==undefined ? (Array.isArray(f.def)?f.def.slice():f.def) : (f.type==='checks'?[]:'');
+  });
+  $('f-title').textContent=spec.title;
+  $('f-go').textContent=spec.go||'Save';
+  $('f-modal').className='modal'+(spec.wide?' '+spec.wide:'');
+  $('f-grid').innerHTML='';
+  $('f-grid').style.setProperty('--cols',spec.cols||2);
+  const who=$('f-who');
+  who.hidden=!spec.who;
+  who.innerHTML=(spec.who||[]).map(r=>'<div class="r"><b>'+r[0]+'</b><span>'+esc(r[1])+'</span></div>').join('');
+  fRender();
+  scrimOn('fdlg');
+  requestAnimationFrame(function(){ const i=$('f-grid').querySelector('input:not([type=checkbox]):not([type=radio]):not([readonly]),textarea,.mbtn'); if(i) i.focus(); });
+}
+window.fShut=function(){ scrimOff('fdlg'); FS=null; };
+function fRead(){
+  if(!FS) return;
+  FS.fields.forEach(function(f){
+    if(!f.k || !$('f-grid').querySelector('.fld[data-k="'+f.k+'"]')) return;
+    if(f.type==='checks') FV[f.k]=[].slice.call(document.querySelectorAll('[name="ff-'+f.k+'"]:checked')).map(x=>x.value);
+    else if(f.type==='choice'){ const c=document.querySelector('[name="ff-'+f.k+'"]:checked'); if(c) FV[f.k]=c.value; }
+    else if(f.type!=='select' && f.type!=='multi' && f.type!=='ro'){ const el=$('ff-'+f.k); if(el) FV[f.k]=el.value; }
+  });
+}
+function fRender(){
+  fRead();
+  $('f-grid').innerHTML=FS.fields.map(function(f){
+    if(f.sec) return '<div class="msec">'+esc(f.sec)+'</div>';
+    const on=!f.show || f.show(FV);
+    if(!on && f.hide) return '';
+    const id='ff-'+f.k, v=FV[f.k];
+    const lab='<label class="lab"'+(f.type==='checks'||f.type==='choice'||f.type==='select'||f.type==='multi'?'':' for="'+id+'"')+'>'+esc(f.label)
+      +(f.opt?'<span class="opt">optional</span>':'')+'</label>';
+    let ctl;
+    if(f.type==='ro'){
+      ctl='<input id="'+id+'" type="text" value="'+esc(v)+'" readonly tabindex="-1">';
+    } else if(f.type==='multi'){
+      ctl=mbtn(id,'fmulti',(v||[]).length?'x':'',multiText(f),' data-k="'+f.k+'" data-any="'+esc(anyOf(f))+'"');
+    } else if(f.type==='select'){
+      const o=optsOf(f).filter(x=>String(x.v)===String(v))[0];
+      ctl=mbtn(id,'fsel',o?o.v:'',o?o.t:anyOf(f),' data-k="'+f.k+'" data-any="'+esc(anyOf(f))+'"');
+    } else if(f.type==='checks'){
+      const o=optsOf(f);
+      ctl='<div class="subrow checks">'+(o.length?o.map(function(x){
+        return '<label class="subbox"><input type="checkbox" name="'+id+'" value="'+esc(x.v)+'"'+((v||[]).indexOf(String(x.v))>=0||(v||[]).indexOf(x.v)>=0?' checked':'')+'>'+esc(x.t)+'</label>';
+      }).join(''):'<span class="mtext">'+esc(f.none||'Nothing to choose from')+'</span>')+'</div>';
+    } else if(f.type==='choice'){
+      ctl='<div class="subrow">'+optsOf(f).map(function(x){
+        return '<label class="subbox"><input type="radio" name="'+id+'" value="'+esc(x.v)+'"'+(String(v)===String(x.v)?' checked':'')+' onchange="fRender()">'+esc(x.t)+'</label>';
+      }).join('')+'</div>';
+    } else if(f.type==='area'){
+      ctl='<textarea id="'+id+'" maxlength="'+(f.max||300)+'">'+esc(v)+'</textarea>';
+    } else {
+      ctl='<input id="'+id+'" type="'+(f.type||'text')+'" value="'+esc(v)+'"'
+        +(f.type==='number'?' step="any" inputmode="decimal"':'')+' autocomplete="off" spellcheck="false" maxlength="'+(f.max||120)+'">';
+    }
+    const place=(f.newRow||f.w)?' style="grid-column:'+(f.newRow?'1':'auto')+' / span '+(f.w||1)+'"':'';
+    return '<div class="fld'+(f.span?' span':'')+(on?'':' off')+'" data-k="'+f.k+'"'+place+'>'+lab+ctl
+      +(f.hint?'<div class="hint">'+f.hint+'</div>':'')+'<div class="err"></div></div>';
+  }).join('');
+}
+function fErr(k,msg){
+  const el=$('f-grid').querySelector('.fld[data-k="'+k+'"]'); if(!el) return;
+  el.classList.toggle('bad',!!msg); el.querySelector('.err').textContent=msg||'';
+}
+window.fSave=function(e){
+  e.preventDefault();
+  fRead();
+  let bad=null;
+  FS.fields.forEach(function(f){
+    if(!f.k) return;
+    fErr(f.k,'');
+    if(f.show && !f.show(FV)) return;
+    const v=FV[f.k], empty=Array.isArray(v)?!v.length:String(v==null?'':v).trim()==='';
+    let msg='';
+    if(!f.opt && empty) msg=f.type==='checks'?'Choose at least one.':(f.type==='select'||f.type==='choice'?'Choose one.':'Required.');
+    else if(!empty && f.type==='email' && !EMAIL.test(String(v).trim())) msg='That does not look like an email address.';
+    else if(!empty && f.type==='number' && !isFinite(+v)) msg='A number, please.';
+    else if(!empty && f.type==='number' && f.min!==undefined && +v<f.min) msg='At least '+f.min+'.';
+    else if(!empty && f.type==='tel' && String(v).replace(/\D/g,'').length<7) msg='That does not look like a phone number.';
+    if(msg){ fErr(f.k,msg); bad=bad||f.k; }
+  });
+  if(!bad && FS.check){ const r=FS.check(FV); if(r){ fErr(r[0],r[1]); bad=r[0]; } }
+  if(bad){ const el=$('f-grid').querySelector('.fld[data-k="'+bad+'"] input,.fld[data-k="'+bad+'"] textarea,.fld[data-k="'+bad+'"] .mbtn'); if(el) el.focus(); return false; }
+  const out={}; Object.keys(FV).forEach(k=>{ out[k]=typeof FV[k]==='string'?FV[k].trim():FV[k]; });
+  const msg=FS.save(out);
+  fShut();
+  if(msg) T(msg);
+  return false;
+};
+
+/* ======================= CUSTOMERS ======================= */
+/* Every ID a person would otherwise type - customer, plant, logger and the
+   customer's device - is made here instead: eight random digits, never
+   starting with 0, and never one already in use anywhere on the panel. It
+   stays the same for the life of the record, so no form offers to edit it. */
+function newId(){
+  const used=id=>custOf(id)||assetOf(id)||loggerOf(id)||CDEV.some(d=>d.cid===id);
+  let id;
+  do{ id=String(Math.floor(10000000+Math.random()*90000000)); }while(used(id));
+  return id;
+}
+const CU_FIELDS=[
+  {sec:'Customer admin'},
+  {k:'first',label:'First name'},{k:'last',label:'Last name'},
+  {k:'amail',label:'Admin email',type:'email',span:1,hint:'They sign in to the customer admin panel with this.'},
+  {sec:'Company'},
+  {k:'name',label:'Name',hint:'What the customer panel calls them.'},{k:'legal',label:'Legal name'},
+  {k:'cmail',label:'Company email',type:'email'},{k:'phone',label:'Contact number',type:'tel'},
+  {k:'addr',label:'Address',type:'area',span:1}
+];
+DRAW.customers=function(){
+  grid('cu','customers',[{t:'Id'},{t:'Name'},{t:'Legal name'},{t:'Company email'},{t:'Contact number'},{t:'Admin email'},{t:'Address'},{t:'Plants',num:1},{t:''}],
+    CUSTOMERS,function(c){
+      const n=assetsOf(c.id).length;
+      return '<tr><td class="mono">'+c.id+'</td><td class="nm">'+esc(c.name)+'</td><td>'+esc(c.legal)+'</td><td>'+esc(c.cmail)+'</td>'
+        +'<td>'+esc(dash(c.phone))+'</td><td>'+esc(c.amail)+'</td><td class="wrap">'+esc(c.addr)+'</td>'
+        +'<td class="num">'+n+'</td>'
+        +'<td>'+rowBtns(CAN.editCustomer?"cuEdit('"+c.id+"')":null,CAN.deleteCustomer?"cuDel('"+c.id+"')":null)+'</td></tr>';
+    },'No customers yet');
+};
+window.cuAdd=function(){
+  fOpen({title:'Add customer',go:'Add customer',wide:'w600',fields:CU_FIELDS,
+    check:v=>CUSTOMERS.some(c=>c.amail.toLowerCase()===v.amail.toLowerCase())?['amail','That admin already runs another customer.']:null,
+    save:function(v){
+      const c=Object.assign({id:newId()},v);
+      CUSTOMERS.push(c); DRAW.customers();
+      return v.name+' added';
+    }});
+};
+window.cuEdit=function(id){
+  const c=custOf(id);
+  fOpen({title:'Edit customer',go:'Save changes',wide:'w600',fields:CU_FIELDS,who:[['Id',c.id]],
+    check:v=>CUSTOMERS.some(x=>x!==c && x.amail.toLowerCase()===v.amail.toLowerCase())?['amail','That admin already runs another customer.']:null,
+    save:function(v){
+      Object.assign(c,v);
+      DRAW.customers();
+      return c.name+' updated';
+    }},c);
+};
+/* A delete always runs, and says first what goes with the record: a
+   customer takes its plants, a plant its loggers, a logger its devices. */
+function also(plants,loggers,devices){
+  const p=[];
+  if(plants) p.push(count(plants,'plant'));
+  if(loggers) p.push(count(loggers,'logger'));
+  if(devices) p.push(count(devices,'device'));
+  if(!p.length) return '';
+  return ' Its '+(p.length>1?p.slice(0,-1).join(', ')+' and '+p[p.length-1]:p[0])+' are removed with it.';
+}
+function dropLogger(l){ CDEV.filter(d=>d.logger===l.id).forEach(d=>CDEV.splice(CDEV.indexOf(d),1)); LOGGERS.splice(LOGGERS.indexOf(l),1); }
+function dropAsset(a){ loggersOf(a.id).forEach(dropLogger); ASSETS.splice(ASSETS.indexOf(a),1); }
+window.cuDel=function(id){
+  const c=custOf(id), as=assetsOf(id), ls=LOGGERS.filter(l=>as.some(a=>a.id===l.asset));
+  const ds=CDEV.filter(d=>ls.some(l=>l.id===d.logger));
+  ask({title:'Delete customer',rows:[['Customer',c.name],['Admin',c.amail]],
+    text:'The customer and their admin account are removed. Their admin can no longer sign in to the customer admin panel.'+also(as.length,ls.length,ds.length),
+    go:'Delete customer',then:function(){
+      as.forEach(dropAsset);
+      ROLES.forEach(r=>{ r.cust=r.cust.filter(x=>x!==c.id); });
+      CUSTOMERS.splice(CUSTOMERS.indexOf(c),1); fixFilters(); DRAW.customers(); T(c.name+' deleted');
+    }});
+};
+
+/* ======================= ASSETS (PLANTS) ======================= */
+const sourceOpts=[{v:'inverter',t:'Inverter'},{v:'meter',t:'Meter'}];
+const meterOpts=function(v){
+  const ls=v.id?loggersOf(v.id).map(l=>l.id):[];
+  return CDEV.filter(d=>ls.indexOf(d.logger)>=0 && (catOf(d.dev)||{}).cat==='MFM').map(d=>({v:d.name,t:d.name,s:d.cid}));
+};
+const wmsOpts=function(v){
+  const ls=v.id?loggersOf(v.id).map(l=>l.id):[];
+  return CDEV.filter(d=>ls.indexOf(d.logger)>=0 && (catOf(d.dev)||{}).cat==='WMS').map(d=>({v:d.name,t:d.name}));
+};
+const TIMEZONES=[['Asia/Kolkata','Asia/Kolkata (UTC+05:30)'],['Asia/Dubai','Asia/Dubai (UTC+04:00)'],
+  ['Asia/Singapore','Asia/Singapore (UTC+08:00)'],['Africa/Nairobi','Africa/Nairobi (UTC+03:00)'],
+  ['Europe/London','Europe/London (UTC+00:00)'],['America/New_York','America/New_York (UTC-05:00)'],
+  ['Australia/Sydney','Australia/Sydney (UTC+10:00)']];
+const YESNO=[{v:'no',t:'No'},{v:'yes',t:'Yes'}];
+const KPI_OPTS=METRICS.map(m=>({v:m[0],t:m[1]}));
+const meterWord=v=>meterOpts(v).length?'Select':'No meters found';
+/* HOME PAGE DATA SOURCE: where three things on the customer Home page read
+   from - inverters (the default, as today) or one meter of this plant. */
+const HPDS=[['power','Plant Power source','Plant Power graph and the Plant Power value in Plant Details.'],
+  ['energy','Plant Energy source','Plant Energy value in Plant Details.'],
+  ['gen','Energy Generation source','Plant Energy Generation graph (daily e-diff).']];
+/* The live panel's plant form, field for field and in its order: the customer
+   on its own row, then the plant four to a row, then where its energy and each
+   KPI are counted from, then how its KPIs are shown. The three settings under
+   Configure KPI belong to whichever KPI is picked there - each KPI keeps its
+   own. */
+function asFields(){
+  const f=[
+    {k:'cust',label:'Select Customer',type:'select',any:'Select',opts:()=>myCustomers().map(c=>({v:c.id,t:c.name,s:c.id}))},
+    {k:'name',label:'Name',newRow:1},
+    {k:'id',label:'Asset ID',type:'ro',hint:'Made automatically.'},
+    {k:'area',label:'Area'},{k:'city',label:'City'},
+    {k:'state',label:'State'},{k:'country',label:'Country',def:'India'},{k:'zip',label:'Zip'},
+    {k:'lat',label:'Latitude',type:'number'},
+    {k:'lng',label:'Longitude',type:'number'},{k:'addr',label:'Address'},
+    {k:'desc',label:'Asset Description',opt:1},
+    {k:'ac',label:'AC Capacity (kW)',type:'number',min:0},
+    {k:'dc',label:'DC Capacity (kWp)',type:'number',min:0},
+    {k:'pstc',label:'PSTC (kWp)',type:'number',min:0},
+    {k:'mod',label:'Modules Power Rating (Wp)',type:'number',min:0},
+    {k:'minIrr',label:'Minimum Irradiance (W/m\u00b2)',type:'number',min:0},
+    {k:'inst',label:'Installation Date',type:'date'},
+    {k:'sensors',label:'Irradiation Sensor',type:'multi',opts:wmsOpts,opt:1,any:'Select',none:'No weather station on this plant'},
+    {k:'pages',label:'Page Access',type:'multi',opts:CHOICE_PAGES,def:CHOICE_PAGES.slice(),any:'None',opt:1,
+     hint:'Home, Monitoring and Alarms are always on.'},
+    {k:'irr',label:'Irradiance',type:'select',def:'inclined',opts:[{v:'inclined',t:'Inclined (POA)'},{v:'horizontal',t:'Horizontal (GHI)'}]},
+    {k:'tz',label:'Select Timezone',type:'select',def:'Asia/Kolkata',opts:TIMEZONES.map(t=>({v:t[0],t:t[1]})),w:2},
+    {sec:'Home Page Data Source'}
+  ];
+  HPDS.forEach(function(h){
+    f.push({k:'hs_'+h[0],label:h[1],type:'select',def:'inverter',opts:sourceOpts,hint:h[2]},
+      {k:'hm_'+h[0],label:'Meter',type:'select',opts:meterOpts,any:meterWord,show:v=>v['hs_'+h[0]]==='meter',
+       hint:'One meter of this plant.'});
+  });
+  f.push(
+    {sec:'Energy Source Selection For Metrics'},
+    {k:'src',label:'Energy Source',type:'select',def:'inverter',opts:sourceOpts},
+    {k:'meter',label:'Meter',type:'select',opts:meterOpts,any:meterWord,show:v=>v.src==='meter'}
+  );
+  METRICS.forEach(function(m){ f.push({k:'m_'+m[0],label:m[1],type:'select',opts:meterOpts,any:meterWord,opt:1}); });
+  f.push({sec:'KPI Configuration'},
+    {k:'kpiHome',label:'Default Home Page KPI',type:'select',def:'pr',opts:KPI_OPTS},
+    {k:'ckpi',label:'Configure KPI',type:'select',def:'pr',opts:KPI_OPTS,newRow:1});
+  METRICS.forEach(function(m){
+    const mine=v=>v.ckpi===m[0];
+    f.push({k:'kb_'+m[0],label:'Show Barchart',type:'select',def:'no',opts:YESNO,show:mine,hide:1},
+      {k:'ka_'+m[0],label:'Auxiliary Supply Meter Available',type:'select',def:'no',opts:YESNO,show:mine,hide:1},
+      {k:'kp_'+m[0],label:'Energy at POI Meter Available',type:'select',def:'no',opts:YESNO,show:mine,hide:1});
+  });
+  return f;
+}
+function asValues(a){
+  const v=Object.assign({},a); delete v.metrics; delete v.kcfg;
+  METRICS.forEach(function(m){
+    v['m_'+m[0]]=a.metrics[m[0]];
+    v['kb_'+m[0]]=a.kcfg[m[0]].bar; v['ka_'+m[0]]=a.kcfg[m[0]].aux; v['kp_'+m[0]]=a.kcfg[m[0]].poi;
+  });
+  v.ckpi=a.kpiHome;
+  HPDS.forEach(function(h){ v['hs_'+h[0]]=a.hp[h[0]].src; v['hm_'+h[0]]=a.hp[h[0]].meter; });
+  v.pages=(a.pages||[]).filter(p=>CHOICE_PAGES.indexOf(p)>=0);
+  return v;
+}
+function asStore(a,v){
+  const metrics={}, kcfg={};
+  METRICS.forEach(function(m){
+    metrics[m[0]]=v['m_'+m[0]]||'';
+    kcfg[m[0]]={bar:v['kb_'+m[0]],aux:v['ka_'+m[0]],poi:v['kp_'+m[0]]};
+    delete v['m_'+m[0]]; delete v['kb_'+m[0]]; delete v['ka_'+m[0]]; delete v['kp_'+m[0]];
+  });
+  delete v.ckpi;
+  const hp={};
+  HPDS.forEach(function(h){
+    const src=v['hs_'+h[0]];
+    hp[h[0]]={src:src, meter:src==='meter'?v['hm_'+h[0]]:''};
+    delete v['hs_'+h[0]]; delete v['hm_'+h[0]];
+  });
+  v.hp=hp;
+  v.pages=FIXED_PAGES.concat(CHOICE_PAGES.filter(p=>(v.pages||[]).indexOf(p)>=0));
+  if(v.src!=='meter') v.meter='';
+  Object.assign(a,v,{metrics:metrics,kcfg:kcfg});
+}
+DRAW.assets=function(){
+  filters('as-filt','assets',['cust']);
+  $('as-add').hidden=!myCustomers().length;
+  const rows=assetsOf(F.cust);
+  grid('as','assets',[{t:'Asset ID'},{t:'Name'},{t:'Area'},{t:'City'},{t:'State'},{t:'Country'},{t:'Zip'},{t:'Lat / Lng'},{t:'AC kW',num:1},{t:'DC kWp',num:1},{t:'Energy source'},{t:'Installed'},{t:''}],
+    rows,function(a){
+      const n=loggersOf(a.id).length;
+      return '<tr><td class="mono">'+a.id+'</td><td class="nm">'+esc(a.name)+'</td><td>'+esc(a.area)+'</td><td>'+esc(a.city)+'</td>'
+        +'<td>'+esc(a.state)+'</td><td>'+esc(a.country)+'</td><td class="mono">'+esc(a.zip)+'</td><td class="mono">'+esc(a.lat)+', '+esc(a.lng)+'</td>'
+        +'<td class="num">'+esc(a.ac)+'</td><td class="num">'+esc(a.dc)+'</td>'
+        +'<td>'+(a.src==='meter'?'Meter · '+esc(a.meter):'Inverter')+'</td><td class="mono">'+fmtDate(a.inst)+'</td>'
+        +'<td>'+(CAN.plant(a)?rowBtns("asEdit('"+a.id+"')","asDel('"+a.id+"')"):'')+'</td></tr>';
+    },'No plants for this customer yet');
+};
+window.asAdd=function(){
+  fOpen({title:'Add plant',go:'Add plant',wide:'w1100',cols:4,fields:asFields(),
+    save:function(v){ const a={by:SELF.email}; asStore(a,v); ASSETS.push(a); F.cust=a.cust; F.asset=a.id; DRAW.assets(); return a.name+' added'; }},
+    {cust:F.cust,id:newId()});
+};
+window.asEdit=function(id){
+  const a=assetOf(id);
+  fOpen({title:'Edit plant',go:'Save changes',wide:'w1100',cols:4,fields:asFields(),
+    save:function(v){
+      v.id=a.id; asStore(a,v);
+      F.cust=a.cust; DRAW.assets(); return a.name+' updated';
+    }},asValues(a));
+};
+window.asDel=function(id){
+  const a=assetOf(id);
+  const ls=loggersOf(a.id), ds=CDEV.filter(d=>ls.some(l=>l.id===d.logger));
+  ask({title:'Delete plant',rows:[['Plant',a.name],['Customer',(custOf(a.cust)||{}).name||'']],
+    text:'The plant is removed from the customer admin panel.'+also(0,ls.length,ds.length),go:'Delete plant',
+    then:function(){ dropAsset(a); fixFilters(); DRAW.assets(); T(a.name+' deleted'); }});
+};
+
+/* ======================= LOGGERS ======================= */
+const LG_FIELDS=[{k:'name',label:'Logger name',span:1},{k:'desc',label:'Description',type:'area',span:1,opt:1}];
+DRAW.loggers=function(){
+  filters('lg-filt','loggers',['cust','asset']);
+  const rows=loggersOf(F.asset), mine=CAN.plant(assetOf(F.asset));
+  $('lg-add').hidden=LEVEL==='plant' && !mine;
+  grid('lg','loggers',[{t:'Logger ID'},{t:'Logger name'},{t:'Description'},{t:'Devices',num:1},{t:''}],rows,function(l){
+    const n=devicesOf(l.id).length;
+    return '<tr><td class="mono">'+l.id+'</td><td class="nm">'+esc(l.name)+'</td><td class="wrap">'+esc(dash(l.desc))+'</td><td class="num">'+n+'</td>'
+      +'<td>'+(mine?rowBtns("lgEdit('"+l.id+"')","lgDel('"+l.id+"')"):'')+'</td></tr>';
+  },F.asset?'No loggers on this plant yet':'Add a plant for this customer first');
+};
+function lgWho(){ return [['Customer',(custOf(F.cust)||{}).name||''],['Plant',(assetOf(F.asset)||{}).name||'']]; }
+window.lgAdd=function(){
+  if(!F.asset){ T('Add a plant for this customer first'); return; }
+  fOpen({title:'Add logger',go:'Add logger',who:lgWho(),fields:LG_FIELDS,
+    save:function(v){ const id=newId(); LOGGERS.push(Object.assign({asset:F.asset,id:id},v)); F.logger=id; DRAW.loggers(); return v.name+' added'; }});
+};
+window.lgEdit=function(id){
+  const l=loggerOf(id);
+  fOpen({title:'Edit logger',go:'Save changes',who:lgWho().concat([['Logger ID',l.id]]),fields:LG_FIELDS,
+    save:function(v){ Object.assign(l,{name:v.name,desc:v.desc}); DRAW.loggers(); return l.name+' updated'; }},l);
+};
+window.lgDel=function(id){
+  const l=loggerOf(id);
+  ask({title:'Delete logger',rows:[['Logger',l.name],['Id',l.id]],text:'The logger is removed from this plant.'+also(0,0,devicesOf(l.id).length),go:'Delete logger',
+    then:function(){ dropLogger(l); fixFilters(); DRAW.loggers(); T(l.name+' deleted'); }});
+};
+
+/* ======================= CUSTOMER DEVICES ======================= */
+const CD_FIELDS=[
+  {k:'cat',label:'Device category',type:'select',opts:CATS.map(c=>({v:c,t:catName(c)})),any:'Choose a category'},
+  {k:'dev',label:'Device name',type:'select',any:'Choose a model',
+   opts:v=>CATALOG.filter(d=>!v.cat||d.cat===v.cat).map(d=>({v:d.id,t:d.name,s:d.map})),
+   hint:'The model, from the Devices List.'},
+  {k:'name',label:'Customer device name',hint:'The name the customer panel shows, e.g. INV01.'},
+  {k:'serial',label:'Serial number',opt:1}
+];
+DRAW.cdevices=function(){
+  filters('cd-filt','cdevices',['cust','asset','logger']);
+  const rows=devicesOf(F.logger), mine=CAN.plant(assetOf(F.asset));
+  $('cd-add').hidden=LEVEL==='plant' && !mine;
+  grid('cd','cdevices',[{t:'Device ID'},{t:'Customer device name'},{t:'Device name'},{t:'Category'},{t:'Serial number'},{t:''}],rows,function(d){
+    const m=catOf(d.dev)||{};
+    return '<tr><td class="mono">'+esc(d.cid)+'</td><td class="nm">'+esc(d.name)+'</td><td>'+esc(m.name||'')+'</td><td>'+esc(catName(m.cat))+'</td>'
+      +'<td class="mono">'+esc(dash(d.serial))+'</td><td>'+(mine?rowBtns("cdEdit('"+d.uuid+"')","cdDel('"+d.uuid+"')"):'')+'</td></tr>';
+  },F.logger?'No devices on this logger yet':(F.asset?'Add a logger to this plant first':'Add a plant for this customer first'));
+};
+function cdWho(){ return [['Customer',(custOf(F.cust)||{}).name||''],['Plant',(assetOf(F.asset)||{}).name||''],['Logger',(loggerOf(F.logger)||{}).name||'']]; }
+function cdClash(v,self){
+  const ls=loggersOf(F.asset).map(l=>l.id);
+  if(CDEV.some(d=>d!==self && ls.indexOf(d.logger)>=0 && d.name.toLowerCase()===v.name.toLowerCase())) return ['name','This plant already has a device called that.'];
+  if(!v.cat || (catOf(v.dev)||{}).cat!==v.cat) return ['dev','Choose a model in this category.'];
+  return null;
+}
+window.cdAdd=function(){
+  if(!F.logger){ T(F.asset?'Add a logger to this plant first':'Add a plant for this customer first'); return; }
+  fOpen({title:'Add device',go:'Add device',who:cdWho(),fields:CD_FIELDS,check:v=>cdClash(v,null),
+    save:function(v){ CDEV.push({uuid:'u'+(seq++),logger:F.logger,dev:v.dev,name:v.name,cid:newId(),serial:v.serial}); DRAW.cdevices(); return v.name+' added'; }});
+};
+window.cdEdit=function(uuid){
+  const d=CDEV.filter(x=>x.uuid===uuid)[0];
+  fOpen({title:'Edit device',go:'Save changes',who:cdWho().concat([['Device ID',d.cid]]),fields:CD_FIELDS,check:v=>cdClash(v,d),
+    save:function(v){ Object.assign(d,{dev:v.dev,name:v.name,serial:v.serial}); DRAW.cdevices(); return d.name+' updated'; }},
+    Object.assign({cat:(catOf(d.dev)||{}).cat||''},d));
+};
+window.cdDel=function(uuid){
+  const d=CDEV.filter(x=>x.uuid===uuid)[0];
+  ask({title:'Delete device',rows:[['Device',d.name],['Id',d.cid]],
+    text:'The device leaves this plant. Its readings stop appearing on the customer panel.',go:'Delete device',
+    then:function(){ CDEV.splice(CDEV.indexOf(d),1); DRAW.cdevices(); T(d.name+' deleted'); }});
+};
+
+/* ======================= THE CATALOGUE (read-only) ======================= */
+DRAW.devices=function(){
+  grid('dv','devices',[{t:'Device name'},{t:'Device ID'},{t:'Category'},{t:'Type'},{t:'Mapping version'}],CATALOG,function(d){
+    return '<tr><td class="nm">'+esc(d.name)+'</td><td class="mono">'+d.id+'</td><td>'+esc(catName(d.cat))+'</td>'
+      +'<td class="mono">'+esc(typeOf(d))+'</td><td class="mono">'+esc(d.map)+'</td></tr>';
+  },'No device models');
+};
+DRAW.sensors=function(){
+  filters('se-filt','sensors',['sdev']);
+  const rows=sensorsOf(F.sdev);
+  grid('se','sensors',[{t:'Sensor name'},{t:'Field code'},{t:'Variable name'},{t:'Unit'},{t:'Category'}],rows,function(s){
+    return '<tr><td class="nm">'+esc(s.name)+'</td><td class="mono">'+s.code+'</td><td class="mono">'+s.tag+'</td><td>'+esc(dash(s.unit))+'</td>'
+      +'<td>'+esc(s.cat)+'</td></tr>';
+  },'No data points for this device');
+};
+
+/* ======================= THE TEAM =======================
+   Users, Role and Access Control cover Admins and Plant Admins together; the
+   Super Admin is left out of the lists. */
+const TEAM_LEVELS=[{v:'admin',t:'Admin'},{v:'plant',t:'Plant Admin'}];
+const team=()=>OPERATORS.filter(o=>o.level!=='super');
+
+/* ---------- users ---------- */
+const OP_FIELDS=[{k:'first',label:'First name'},{k:'last',label:'Last name'},
+  {k:'level',label:'Role level',type:'select',def:'plant',opts:TEAM_LEVELS,span:1,
+   hint:'Admin: plants, loggers, devices and the device catalogue. Plant Admin: adds and sets up plants for the customers their role reaches.'},
+  {k:'email',label:'Email',type:'email',span:1,hint:'This is what they sign in with.'},
+  {k:'phone',label:'Contact number',type:'tel',opt:1,span:1,
+   hint:'A new user can sign in straight away, but reaches no customer until they are given a role on <b>Access Control</b>.'}];
+DRAW.operators=function(){
+  grid('op','operators',[{t:'First name'},{t:'Last name'},{t:'Email'},{t:'Contact number'},{t:'Role level'},{t:''}],team(),function(o){
+    return '<tr><td class="nm">'+esc(o.first)+'</td><td class="nm">'+esc(o.last)+'</td><td>'+esc(o.email)+'</td><td>'+esc(dash(o.phone))+'</td>'
+      +'<td>'+LEVELS[o.level]+'</td>'
+      +'<td>'+(CAN.manageUsers?rowBtns(null,"opDel('"+o.id+"')"):'')+'</td></tr>';
+  },'No users yet');
+};
+window.opAdd=function(){
+  fOpen({title:'Add user',go:'Add user',fields:OP_FIELDS,
+    check:v=>OPERATORS.some(o=>o.email.toLowerCase()===v.email.toLowerCase())?['email','Another user already signs in with this.']:null,
+    save:function(v){ OPERATORS.push(Object.assign({id:'op'+(seq++),role:null,company:COMPANY,address:''},v)); DRAW.operators(); return opName(v)+' added as '+LEVELS[v.level]; }});
+};
+window.opDel=function(id){
+  const o=byId(OPERATORS,id);
+  ask({title:'Delete user',rows:[['User',opName(o)],['Email',o.email],['Role level',LEVELS[o.level]]],text:'They can no longer sign in to the web admin panel.',go:'Delete user',
+    then:function(){ OPERATORS.splice(OPERATORS.indexOf(o),1); DRAW.operators(); T(opName(o)+' deleted'); }});
+};
+
+/* ---------- roles ---------- */
+const RO_FIELDS=[{k:'name',label:'Role name',span:1},
+  {k:'cust',label:'Customers it reaches',type:'checks',span:1,opts:()=>CUSTOMERS.map(c=>({v:c.id,t:c.name}))}];
+/* the customers a role reaches, by name and as plain text - all of them when
+   it reaches all of them, so nobody has to know what "all" covers today */
+function reach(ids){
+  const names=ids.map(id=>(custOf(id)||{name:id}).name);
+  return names.length?esc(names.join(', ')):'<span class="none-t">None</span>';
+}
+DRAW.roles=function(){
+  grid('ro','roles',[{t:'Role name'},{t:'Customers it reaches'},{t:'Held by',num:1},{t:''}],ROLES,function(r){
+    const n=team().filter(o=>o.role===r.id).length;
+    return '<tr><td class="nm">'+esc(r.name)+'</td><td class="wrap">'+reach(r.cust)+'</td><td class="num">'+n+'</td>'
+      +'<td>'+(CAN.manageRoles?rowBtns("roEdit('"+r.id+"')","roDel('"+r.id+"')"):'')+'</td></tr>';
+  },'No roles yet');
+};
+const roClash=(v,self)=>ROLES.some(r=>r!==self && r.name.toLowerCase()===v.name.toLowerCase())?['name','There is already a role called that.']:null;
+window.roAdd=function(){
+  fOpen({title:'Add role',go:'Add role',fields:RO_FIELDS,check:v=>roClash(v,null),
+    save:function(v){ ROLES.push(Object.assign({id:'ro-'+(seq++)},v)); DRAW.roles(); return v.name+' added'; }});
+};
+window.roEdit=function(id){
+  const r=roleOf(id);
+  fOpen({title:'Edit role',go:'Save changes',fields:RO_FIELDS,check:v=>roClash(v,r),
+    save:function(v){ Object.assign(r,v); DRAW.roles(); return r.name+' updated'; }},Object.assign({},r,{cust:r.cust.slice()}));
+};
+window.roDel=function(id){
+  const r=roleOf(id);
+  const held=team().filter(o=>o.role===r.id);
+  ask({title:'Delete role',rows:[['Role',r.name]],
+    text:held.length?count(held.length,'user')+' '+(held.length===1?'holds':'hold')+' this role. They keep their sign-in but reach no customer until they are given another role on <b>Access Control</b>.'
+      :'Nobody holds this role, so nobody loses access.',
+    go:'Delete role',
+    then:function(){ held.forEach(o=>{ o.role=null; }); ROLES.splice(ROLES.indexOf(r),1); DRAW.roles(); T(r.name+' deleted'); }});
+};
+
+/* ---------- access control ---------- */
+SSK.orole={label:()=>'Role',
+  list:()=>[{v:'',t:'No role',none:true}].concat(ROLES.map(r=>({v:r.id,t:r.name}))),
+  pick:function(btn,v){
+    const o=byId(OPERATORS,btn.dataset.o); o.role=v||null; DRAW.assign();
+    T(v?opName(o)+' now holds '+roleOf(v).name:opName(o)+' no longer holds a role');
+  }};
+DRAW.assign=function(){
+  grid('ra','assign',[{t:'User'},{t:'Email'},{t:'Role level'},{t:'Role'},{t:'Customers they reach'}],team(),function(o){
+    const r=roleOf(o.role);
+    return '<tr><td class="nm">'+esc(opName(o))+'</td><td>'+esc(o.email)+'</td><td>'+LEVELS[o.level]+'</td>'
+      +(CAN.manageRoles
+        ? '<td class="pad"><button class="mbtn mini" type="button" data-ss="orole" data-o="'+o.id+'" value="'+(o.role||'')+'" data-any="No role" aria-haspopup="true" aria-expanded="false">'
+          +'<span class="mlab'+(r?'':' any')+'">'+esc(r?r.name:'No role')+'</span></button></td>'
+        : '<td>'+(r?esc(r.name):'<span class="none-t">No role</span>')+'</td>')
+      +'<td class="wrap">'+(r?reach(r.cust):'<span class="none-t">None</span>')+'</td></tr>';
+  },'No users yet');
+};
+
+/* ======================= MY PROFILE ======================= */
+const ME_FIELDS=[['first','First name','text'],['last','Last name','text'],['company','Company name','text'],['address','Address','text'],['email','Email','email'],['phone','Contact number','tel']];
+function meDraw(){
+  $('me-fields').innerHTML=ME_FIELDS.map(function(f){
+    return '<div class="f" data-k="'+f[0]+'"><label class="k" for="me-'+f[0]+'">'+f[1]+'</label>'
+      +'<div class="v'+(ME[f[0]]?'':' none')+'">'+esc(dash(ME[f[0]]))+'</div>'
+      +'<div class="in"><input id="me-'+f[0]+'" type="'+f[2]+'" autocomplete="off"><div class="err"></div></div></div>';
+  }).join('');
+  const nm=(ME.first+' '+ME.last).trim(), ini=(ME.first||ME.email||'?').charAt(0).toUpperCase();
+  $('me-nm').textContent=nm; $('me-big').textContent=ini; $('me-ro').textContent=LEVELS[LEVEL];
+  $('acct-nm').textContent=nm; $('acct-em').textContent=ME.email; $('acctbtn').textContent=ini;
+}
+window.startEdit=function(){
+  ME_FIELDS.forEach(function(f){ $('me-'+f[0]).value=ME[f[0]]||''; });
+  $('p-profile').classList.add('editing'); $('me-first').focus();
+};
+window.cancelEdit=function(){ $('p-profile').classList.remove('editing'); meErrs({}); };
+function meErrs(errs){
+  ME_FIELDS.forEach(function(f){
+    const c=document.querySelector('#me-fields .f[data-k="'+f[0]+'"]');
+    c.classList.toggle('bad',!!errs[f[0]]); c.querySelector('.err').textContent=errs[f[0]]||'';
+  });
+}
+window.saveProfile=function(e){
+  e.preventDefault();
+  const v={}; ME_FIELDS.forEach(function(f){ v[f[0]]=$('me-'+f[0]).value.trim(); });
+  const errs={};
+  if(!v.first) errs.first='A first name is required.';
+  if(!v.last) errs.last='A last name is required.';
+  if(!v.email) errs.email='An email address is required — it is how you sign in.';
+  else if(!EMAIL.test(v.email)) errs.email='That does not look like an email address.';
+  if(v.phone && v.phone.replace(/\D/g,'').length<7) errs.phone='That does not look like a phone number.';
+  meErrs(errs);
+  const bad=Object.keys(errs)[0]; if(bad){ $('me-'+bad).focus(); return false; }
+  v.email=v.email.toLowerCase();
+  Object.assign(ME,v); writeSeat(); meDraw(); $('p-profile').classList.remove('editing'); T('Profile updated');
+  return false;
+};
+window.pwOpen=function(){
+  fOpen({title:'Change password',go:'Change password',fields:[
+    {k:'cur',label:'Current password',type:'password',span:1},
+    {k:'nw',label:'New password',type:'password',span:1,hint:'At least 8 characters.'},
+    {k:'again',label:'New password again',type:'password',span:1}],
+    check:function(v){
+      if(v.nw.length<8) return ['nw','At least 8 characters.'];
+      if(v.nw===v.cur) return ['nw','Choose a password you are not using now.'];
+      if(v.again!==v.nw) return ['again','The two new passwords do not match.'];
+      return null;
+    },
+    save:()=>'Password changed'});
+};
+DRAW.profile=function(){};
+
+meDraw();
+$('cu-add').hidden=!CAN.addCustomer;
+$('op-add').hidden=!CAN.manageUsers;
+$('ro-add').hidden=!CAN.manageRoles;
+$('g-ops').hidden=!CAN.account;
+$('g-cat').hidden=!CAN.catalogue;
+$('editbtn').hidden=!CAN.editProfile;
+$('acct-lv').textContent=LEVELS[LEVEL];
+show(location.hash.slice(1)||'profile',false);
+arrived=true;
+</script>
+</body>
+</html>

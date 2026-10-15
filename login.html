@@ -928,6 +928,41 @@ const OPENING=[
   {say:'PREPARING PORTAL', row:'preparing portal', at:79,  out:'READY',   bad:'REFUSED'},
   {say:'OPENING',          row:'opening',          at:100, out:'GO',      bad:'TIMED OUT'}
 ];
+
+/* ---- ONE DOOR, TWO PANELS ----
+   The web admin panel - the internal one the EnerOps team runs customers from -
+   comes in through this same door rather than a second sign-in page. Who signs
+   in decides where the run ends: the Super Admin opens web-admin.html;
+   everybody else - an Admin, a Plant Admin and every customer - opens the
+   customer panel's Site Control through the globe, as before.
+
+   The mockup has no server, so the web admin side is three fixed accounts,
+   one per level: the Super Admin (the original web admin login), an Admin and
+   a Plant Admin. The email is matched without regard to case, the passkey
+   exactly, and one of these emails with any other passkey is refused at the
+   form. Every other address still gets in with anything, as it always has here.
+   Signing in as one of them leaves a seat - level, name, email - that the web
+   admin panel and the customer pages read.
+
+   The run is the same four steps with the same timing; only what they say
+   changes for the Super Admin, because they are not loading sites - they are
+   loading the customers, and '1 CUSTOMER' is the one the web admin mockup
+   carries. An Admin or a Plant Admin gets the customers' run, since they land
+   on Site Control. */
+const WEB_ACCOUNTS=[
+  {email:'admin@enerops.in',       passkey:'Enerops#01', level:'super', first:'Ravi',  last:'Goyal'},
+  {email:'rahul.verma@enerops.in', passkey:'Admin#01',   level:'admin', first:'Rahul', last:'Verma'},
+  {email:'anita.desai@enerops.in', passkey:'Plant#01',   level:'plant', first:'Anita', last:'Desai'}
+];
+const OPENING_ADMIN=[
+  {say:'CONNECTING',          row:'connecting',          at:16,  out:'LINKED',      bad:'NO ROUTE'},
+  {say:'LOADING CUSTOMERS',   row:'loading customers',   at:48,  out:'1 CUSTOMER',  bad:'NO RESPONSE'},
+  {say:'PREPARING WEB ADMIN', row:'preparing web admin', at:79,  out:'READY',       bad:'REFUSED'},
+  {say:'OPENING',             row:'opening',             at:100, out:'GO',          bad:'TIMED OUT'}
+];
+/* the run in progress: which steps it shows and where it ends */
+let RUN=OPENING, DEST='plants.html';
+const webAccount=u=>WEB_ACCOUNTS.filter(a=>a.email===u.trim().toLowerCase())[0]||null;
 const STEPMS=BEAT*2.2;
 /* how long the whole run is expected to take. The DESCENT is driven off this
    rather than off the bar - see the note on the limb for why a camera must not
@@ -988,11 +1023,11 @@ function openPortal(who){
   const oldBtn=$('load-retry'); if(oldBtn) oldBtn.remove();
   bar.querySelectorAll('u').forEach(function(u){ u.remove(); });
 
-  /* ---- the ledger, and the notches, both built from OPENING ----
+  /* ---- the ledger, and the notches, both built from the run's steps ----
      One list describes the run, and everything on screen is drawn from it: the
      rows, the boundaries in the bar, the announcements. Adding a fifth step is
      one entry, not five edits in four places. */
-  $('load-steps').innerHTML=OPENING.map(function(s,n){
+  $('load-steps').innerHTML=RUN.map(function(s,n){
     return '<div class="lstep wait" id="lstep'+n+'">'+
       '<span class="lt"></span>'+
       '<span class="ln">'+s.row+'</span>'+
@@ -1001,7 +1036,7 @@ function openPortal(who){
   }).join('');
   /* the last step ends at 100, which is the end of the bar and not a boundary
      inside it - a notch there is a mark against the edge */
-  OPENING.slice(0,-1).forEach(function(s){
+  RUN.slice(0,-1).forEach(function(s){
     const u=document.createElement('u');
     u.style.left=s.at+'%';
     bar.appendChild(u);
@@ -1052,7 +1087,7 @@ function openPortal(who){
   function closeStep(n){
     mark(n,'done');
     put(n,'.lt', stepClock(performance.now()-runT0));
-    put(n,'.lv', OPENING[n].out);
+    put(n,'.lv', RUN[n].out);
   }
 
   /* THE CLOCK ON THE RUNNING ROW.
@@ -1076,12 +1111,12 @@ function openPortal(who){
     cancelAnimationFrame(openRAF); clearTimeout(openTimer);
     mark(n,'fail');
     put(n,'.lt', stepClock(performance.now()-runT0));
-    put(n,'.lv', OPENING[n].bad);
+    put(n,'.lv', RUN[n].bad);
     bar.classList.add('bad'); $('load-pct').classList.add('bad');
     bar.setAttribute('aria-invalid','true');
     /* the announcement names the step AND the reason - a screen reader hearing
        only "failed" is in the position the bar left everybody else in */
-    say.textContent=OPENING[n].say+' FAILED: '+OPENING[n].bad;
+    say.textContent=RUN[n].say+' FAILED: '+RUN[n].bad;
     const b=document.createElement('button');
     b.type='button'; b.className='lgo retry'; b.id='load-retry'; b.textContent='RETRY';
     b.addEventListener('click',function(){ openPortal(who); });
@@ -1093,11 +1128,11 @@ function openPortal(who){
     /* the last step is allowed to be SEEN before the page changes under it - a
        bar that reaches 100% and a ledger that completes in the same instant the
        page is replaced read as a jump rather than as a finish */
-    openTimer=setTimeout(function(){ window.location.href='plants.html'; }, reduced?150:620);
+    openTimer=setTimeout(function(){ window.location.href=DEST; }, reduced?150:620);
   }
 
   (function step(){
-    const n=i, s=OPENING[i++], to=s.at;
+    const n=i, s=RUN[i++], to=s.at;
     say.textContent=s.say;
     mark(n,'run');
     /* the step that the review flags act on, and only on the first attempt */
@@ -1121,7 +1156,7 @@ function openPortal(who){
          less information. */
       if(willFail){ paint(to); fail(n); return; }
       paint(to); from=to; closeStep(n);
-      openTimer=setTimeout(i<OPENING.length?step:done, 90);
+      openTimer=setTimeout(i<RUN.length?step:done, 90);
       return;
     }
     /* THE CLOCK IS THE FRAME CLOCK, NOT performance.now().
@@ -1149,13 +1184,13 @@ function openPortal(who){
          being left to infer it from a stripe that has stopped moving. */
       if(!said && k>0 && (now-t0)>expect*SLOWAT && k<1){
         said=true; mark(n,'run slow'); put(n,'.lv','SLOW');
-        say.textContent=OPENING[n].say+' - TAKING LONGER THAN EXPECTED';
+        say.textContent=RUN[n].say+' - TAKING LONGER THAN EXPECTED';
       }
       if(k<1){ openRAF=requestAnimationFrame(frame); return; }
       if(willFail){ fail(n); return; }
       from=to;
       closeStep(n);
-      if(i<OPENING.length) step(); else done();
+      if(i<RUN.length) step(); else done();
     });
   })();
 }
@@ -1178,6 +1213,15 @@ $('lgo').addEventListener('click',function(){
     if(!u) return ['lu','ENTER YOUR OPERATOR ADDRESS'];
     if(!isEmail(u)) return ['lu','THAT IS NOT AN EMAIL ADDRESS'];
     if(!p) return ['lp','ENTER YOUR PASSKEY'];
+    const acct=webAccount(u);
+    if(acct && p!==acct.passkey) return ['lp','OPERATOR OR PASSKEY NOT RECOGNISED'];
+    const sup=!!acct && acct.level==='super';
+    RUN=sup?OPENING_ADMIN:OPENING; DEST=sup?'web-admin.html':'plants.html';
+    /* the seat the web admin panel and the customer pages read */
+    try{
+      if(acct) localStorage.setItem('enerops-seat',JSON.stringify({level:acct.level,first:acct.first,last:acct.last,email:acct.email}));
+      else localStorage.removeItem('enerops-seat');
+    }catch(e){}
     return null;
   }, $('lu').value.trim().toUpperCase());
 });
@@ -1191,6 +1235,8 @@ $('rgo').addEventListener('click',function(){
     if(a.length<8) return ['rp','USE AT LEAST 8 CHARACTERS'];
     if(!b) return ['rp2','TYPE THE NEW PASSKEY AGAIN'];
     if(a!==b) return ['rp2','THE TWO PASSKEYS DO NOT MATCH'];
+    RUN=OPENING; DEST='plants.html';
+    try{ localStorage.removeItem('enerops-seat'); }catch(e){}
     return null;
   }, $('ru').value.trim().toUpperCase());
 });

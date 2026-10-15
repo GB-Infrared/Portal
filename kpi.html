@@ -1709,5 +1709,70 @@ window.addEventListener('resize',refit);
   window.addEventListener('resize',hide);
 })();
 </script>
+<script>
+/* ===================== WHO IS AT THE DESK =====================
+   Somebody from the web admin panel - a Super Admin, an Admin or a Plant Admin
+   - can open this customer panel from the web admin logo. They are not this
+   customer's admin, so the account menu names who they are and their role
+   (Super Admin, Admin or Plant Admin) and offers the way
+   back: Web Admin (their own panel), Customer Admin (this customer's Settings -
+   left out on Settings itself, as Settings leaves out a link to itself) and
+   Sign out.
+
+   A PLANT ADMIN READS THIS PANEL BUT CHANGES NOTHING in it: on Settings every
+   add, edit, delete and save control is taken away - the toolbar buttons, the
+   row buttons, Change password and the role pickers on Access Control. The
+   other pages only read already, so they are unchanged.
+
+   The seat is one key - level, name, email - set by login.html when one of the
+   web admin accounts signs in and by the web admin panel itself, cleared by
+   any other sign-in and by Sign out. The same block is on every page of this
+   panel. */
+(function(){
+  var KEY='enerops-seat', raw=null, seat=null;
+  try{ raw=localStorage.getItem(KEY); }catch(e){}
+  if(raw==='webadmin') seat={level:'super',first:'Ravi',last:'Goyal',email:'admin@enerops.in'};
+  else { try{ seat=JSON.parse(raw); }catch(e){ seat=null; } }
+  var menu=document.querySelector('.acctmenu');
+  if(!menu) return;
+  [].slice.call(menu.querySelectorAll('.acctitem.out')).forEach(function(a){
+    a.addEventListener('click',function(){ try{ localStorage.removeItem(KEY); }catch(e){} });
+  });
+  if(!seat || !seat.email) return;
+  var name=((seat.first||'')+' '+(seat.last||'')).trim()||seat.email;
+  menu.querySelector('.acctwho .nm').textContent=name;
+  menu.querySelector('.acctwho .em').textContent=seat.email;
+  var LV={super:'Super Admin',admin:'Admin',plant:'Plant Admin'};
+  if(LV[seat.level]){
+    var lv=document.createElement('div');
+    lv.className='lv';
+    lv.style.cssText='margin-top:6px;font-size:12.5px;font-weight:700;color:var(--text)';
+    lv.textContent=LV[seat.level];
+    menu.querySelector('.acctwho').appendChild(lv);
+  }
+  var btn=document.getElementById('acctbtn'); if(btn) btn.textContent=name.charAt(0).toUpperCase();
+  [].slice.call(menu.querySelectorAll('.acctitem:not(.out)')).forEach(function(a){ a.remove(); });
+  var out=menu.querySelector('.acctitem.out'), here=location.pathname.split('/').pop();
+  [['web-admin.html','Web Admin','<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2 5 6v5.4c0 4.2 2.9 7.6 7 9.4 4.1-1.8 7-5.2 7-9.4V6l-7-2.8z"/><path d="M9.2 12.2l2 2 3.8-4"/></svg>'],
+   ['settings.html','Customer Admin','<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.3a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.7 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15.1 4.7a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09A1.7 1.7 0 0 0 21 10.1a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>']].forEach(function(it){
+    if(it[0]===here) return;
+    var a=document.createElement('a');
+    a.className='acctitem'; a.setAttribute('role','menuitem'); a.href=it[0];
+    a.innerHTML=it[2]+' '+it[1];
+    menu.insertBefore(a,out);
+  });
+  if(seat.level==='plant' && here==='settings.html'){
+    document.documentElement.classList.add('seat-ro');
+    var st=document.createElement('style');
+    st.textContent='html.seat-ro .tbtn,html.seat-ro .rowbtn,html.seat-ro .cfoot .linkbtn{display:none !important}'
+      +'html.seat-ro [data-ss="acrole"]{pointer-events:none;background-image:none}';
+    document.head.appendChild(st);
+    document.addEventListener('keydown',function(e){
+      var t=e.target;
+      if(t && t.dataset && t.dataset.ss==='acrole'){ e.preventDefault(); e.stopPropagation(); }
+    },true);
+  }
+})();
+</script>
 </body>
 </html>
