@@ -386,6 +386,10 @@ body{background:
    that are actually moving; a second one beside the operator's own name was a
    light announcing that a name was live. */
 @media (max-width:860px){ .hud .lc{display:none} }
+/* On a phone the bar keeps the mark and the way out. The operator's name is
+   the first thing to go: at 390px the mark, the name and Exit need about 450px,
+   and a bar that runs off the screen takes Exit with it. */
+@media (max-width:520px){ .hud .right .cell{display:none} .hud .out{margin-left:0} .hud .mark{padding-right:12px} }
 
 
 /* ============================================================================
@@ -409,7 +413,7 @@ body{background:
    instrument reads as one object standing in one room.
    ============================================================================ */
 .rail{position:fixed;left:22px;top:78px;width:236px;z-index:7;
-  max-height:calc(100vh - 132px);
+  max-height:calc(calc(100vh / var(--z,1)) - 132px);
   display:flex;flex-direction:column;
   background:var(--glass);border:1px solid var(--edge);border-radius:14px;
   box-shadow:0 26px 64px rgba(0,0,0,.55);
@@ -562,9 +566,6 @@ body{background:
   .frow .ac{font-size:9.5px;color:var(--void-dim);margin-top:2px}
   .frow .kw{margin-left:auto;font-size:11.5px;color:var(--emerald);text-align:right}
   .frow .dot{width:9px;height:9px;border-radius:50%;flex:none}
-  .frow .nm{font-size:12.5px;letter-spacing:.1em;color:var(--text)}
-  .frow .ac{font-size:9.5px;color:var(--faint);margin-top:2px}
-  .frow .kw{margin-left:auto;font-size:11.5px;color:var(--green-deep);text-align:right}
 }
 
 /* ============================================================================
@@ -812,6 +813,48 @@ body.going .iris{opacity:1;--iris:0%;
 }
 
 </style>
+<script>
+/* ===================== SCREEN SIZE: BIG SCREENS =====================
+   The portal is laid out for a screen of about 1600 x 900. On a bigger screen
+   - a 1920 x 1080 monitor or projector, a 2560 x 1440 monitor, a 4K screen or
+   TV - the whole page is drawn larger by one factor, so it looks like the
+   design, only bigger, instead of a small page in a sea of margin:
+   1920 x 1080 -> 1.2x, 2560 x 1440 -> 1.6x, 3840 x 2160 -> 2.4x.
+   The factor is the smaller of width / 1600 and height / 900, so a wide but
+   short screen is never scaled past its height, and under 1.1x nothing is
+   scaled at all. Screens smaller than the design are never shrunk: tablets and
+   phones get the narrow layouts instead.
+
+   How: CSS zoom on the page. Two things have to know about it.
+   - Lengths written in vw / vh in the stylesheet are divided by --z, because
+     zoom would otherwise multiply them too (100vh would be 2.4 screens tall).
+   - The browser reports the mouse and the boxes on screen in screen pixels,
+     but sizes set from code are page pixels. Code that does sums with both
+     converts first: cssRect(el), cssX(e), cssY(e), viewW(), viewH(). A canvas
+     draws at devicePixelRatio x zoom, so it stays sharp. */
+(function(){
+  var root=document.documentElement;
+  function fit(){
+    var z=Math.min(innerWidth/1600, innerHeight/900);
+    z = z<1.1 ? 1 : Math.min(4, Math.round(z*20)/20);
+    window.pageZoom=z;
+    root.style.setProperty('--z', String(z));
+    root.style.zoom = z===1 ? '' : String(z);
+  }
+  window.pageZoomNow=function(){ return window.pageZoom||1; };
+  window.cssRect=function(el){
+    var r=el.getBoundingClientRect(), z=window.pageZoom||1;
+    return { left:r.left/z, top:r.top/z, right:r.right/z, bottom:r.bottom/z,
+             width:r.width/z, height:r.height/z, x:r.left/z, y:r.top/z };
+  };
+  window.cssX=function(e){ return e.clientX/(window.pageZoom||1); };
+  window.cssY=function(e){ return e.clientY/(window.pageZoom||1); };
+  window.viewW=function(){ return innerWidth/(window.pageZoom||1); };
+  window.viewH=function(){ return innerHeight/(window.pageZoom||1); };
+  fit();
+  addEventListener('resize', fit);
+})();
+</script>
 </head>
 <body>
 
@@ -1291,9 +1334,9 @@ setPhi(PHI);
 const HUD_H=62, SUM_H=74;
 
 function size(){
-  const r=oc.parentElement.getBoundingClientRect();
+  const r=cssRect(oc.parentElement);
   W=r.width; H=r.height;
-  const dpr=window.devicePixelRatio||1;
+  const dpr=(window.devicePixelRatio||1)*pageZoomNow();
   oc.width=W*dpr; oc.height=H*dpr;
   oc.style.width=W+'px'; oc.style.height=H+'px';
   ox.setTransform(dpr,0,0,dpr,0,0);
@@ -1689,7 +1732,7 @@ function basis(){
 
 function drawEarth(sub){
   if(!prog||!texReady) return false;
-  const dpr=window.devicePixelRatio||1;
+  const dpr=(window.devicePixelRatio||1)*pageZoomNow();
   gl.viewport(0,0,ec.width,ec.height);
   gl.clear(gl.COLOR_BUFFER_BIT);
   const b=basis();
@@ -1744,8 +1787,8 @@ let drag=null, idle=0;
 let travelled=0;       /* how far the pointer moved since it went down  */
 
 function localXY(e){
-  const r=oc.getBoundingClientRect();
-  return [e.clientX-r.left, e.clientY-r.top];
+  const r=cssRect(oc);
+  return [cssX(e)-r.left, cssY(e)-r.top];
 }
 /* which site is under the pointer, if any. The radius is generous on purpose:
    these are small marks on a sphere you can also spin, and demanding pixel
@@ -1761,7 +1804,7 @@ function dotAt(mx,my){
 }
 oc.addEventListener('pointerdown',function(e){
   travelled=0; idle=0;
-  drag={x:e.clientX,y:e.clientY};
+  drag={x:cssX(e),y:cssY(e)};
   try{ oc.setPointerCapture(e.pointerId); }catch(err){}
   oc.style.cursor='grabbing';
 });
@@ -1772,10 +1815,10 @@ oc.addEventListener('pointermove',function(e){
     /* the smaller the globe, the more degrees a pixel of drag is worth - so the
        surface moves under the finger at the same speed at every size */
     const k=0.26*(320/R);
-    travelled+=Math.hypot(e.clientX-drag.x,e.clientY-drag.y);
-    tLAM=LAM-(e.clientX-drag.x)*k;
-    tPHI=Math.max(-78,Math.min(78,PHI+(e.clientY-drag.y)*k));
-    drag={x:e.clientX,y:e.clientY}; idle=0; return;
+    travelled+=Math.hypot(cssX(e)-drag.x,cssY(e)-drag.y);
+    tLAM=LAM-(cssX(e)-drag.x)*k;
+    tPHI=Math.max(-78,Math.min(78,PHI+(cssY(e)-drag.y)*k));
+    drag={x:cssX(e),y:cssY(e)}; idle=0; return;
   }
   /* over a site the pointer says "this opens something"; everywhere else the
      field says "this turns" */
@@ -1890,9 +1933,9 @@ CARD.addEventListener('mouseleave',armShut);
    never hang off the top or the bottom of the window - a card half off the
    screen is a card that has stopped being one. */
 function placeCard(p){
-  const r=p._row2.getBoundingClientRect();
+  const r=cssRect(p._row2);
   const h=CARD.offsetHeight||300;
-  const y=Math.max(88+h/2, Math.min(innerHeight-18-h/2, r.top+r.height/2));
+  const y=Math.max(88+h/2, Math.min(viewH()-18-h/2, r.top+r.height/2));
   CARD.style.top=y+'px';
 }
 
@@ -2014,7 +2057,7 @@ function open(p){
      fallen to; and a narrow screen, where the picture is a plain list and there
      is no ground to go through. All three get the old cut, unchanged - which is
      also why the cut is still the first thing written above. */
-  if(reduced || !isFinite(p.lat) || !isFinite(p.lng) || innerWidth<=720){ go(); return; }
+  if(reduced || !isFinite(p.lat) || !isFinite(p.lng) || viewW()<=720){ go(); return; }
 
   GOING=p; GOT=0;
   GO={ t:0, dur:GO_MS/1000,
@@ -2067,7 +2110,7 @@ function cool(){
 let DOCK=null;
 function dock(){
   if(!ACT || !CARD.classList.contains('on')){ DOCK=null; return; }
-  const b=$('theatre').getBoundingClientRect(), r=CARD.getBoundingClientRect();
+  const b=cssRect($('theatre')), r=cssRect(CARD);
   DOCK=[r.right-b.left, r.top-b.top+r.height/2];
 }
 
@@ -3104,11 +3147,11 @@ function drawSites(now,dt){
      every frame, and nothing shuffles while you drag. */
   if(CLOSE>0.002){
     PLATES.length=0;
-    const tb=$('theatre').getBoundingClientRect();
+    const tb=cssRect($('theatre'));
     ['.rail','.sumx'].forEach(function(sel){
       const el=document.querySelector(sel);
       if(!el) return;
-      const r=el.getBoundingClientRect();
+      const r=cssRect(el);
       PLATES.push({x:r.left-tb.left, y:r.top-tb.top, w:r.width, h:r.height});
     });
     PLANTS.filter(function(p){ return p.vis; })

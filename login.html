@@ -228,7 +228,7 @@ body{background:
    as resting on it. The bottom padding is a floor, so a short window closes the
    gap rather than pushing the sign-in off the top. */
 #boot{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
-  padding:24px 24px max(24px,13vh)}
+  padding:24px 24px max(24px,calc(13vh / var(--z,1)))}
 /* ---------- ONE PANEL, AND IT IS THE OVERVIEW'S OWN ----------
    The sign-in used to stand bare on the field: type on a background, with
    nothing bounding it. That is why it read as plain - not because anything was
@@ -561,7 +561,7 @@ body{background:
 @media (max-width:620px){
   /* the limb is drawn shallower on a narrow window by the script; the panel
      simply stops being generous with its own edges */
-  #boot{padding:18px 16px max(18px,9vh)}
+  #boot{padding:18px 16px max(18px,calc(9vh / var(--z,1)))}
   .stack{padding:18px 18px 20px;border-radius:13px;width:min(100%,360px)}
   .brand img{height:27px}
   .brand .word{font-size:15.5px}
@@ -572,6 +572,48 @@ body{background:
   .lbox{width:min(100%,340px)}
 }
 </style>
+<script>
+/* ===================== SCREEN SIZE: BIG SCREENS =====================
+   The portal is laid out for a screen of about 1600 x 900. On a bigger screen
+   - a 1920 x 1080 monitor or projector, a 2560 x 1440 monitor, a 4K screen or
+   TV - the whole page is drawn larger by one factor, so it looks like the
+   design, only bigger, instead of a small page in a sea of margin:
+   1920 x 1080 -> 1.2x, 2560 x 1440 -> 1.6x, 3840 x 2160 -> 2.4x.
+   The factor is the smaller of width / 1600 and height / 900, so a wide but
+   short screen is never scaled past its height, and under 1.1x nothing is
+   scaled at all. Screens smaller than the design are never shrunk: tablets and
+   phones get the narrow layouts instead.
+
+   How: CSS zoom on the page. Two things have to know about it.
+   - Lengths written in vw / vh in the stylesheet are divided by --z, because
+     zoom would otherwise multiply them too (100vh would be 2.4 screens tall).
+   - The browser reports the mouse and the boxes on screen in screen pixels,
+     but sizes set from code are page pixels. Code that does sums with both
+     converts first: cssRect(el), cssX(e), cssY(e), viewW(), viewH(). A canvas
+     draws at devicePixelRatio x zoom, so it stays sharp. */
+(function(){
+  var root=document.documentElement;
+  function fit(){
+    var z=Math.min(innerWidth/1600, innerHeight/900);
+    z = z<1.1 ? 1 : Math.min(4, Math.round(z*20)/20);
+    window.pageZoom=z;
+    root.style.setProperty('--z', String(z));
+    root.style.zoom = z===1 ? '' : String(z);
+  }
+  window.pageZoomNow=function(){ return window.pageZoom||1; };
+  window.cssRect=function(el){
+    var r=el.getBoundingClientRect(), z=window.pageZoom||1;
+    return { left:r.left/z, top:r.top/z, right:r.right/z, bottom:r.bottom/z,
+             width:r.width/z, height:r.height/z, x:r.left/z, y:r.top/z };
+  };
+  window.cssX=function(e){ return e.clientX/(window.pageZoom||1); };
+  window.cssY=function(e){ return e.clientY/(window.pageZoom||1); };
+  window.viewW=function(){ return innerWidth/(window.pageZoom||1); };
+  window.viewH=function(){ return innerHeight/(window.pageZoom||1); };
+  fit();
+  addEventListener('resize', fit);
+})();
+</script>
 </head>
 <body>
 
@@ -1317,7 +1359,7 @@ function sunX(){
   const v=getComputedStyle(document.documentElement).getPropertyValue('--sun-x').trim();
   const n=parseFloat(v);
   if(!isFinite(n)) return 0.78;
-  return v.indexOf('%')>=0 ? n/100 : n/innerWidth;
+  return v.indexOf('%')>=0 ? n/100 : n/viewW();
 }
 
 /* THE CANVAS IS SIZED IN ONE PLACE AND DRAWN IN ANOTHER.
@@ -1338,8 +1380,8 @@ let W=0, H=0, GROUND=null, AIR=null;
 let flyT=0;
 
 function size(){
-  const dpr=Math.min(2,window.devicePixelRatio||1);
-  W=innerWidth; H=innerHeight;
+  const dpr=Math.min(2,window.devicePixelRatio||1)*pageZoomNow();
+  W=viewW(); H=viewH();
   cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
   cv.style.width=W+'px'; cv.style.height=H+'px';
   lx.setTransform(dpr,0,0,dpr,0,0);
@@ -1579,8 +1621,8 @@ const buf=document.createElement('canvas');
 const bx=buf.getContext('2d');
 
 function size(){
-  dpr=Math.min(2,window.devicePixelRatio||1);
-  W=innerWidth; H=innerHeight;
+  dpr=Math.min(2,window.devicePixelRatio||1)*pageZoomNow();
+  W=viewW(); H=viewH();
   sky.width=Math.round(W*dpr); sky.height=Math.round(H*dpr);
   sky.style.width=W+'px'; sky.style.height=H+'px';
   ox.setTransform(dpr,0,0,dpr,0,0);

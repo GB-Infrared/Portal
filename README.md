@@ -454,6 +454,24 @@ worse than either keeping the feature or dropping it. Order is by name, always.
 
 ---
 
+## Screen sizes
+
+The layout is made for a screen of about 1600 x 900.
+
+| Screen | What happens |
+|---|---|
+| Bigger than 1600 x 900 (1920 x 1080, 2560 x 1440, 4K, projectors) | The whole page is scaled up by one factor with CSS zoom: 1920 -> 1.2x, 2560 -> 1.6x, 3840 -> 2.4x. The factor is the smaller of width / 1600 and height / 900; under 1.1x nothing is scaled. |
+| Under 1240px (small laptops, tablets, 1024 x 768 projectors) | The header's tabs move into the menu button. Under 900px the clock is left out. |
+| Under 680px (phones) | Refresh and the theme button move into the menu too. Site Control shows its site list instead of the globe, and the operator name leaves its header so Exit stays on screen. |
+
+Every page carries the same SCREEN SIZE script in its `<head>`. Because of the
+zoom, `vw` / `vh` in the stylesheets are written as `calc(100vh / var(--z,1))`,
+and code that reads the mouse or a box on screen uses `cssRect`, `cssX`, `cssY`,
+`viewW` and `viewH` instead of `getBoundingClientRect`, `clientX` or
+`innerWidth`. New code should do the same (see the trap below).
+
+---
+
 ## Controls, everywhere
 
 | Control | Options | Notes |
@@ -461,6 +479,8 @@ worse than either keeping the feature or dropping it. Order is by name, always.
 | **Refresh** | Off · 5 min · 10 min · 15 min | Header, all six portal pages. Only `monitoring` runs a real timer. `analysis` and `kpi` default to **Off** — a closed historical window does not move while you read it. |
 | **Rows per page** | 25 · 50 · 75 · 100 · 150 · 200 | Table footers. Opens **upward** — a list dropped downward from a page footer opens into the window edge. |
 | **Theme** | ☾ / ☀ | Header. Names *what it will do*, not where you are. |
+| **Notifications** | one row per logger | Header, just before the theme button, on the five portal pages. Same as the live dashboard: the dot is green when every logger is live and red when any is not (or the list is empty); a logger that is not live reads "Data is not Live" in red. The real call is `GET /api/v1/data-communications/logger-status`, asked again every 3 minutes. |
+| **Menu** | ☰ | Header, only on small screens. Under 1240px the tabs move into it; under 680px Refresh and the theme button too. Notifications and the avatar always stay in the bar. |
 | **Escape** | closes any open panel | 19 handlers across the eight files. |
 
 ---
@@ -485,6 +505,11 @@ settings.html?as=user
                    the customer admin: only User Profile and Customer Devices
                    (read-only, no rename), signed in as Priya Nair, Sangria
                    only. Without it the page is the customer admin's.
+
+home.html?loggers=down
+                   one logger not live: red dot, red row. Works on all five
+                   portal pages. ?loggers=none shows a customer with no
+                   loggers.
 
 any key            skips the boot log. Somebody who has seen it once should
                    not have to sit through it again.
@@ -530,6 +555,7 @@ Recorded so they are not re-discovered.
 | **Mixed clocks** | Seeding a `requestAnimationFrame` loop with a `performance.now()` reading. They are not guaranteed to be the same clock; the second frame arrived *before* the start, the ease squared it, and the panel counted down to **−586 %**. The first frame that runs is time zero. |
 | **Circular thresholds** | A "this is slow" detector compared elapsed time against the same budget the demo flag was stretching — so a step told to run four times longer also got four times longer before counting as late. A deadline derived from the thing it is meant to catch can never be missed. |
 | **Once-per-resize painters** | A canvas painter that sized the buffer *and* drew was correct at one call per resize and pathological per frame — `canvas.width` reallocates the backing store. Split into `size()` and `draw()` before animating anything. |
+| **Mixed pixels under zoom** | With the page zoomed for a big screen, the browser reports the mouse, `getBoundingClientRect` and `innerWidth` in screen pixels, while sizes set from code are page pixels. A tooltip placed with `e.clientX + 20` lands 2.4 times too far out on a 4K screen. Convert first with the SCREEN SIZE helpers. |
 | **Stale comments** | `login.html` opened with *"THE FRONT DOOR IS LIGHT NOW"* while the `:root` sixty lines below overrode every token to the void's values. A comment that says the opposite of the code is worse than no comment. |
 
 ---
@@ -537,13 +563,13 @@ Recorded so they are not re-discovered.
 ## Repository
 
 ```
-remote ....... github.com/GB-Infrared/UI-Design   (was Portal-UI)
-branch ....... portal-design-mockup
+remote ....... github.com/GB-Infrared/Portal   (was UI-Design, Portal-UI)
+branch ....... mockup   (was portal-design-mockup)
 folder ....... design-mockup/
 ```
 
 The React version of these screens, with the demo data removed and ready to
-connect to the real backend, is on the **`portal-design`** branch (folder
+connect to the real backend, is on the **`design`** branch (folder
 `design-backend/`). The mockups in this folder stay the source of truth for all
 design and interaction work: change a screen here first, then carry the change
 over to the React app.

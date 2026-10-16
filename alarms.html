@@ -308,9 +308,9 @@ select:focus{border-color:var(--line-hi);background-color:var(--hover)}
    One column, not two. Monitoring needs a rail because its chart is driven by a
    device you pick; an alarm list is driven by the filter bar above it, and every
    pixel a rail took would come out of the columns. */
-.wrap{max-width:2400px;margin:0 auto;padding:14px clamp(14px,1.5vw,28px) 34px;
+.wrap{max-width:2400px;margin:0 auto;padding:14px clamp(14px,calc(1.5vw / var(--z,1)),28px) 34px;
   display:flex;flex-direction:column;gap:14px}
-.toprow{max-width:2400px;margin:0 auto;padding:16px clamp(14px,1.5vw,28px) 0}
+.toprow{max-width:2400px;margin:0 auto;padding:16px clamp(14px,calc(1.5vw / var(--z,1)),28px) 0}
 
 /* ---------- filter bar ---------- */
 /* bare toolbar — no card around the controls, keeps the page open */
@@ -389,7 +389,7 @@ select:focus{border-color:var(--line-hi);background-color:var(--hover)}
    to three styled dropdowns was the odd one out, and it could not have shown a
    count anyway. */
 .pplant{width:212px;padding:7px;display:flex;flex-direction:column;gap:5px;
-  max-height:min(60vh,320px);overflow-y:auto;scrollbar-width:thin}
+  max-height:min(calc(60vh / var(--z,1)),320px);overflow-y:auto;scrollbar-width:thin}
 .pcard{display:flex;flex-direction:column;gap:3px;min-width:0;width:100%;
   text-align:left;font-family:inherit;
   background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-sm);
@@ -558,7 +558,7 @@ tbody tr:not(.dh):hover td:not(.nil){color:var(--text)}
 .colpanel{position:absolute;top:calc(100% + 6px);left:0;z-index:80;width:250px;
   background:var(--elev);border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:0 18px 44px -16px var(--shadow);padding:8px;
-  max-height:min(60vh,460px);overflow-y:auto;scrollbar-width:thin}
+  max-height:min(calc(60vh / var(--z,1)),460px);overflow-y:auto;scrollbar-width:thin}
 .colpanel[hidden]{display:none}
 .colhead{font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
   color:var(--faint);padding:4px 8px 8px}
@@ -623,7 +623,7 @@ tbody tr:not(.dh):hover td:not(.nil){color:var(--text)}
 .rowpop{position:fixed;z-index:120;pointer-events:none;opacity:0;transition:opacity .12s ease;
   background:var(--elev);border:1px solid var(--line);border-radius:11px;padding:11px 13px;
   box-shadow:0 20px 48px -18px var(--shadow),0 3px 10px -6px var(--shadow);
-  max-width:min(620px,92vw)}
+  max-width:min(620px,calc(92vw / var(--z,1)))}
 .rowpop.on{opacity:1}
 .rowpop .rp-h{font-family:var(--mono);font-size:11px;font-weight:800;letter-spacing:.05em;
   color:var(--text);padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--line-soft)}
@@ -681,6 +681,48 @@ tbody tr:not(.dh):hover td:not(.nil){color:var(--text)}
   document.addEventListener('DOMContentLoaded', say);
 })();
 </script>
+<script>
+/* ===================== SCREEN SIZE: BIG SCREENS =====================
+   The portal is laid out for a screen of about 1600 x 900. On a bigger screen
+   - a 1920 x 1080 monitor or projector, a 2560 x 1440 monitor, a 4K screen or
+   TV - the whole page is drawn larger by one factor, so it looks like the
+   design, only bigger, instead of a small page in a sea of margin:
+   1920 x 1080 -> 1.2x, 2560 x 1440 -> 1.6x, 3840 x 2160 -> 2.4x.
+   The factor is the smaller of width / 1600 and height / 900, so a wide but
+   short screen is never scaled past its height, and under 1.1x nothing is
+   scaled at all. Screens smaller than the design are never shrunk: tablets and
+   phones get the narrow layouts instead.
+
+   How: CSS zoom on the page. Two things have to know about it.
+   - Lengths written in vw / vh in the stylesheet are divided by --z, because
+     zoom would otherwise multiply them too (100vh would be 2.4 screens tall).
+   - The browser reports the mouse and the boxes on screen in screen pixels,
+     but sizes set from code are page pixels. Code that does sums with both
+     converts first: cssRect(el), cssX(e), cssY(e), viewW(), viewH(). A canvas
+     draws at devicePixelRatio x zoom, so it stays sharp. */
+(function(){
+  var root=document.documentElement;
+  function fit(){
+    var z=Math.min(innerWidth/1600, innerHeight/900);
+    z = z<1.1 ? 1 : Math.min(4, Math.round(z*20)/20);
+    window.pageZoom=z;
+    root.style.setProperty('--z', String(z));
+    root.style.zoom = z===1 ? '' : String(z);
+  }
+  window.pageZoomNow=function(){ return window.pageZoom||1; };
+  window.cssRect=function(el){
+    var r=el.getBoundingClientRect(), z=window.pageZoom||1;
+    return { left:r.left/z, top:r.top/z, right:r.right/z, bottom:r.bottom/z,
+             width:r.width/z, height:r.height/z, x:r.left/z, y:r.top/z };
+  };
+  window.cssX=function(e){ return e.clientX/(window.pageZoom||1); };
+  window.cssY=function(e){ return e.clientY/(window.pageZoom||1); };
+  window.viewW=function(){ return innerWidth/(window.pageZoom||1); };
+  window.viewH=function(){ return innerHeight/(window.pageZoom||1); };
+  fit();
+  addEventListener('resize', fit);
+})();
+</script>
 </head>
 <body>
 
@@ -724,6 +766,19 @@ tbody tr:not(.dh):hover td:not(.nil){color:var(--text)}
       <div class="msel rsel" id="refresh-pick"></div>
       <input type="hidden" id="refresh-sel" value="300">
     </div>
+    <!-- NOTIFICATIONS: is every logger sending data? See the LOGGER
+         NOTIFICATIONS script at the end of the page. -->
+    <div class="notif" id="notif">
+      <button class="notifbtn" type="button" id="notifbtn" aria-haspopup="true" aria-expanded="false"
+              title="Notifications" aria-label="Notifications">
+        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6.5 0C2.91 0 0 2.462 0 5.5c0 1.075.37 2.074 1 2.922V12l2.699-1.542A7.454 7.454 0 006.5 11c3.59 0 6.5-2.462 6.5-5.5S10.09 0 6.5 0z"/><path fill="currentColor" opacity=".55" d="M16 9.5c0-.987-.429-1.897-1.147-2.639C14.124 10.348 10.66 13 6.5 13c-.103 0-.202-.018-.305-.021C7.231 13.617 8.556 14 10 14c.449 0 .886-.04 1.307-.11L15 16v-4h-.012C15.627 11.285 16 10.425 16 9.5z"/></svg>
+        <span class="ndot" id="notifdot"></span>
+      </button>
+      <div class="notifmenu" id="notifmenu" role="menu">
+        <div class="nhead">Notifications</div>
+        <ul class="nlist" id="notiflist"></ul>
+      </div>
+    </div>
     <!-- LIGHT / DARK. Only the portal carries it. The sign-in and the site
          overview are the void by design - they are one continuous arrival
          through space, and a switch offering to make those white would be
@@ -748,6 +803,23 @@ tbody tr:not(.dh):hover td:not(.nil){color:var(--text)}
         <div class="acctdiv"></div>
         <a class="acctitem" role="menuitem" href="settings.html"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.3a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.7 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15.1 4.7a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09A1.7 1.7 0 0 0 21 10.1a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg> Settings</a>
         <a class="acctitem out" role="menuitem" href="login.html"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 16.5v1.8a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V5.7a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v1.8"/><path d="M19.8 12H9.4m10.4 0-3.2-3.2M19.8 12l-3.2 3.2"/></svg> Sign out</a>
+      </div>
+    </div>
+    <!-- MENU: on a tablet or a phone the tabs move in here, and on a phone
+         Refresh and light/dark too. See TOP BAR ON SMALL SCREENS at the end. -->
+    <div class="navwrap" id="navwrap">
+      <button class="menubtn" type="button" id="menubtn" aria-haspopup="true" aria-expanded="false"
+              title="Menu" aria-label="Menu">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div class="navpanel" id="navpanel">
+        <div class="nphead">Pages</div>
+        <div class="npages" id="npages"></div>
+        <div class="npextra" id="npextra" hidden>
+          <div class="nprow" id="np-refresh"><span class="npl">Refresh</span></div>
+          <div class="nprow" id="np-theme"><span class="npl">Light / dark</span></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1397,7 +1469,7 @@ function wireDatePickers(root){
 
     el.addEventListener('mousedown',function(e){
       /* the indicator already toggles itself; taking it over would fight it */
-      if(e.offsetX>=el.clientWidth-26) return;
+      if((e.offsetX/pageZoomNow())>=el.clientWidth-26) return;
       e.preventDefault();                       /* no caret, no segment highlight */
       if(open){ el.blur(); open=false; return; }
       el.focus({preventScroll:true});
@@ -1509,9 +1581,9 @@ renderTable();
 
   function place(e){
     const w=pop.offsetWidth, h=pop.offsetHeight;
-    let x=e.clientX+20, y=e.clientY+18;
-    if(x+w>window.innerWidth-10) x=e.clientX-w-20;   /* flip rather than overflow */
-    if(y+h>window.innerHeight-10) y=Math.max(10,e.clientY-h-14);
+    let x=cssX(e)+20, y=cssY(e)+18;
+    if(x+w>viewW()-10) x=cssX(e)-w-20;   /* flip rather than overflow */
+    if(y+h>viewH()-10) y=Math.max(10,cssY(e)-h-14);
     pop.style.left=x+'px';
     pop.style.top=y+'px';
   }
@@ -1596,6 +1668,176 @@ renderTable();
       if(t && t.dataset && t.dataset.ss==='acrole'){ e.preventDefault(); e.stopPropagation(); }
     },true);
   }
+})();
+</script>
+<script>
+/* ===================== LOGGER NOTIFICATIONS =====================
+   The same feature the live dashboard has in its top bar: a
+   button just before the light/dark button, whose dot says at a glance whether every logger of this customer is
+   sending data, and a list that names each logger.
+
+   - The list is GET /api/v1/data-communications/logger-status for the
+     signed-in customer (for someone from the web admin panel, the customer
+     they opened). It answers one row per logger: its name and status, true
+     when its data is live. The live site asks again every 3 minutes, not when
+     the window regains focus, and does not retry a failed call.
+   - The dot is green when every logger is live, and red when any one is not
+     - or when the list is empty or did not load, because then nobody can say
+     the data is live.
+   - Each row reads "Logger name: Data is Live"; a logger that is not live
+     reads "Data is not Live" and the row turns red.
+   - The list opens on the button and closes on the button, on a click
+     anywhere else, on Esc, or on picking a row.
+
+   The mockup has no server, so the list is the customer's five loggers, all
+   live. Add ?loggers=down to the address to see one logger not live, or
+   ?loggers=none for a customer with no loggers. The same block is on every
+   page that carries the top bar. */
+(function(){
+  var LOGGERS=[
+    {loggerName:'Sangria logger 1', status:true},
+    {loggerName:'Sangria logger 2', status:true},
+    {loggerName:'Rioja logger',     status:true},
+    {loggerName:'Mendoza logger 1', status:true},
+    {loggerName:'Mendoza logger 2', status:true}
+  ];
+  var mode=new URLSearchParams(location.search).get('loggers');
+  if(mode==='down') LOGGERS[4].status=false;
+  if(mode==='none') LOGGERS=[];
+
+  var wrap=document.getElementById('notif'), btn=document.getElementById('notifbtn'),
+      dot=document.getElementById('notifdot'), list=document.getElementById('notiflist');
+  if(!wrap) return;
+  var allLive=LOGGERS.length>0 && LOGGERS.every(function(l){ return l.status; });
+  dot.className='ndot '+(allLive?'ok':'bad');
+  dot.title=allLive?'Every logger is live':'A logger is not live';
+
+  list.innerHTML='';
+  if(!LOGGERS.length){
+    var e=document.createElement('li'); e.className='nnone'; e.textContent='No loggers yet'; list.appendChild(e);
+  }
+  LOGGERS.forEach(function(l){
+    var li=document.createElement('li');
+    li.className='nrow'+(l.status?'':' down');
+    li.setAttribute('role','menuitem'); li.tabIndex=-1;
+    var nm=document.createElement('b'); nm.textContent=(l.loggerName||'Unnamed logger')+':';
+    li.appendChild(document.createTextNode('\uD83D\uDCE3 '));
+    li.appendChild(nm);
+    li.appendChild(document.createTextNode(' '+(l.status?'Data is Live':'Data is not Live')));
+    li.addEventListener('click',function(){ shut(); });
+    list.appendChild(li);
+  });
+
+  function shut(){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click',function(ev){
+    ev.stopPropagation();
+    var open=!wrap.classList.contains('open');
+    var acct=document.getElementById('acct'); if(acct) acct.classList.remove('open');
+    wrap.classList.toggle('open',open); btn.setAttribute('aria-expanded',open?'true':'false');
+  });
+  document.addEventListener('click',function(ev){ if(!wrap.contains(ev.target)) shut(); });
+  document.addEventListener('keydown',function(ev){ if(ev.key==='Escape' && wrap.classList.contains('open')){ shut(); btn.focus(); } });
+  var ab=document.getElementById('acctbtn'); if(ab) ab.addEventListener('click',shut);
+
+  var st=document.createElement('style');
+  st.textContent=
+    '.notif{position:relative;flex:none}'
+   +'.notifbtn{width:30px;height:30px;display:grid;place-items:center;position:relative;border-radius:8px;'
+   +'border:1px solid var(--line);background:var(--panel-2);color:var(--topbar-fg-2,var(--muted));cursor:pointer;'
+   +'transition:background .12s,border-color .12s,color .12s}'
+   +'.notifbtn:hover,.notif.open .notifbtn{border-color:var(--line-hi);background:var(--topbar-hover,var(--hover));color:var(--topbar-fg,var(--text))}'
+   +'.notifbtn svg{display:block}'
+   +'.ndot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;border:2px solid var(--panel-2)}'
+   +'.ndot.ok{background:var(--green)}.ndot.bad{background:var(--red)}'
+   +'.notifmenu{position:absolute;top:calc(100% + 8px);right:0;z-index:91;width:300px;max-width:calc(100vw / var(--z,1) - 24px);'
+   +'background:var(--elev);border:1px solid var(--line);border-radius:var(--r-md,10px);'
+   +'box-shadow:0 18px 44px -16px var(--shadow);padding:6px 0;display:none}'
+   +'.notif.open .notifmenu{display:block}'
+   +'.nhead{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint,var(--muted));padding:6px 14px 8px}'
+   +'.nlist{list-style:none;margin:0;padding:0;max-height:320px;overflow:auto}'
+   +'.nrow{padding:10px 14px;font-size:13px;color:var(--text);border-bottom:1px solid var(--line);cursor:pointer}'
+   +'.nrow:last-child{border-bottom:0}.nrow:hover{background:var(--hover)}'
+   +'.nrow b{font-weight:600}.nrow.down,.nrow.down b{color:var(--red)}'
+   +'.nnone{padding:8px 14px 10px;font-size:12.5px;color:var(--muted)}';
+  document.head.appendChild(st);
+})();
+</script>
+<script>
+/* ===================== TOP BAR ON SMALL SCREENS =====================
+   The full bar - wordmark, site, six tabs, clock, Refresh, notifications,
+   light/dark and the avatar - needs about 1240px. Below that it does not
+   squeeze: things move into the MENU button at the right end of the bar.
+   - Under 1240px (tablets, small laptops, a 1024 x 768 projector): the tabs
+     move into the menu. Under 900px the clock is left out.
+   - Under 680px (phones): Refresh and light/dark move into the menu too.
+     Notifications and the avatar stay in the bar, so the green or red dot and
+     the account menu are always one tap away. Under 420px the wordmark gives
+     way to the logo alone.
+   The controls are MOVED, not copied, so each keeps working exactly as it does
+   in the bar. The menu closes on the button, on a click anywhere else, on Esc
+   and on opening the notifications or the account menu. The same block is on
+   every page that carries this top bar. */
+(function(){
+  var wrap=document.getElementById('navwrap'), btn=document.getElementById('menubtn');
+  var pages=document.getElementById('npages'), extra=document.getElementById('npextra');
+  var tabs=document.querySelector('.topbar nav.tabs');
+  var refresh=document.querySelector('.topbar .refresh');
+  var theme=document.getElementById('themebtn');
+  if(!wrap || !tabs || !theme) return;
+  var tabletQ=matchMedia('(max-width:1239px)'), phoneQ=matchMedia('(max-width:679px)');
+
+  function mark(el){ var c=document.createComment('top bar place'); el.parentNode.insertBefore(c,el); return c; }
+  function back(el,m){ if(el && m && el.previousSibling!==m) m.parentNode.insertBefore(el,m.nextSibling); }
+  var tabsAt=mark(tabs), refreshAt=refresh?mark(refresh):null, themeAt=mark(theme);
+
+  function shut(){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+  function place(){
+    if(tabletQ.matches){ if(tabs.parentNode!==pages) pages.appendChild(tabs); } else back(tabs,tabsAt);
+    if(phoneQ.matches){
+      if(refresh && refresh.parentNode.id!=='np-refresh') document.getElementById('np-refresh').appendChild(refresh);
+      if(theme.parentNode.id!=='np-theme') document.getElementById('np-theme').appendChild(theme);
+    }else{ back(refresh,refreshAt); back(theme,themeAt); }
+    extra.hidden=!phoneQ.matches;
+    if(!tabletQ.matches) shut();
+  }
+  place();
+  tabletQ.addEventListener('change',place);
+  phoneQ.addEventListener('change',place);
+
+  btn.addEventListener('click',function(ev){
+    ev.stopPropagation();
+    var open=!wrap.classList.contains('open');
+    var acct=document.getElementById('acct'); if(acct) acct.classList.remove('open');
+    var nt=document.getElementById('notif'); if(nt){ nt.classList.remove('open'); var nb=document.getElementById('notifbtn'); if(nb) nb.setAttribute('aria-expanded','false'); }
+    wrap.classList.toggle('open',open); btn.setAttribute('aria-expanded',open?'true':'false');
+  });
+  document.addEventListener('click',function(ev){ if(!wrap.contains(ev.target)) shut(); });
+  document.addEventListener('keydown',function(ev){ if(ev.key==='Escape' && wrap.classList.contains('open')){ shut(); btn.focus(); } });
+  ['acctbtn','notifbtn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.addEventListener('click',shut); });
+
+  var st=document.createElement('style');
+  st.textContent=
+    '.navwrap{position:relative;display:none;flex:none}'
+   +'.menubtn{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;border:1px solid var(--line);'
+   +'background:var(--panel-2);color:var(--topbar-fg-2,var(--muted));cursor:pointer;transition:background .12s,border-color .12s,color .12s}'
+   +'.menubtn:hover,.navwrap.open .menubtn{border-color:var(--line-hi);background:var(--topbar-hover,var(--hover));color:var(--topbar-fg,var(--text))}'
+   +'.menubtn svg{display:block}'
+   +'.navpanel{position:absolute;top:calc(100% + 8px);right:0;z-index:92;width:250px;max-width:calc(100vw / var(--z,1) - 16px);'
+   +'background:var(--elev);border:1px solid var(--line);border-radius:var(--r-md,10px);box-shadow:0 18px 44px -16px var(--shadow);padding:6px;display:none}'
+   +'.navwrap.open .navpanel{display:block}'
+   +'.nphead{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint,var(--muted));padding:6px 10px}'
+   +'.navpanel nav.tabs{display:flex;flex-direction:column;gap:2px;overflow:visible}'
+   +'.navpanel .tab{display:block;padding:9px 10px;border-radius:7px}'
+   +'.npextra{border-top:1px solid var(--line);margin-top:6px;padding-top:6px}'
+   +'.npextra[hidden]{display:none}'
+   +'.nprow{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:40px;padding:4px 4px 4px 10px}'
+   +'.npl{font-size:12.5px;font-weight:600;color:var(--text)}'
+   +'@media (max-width:1239px){.navwrap{display:flex}}'
+   +'@media (max-width:899px){.topbar .clock{display:none}}'
+   +'@media (max-width:679px){.topbar{gap:10px;padding:0 12px}.topbar .right{gap:8px}'
+   +'.sitenow{min-width:0;flex:0 1 auto}.sitenow .n{overflow:hidden;text-overflow:ellipsis}}'
+   +'@media (max-width:419px){.brand .btext{display:none}}';
+  document.head.appendChild(st);
 })();
 </script>
 </body>
