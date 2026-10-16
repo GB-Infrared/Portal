@@ -1,7 +1,7 @@
 import type {
   DeviceLive, TimeSeries, KpiBucket, PortfolioToday, Profile, Company, RatePeriod, EnergyOffset, AlarmRecipient, Role, AccountUser,
   Alarm, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric, LoginResult,
-  Reading, Severity, Site, SiteState, SiteSummary, User,
+  Reading, Severity, Site, SiteState, SiteSummary, User, LoggerStatus,
 } from './types';
 
 type Raw = Record<string, any>;  // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -185,3 +185,8 @@ export const adaptPortfolio = (r: Raw): PortfolioToday => ({
   revenue: num(r.revenue), currency: str(r.currency), co2AvoidedKg: num(r.co2AvoidedKg),
   times: Array.isArray(r.times) ? r.times.map(String) : [], kw: numArr(r.kw),
 });
+
+export const adaptLoggerStatus = (r: unknown): LoggerStatus[] => arr(r).map(l => ({
+  name: str(l.loggerName ?? l.name),
+  live: typeof l.status === 'boolean' ? l.status : null,
+}));

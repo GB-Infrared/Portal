@@ -1,6 +1,6 @@
 # ENEROPS OS portal (React)
 
-The portal from the `portal-design-mockup` branch, built in React and connected
+The portal from the `mockup` branch, built in React and connected
 to a backend. It has no sample data. Every number on screen comes from the API.
 
 The mockup branch is still the reference for how things look and behave.
@@ -114,11 +114,21 @@ public/textures/    the globe's Earth and sky images
   (Refresh menu in the header). Analysis and KPI start with refresh off.
 - **Site Control globe**: `src/pages/siteControl/engine.js` is the mockup's
   drawing code, converted to a module. For the reasoning behind the design,
-  see `plants.html` on the `portal-design-mockup` branch.
+  see `plants.html` on the `mockup` branch.
+- **Screen sizes**: the layout is made for about 1600 x 900.
+  - Bigger screens (1920 x 1080, 2560 x 1440, 4K, projectors) show the same
+    layout scaled up with CSS zoom: 1920 -> 1.2x, 2560 -> 1.6x, 3840 -> 2.4x.
+    The script in `index.html` sets it. Under 1.1x nothing is scaled.
+  - Because of the zoom, code that reads the mouse or a box on screen uses
+    `cssRect`, `cssX`, `cssY`, `viewW` and `viewH` from `src/lib/screen.ts`
+    instead of `getBoundingClientRect`, `clientX` or `innerWidth`, and `vw`/`vh`
+    in CSS are written as `calc(100vh / var(--z,1))`. New code should do the same.
+  - Under 1240px wide the header's tabs move into a menu button; under 680px
+    (phones) Refresh and light/dark move there too.
 - **npm scripts** call `node` directly. The usual shortcuts break when the folder
   path has an `&` in it (like `Portal & Mobile App`).
 - **No comments in the code**, on purpose. Explanations live in this file,
-  in `docs/API.md`, and in the mockup HTML on the `portal-design-mockup` branch.
+  in `docs/API.md`, and in the mockup HTML on the `mockup` branch.
 - **Errors ignored on purpose** (for example the browser blocking storage in a
   private window) go through `ignoreErrors()` in `src/lib/ignoreErrors.ts`, so
   an empty `catch {}` never appears.
@@ -127,9 +137,9 @@ public/textures/    the globe's Earth and sky images
 ## Repository
 
 ```
-GitHub ......... github.com/GB-Infrared/UI-Design   (was Portal-UI)
-this app ....... branch portal-design          folder design-backend/
-mockups ........ branch portal-design-mockup   folder design-mockup/
+GitHub ......... github.com/GB-Infrared/Portal   (was UI-Design, Portal-UI)
+this app ....... branch design    (was portal-design)          folder design-backend/
+mockups ........ branch mockup    (was portal-design-mockup)   folder design-mockup/
 ```
 
 When the design changes, change the mockup first, then carry the change over

@@ -4,7 +4,7 @@ import * as A from './adapters';
 import type {
   Alarm, AlarmStatus, DeviceLive, TimeSeries, KpiBucket, KpiMetric,
   Profile, Company, RateKind, RatePeriod, EnergyOffset, AlarmRecipient, Role, AccountUser, Severity, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric,
-  LoginResult, PortfolioToday, Site, SiteSummary, User,
+  LoginResult, PortfolioToday, Site, SiteSummary, User, LoggerStatus,
 } from './types';
 
 type Sig = { signal?: AbortSignal };
@@ -137,3 +137,7 @@ export async function saveUser(id: string | null, x: { first: string; last: stri
 }
 export async function setUserActive(id: string, active: boolean): Promise<void> { await request(EP.userStatus(id), { method: 'PUT', body: { active } }); }
 export async function setUserRole(id: string, roleId: string | null): Promise<void> { await request(EP.userRole(id), { method: 'PUT', body: { roleId } }); }
+
+export async function getLoggerStatus(o: Sig = {}): Promise<LoggerStatus[]> {
+  return A.adaptLoggerStatus(await request(EP.loggerStatus(), { signal: o.signal }));
+}

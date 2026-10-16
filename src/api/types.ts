@@ -170,3 +170,5 @@ export interface AlarmRecipient { id: string; name: string; email: string; sever
 export interface Role { id: string; name: string; siteIds: string[] }
 
 export interface AccountUser { id: string; first: string; last: string; email: string; phone: string; roleId: string | null; active: boolean }
+
+export interface LoggerStatus { name: string | null; live: boolean | null }

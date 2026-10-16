@@ -1,4 +1,5 @@
 import { STAR_B64 } from '../../assets/starCatalog';
+import { pageZoom, viewH, viewW } from '../../lib/screen';
 
 const D2R = Math.PI / 180;
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -61,8 +62,8 @@ export function startSky(sky: HTMLCanvasElement): () => void {
   };
   const buf = document.createElement('canvas'), bx = buf.getContext('2d');
   const size = () => {
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    W = innerWidth; H = innerHeight;
+    const dpr = Math.min(2, window.devicePixelRatio || 1) * pageZoom();
+    W = viewW(); H = viewH();
     sky.width = Math.round(W * dpr); sky.height = Math.round(H * dpr);
     sky.style.width = W + 'px'; sky.style.height = H + 'px';
     ox.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -107,11 +108,11 @@ export function startLimb(cv: HTMLCanvasElement, sunHost: HTMLElement): { fly: (
   const sunX = () => {
     const v = getComputedStyle(sunHost).getPropertyValue('--sun-x').trim(), n = parseFloat(v);
     if (!Number.isFinite(n)) return 0.78;
-    return v.includes('%') ? n / 100 : n / innerWidth;
+    return v.includes('%') ? n / 100 : n / viewW();
   };
   const size = () => {
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    W = innerWidth; H = innerHeight;
+    const dpr = Math.min(2, window.devicePixelRatio || 1) * pageZoom();
+    W = viewW(); H = viewH();
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     cv.style.width = W + 'px'; cv.style.height = H + 'px';
     lx.setTransform(dpr, 0, 0, dpr, 0, 0);

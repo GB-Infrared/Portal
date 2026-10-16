@@ -93,7 +93,7 @@
 .pg-login .corner.br{bottom:16px;right:16px;border-bottom:1px solid rgba(var(--green-rgb),.42);border-right:1px solid rgba(var(--green-rgb),.42)}
 
 .pg-login #boot{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
-  padding:24px 24px max(24px,13vh)}
+  padding:24px 24px max(24px,calc(13vh / var(--z,1)))}
 .pg-login .stack{display:flex;flex-direction:column;
   padding:24px 30px 26px;border-radius:16px;
   background:var(--panel);border:1px solid var(--line);
@@ -228,7 +228,7 @@
   .pg-login .lbox .step{opacity:1;transform:none;transition:none}
 }
 @media (max-width:620px){
-  .pg-login #boot{padding:18px 16px max(18px,9vh)}
+  .pg-login #boot{padding:18px 16px max(18px,calc(9vh / var(--z,1)))}
   .pg-login .stack{padding:18px 18px 20px;border-radius:13px;width:min(100%,360px)}
   .pg-login .brand img{height:27px}
   .pg-login .brand .word{font-size:15.5px}

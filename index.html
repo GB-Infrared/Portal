@@ -8,6 +8,19 @@
 <script>
 try{ if(localStorage.getItem('enerops-theme')==='dark') document.documentElement.setAttribute('data-theme','dark'); }catch(e){}
 </script>
+<script>
+(function(){
+  var root=document.documentElement;
+  function fit(){
+    var z=Math.min(innerWidth/1600, innerHeight/900);
+    z = z<1.1 ? 1 : Math.min(4, Math.round(z*20)/20);
+    root.style.setProperty('--z', String(z));
+    root.style.zoom = z===1 ? '' : String(z);
+  }
+  fit();
+  addEventListener('resize', fit);
+})();
+</script>
 </head>
 <body>
 <div id="root"></div>

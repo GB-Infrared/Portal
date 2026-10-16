@@ -13,6 +13,7 @@ import { useApi } from '../hooks/useApi';
 import { downloadCsv } from '../lib/csv';
 import { DASH, MON, MONL, pad } from '../lib/format';
 import '../styles/pages/kpi.css';
+import { cssRect, cssX, cssY } from '../lib/screen';
 
 const METRICS: { k: KpiMetric; t: string; u: string; dec: number }[] = [
   { k: 'PR', t: 'Performance Ratio', u: '%', dec: 1 },
@@ -115,8 +116,8 @@ function KpiChart({ rows, live, dec, unit, title, foot, W, H }: {
 
   const onMove = (e: MouseEvent) => {
     const svg = svgRef.current; if (!svg) return;
-    const rc = svg.getBoundingClientRect();
-    const vx = (e.clientX - rc.left) / rc.width * W, vy = (e.clientY - rc.top) / rc.height * H;
+    const rc = cssRect(svg);
+    const vx = (cssX(e) - rc.left) / rc.width * W, vy = (cssY(e) - rc.top) / rc.height * H;
     if (vx < ML || vx > W - MR || vy < MT || vy > MT + PH) { setHov(null); return; }
     setHov(Math.max(0, Math.min(rows.length - 1, Math.floor((vx - ML) / SLOT))));
   };
@@ -125,7 +126,7 @@ function KpiChart({ rows, live, dec, unit, title, foot, W, H }: {
     const b = rows[hov];
     const items = live.map(s => ({ s, v: b[s.k] })).filter(x => x.v != null);
     if (items.length) {
-      const rc = svgRef.current.getBoundingClientRect(), wr = wrapRef.current.getBoundingClientRect();
+      const rc = cssRect(svgRef.current), wr = cssRect(wrapRef.current);
       const cx = ML + (hov + 0.5) * SLOT;
       let lx = (cx / W) * rc.width + (rc.left - wr.left) + 14; if (lx + 180 > wr.width) lx -= 200;
       const peak = Math.max(...items.map(x => x.v as number));

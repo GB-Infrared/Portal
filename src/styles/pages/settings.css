@@ -142,9 +142,9 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings .acctitem.out:hover svg{color:var(--red)}
 
 .pg-settings .shell{display:grid;grid-template-columns:250px 1fr;align-items:start;
-  min-height:calc(100vh - 58px)}
+  min-height:calc(calc(100vh / var(--z,1)) - 58px)}
 
-.pg-settings .side{position:sticky;top:58px;align-self:start;height:calc(100vh - 58px);overflow-y:auto;
+.pg-settings .side{position:sticky;top:58px;align-self:start;height:calc(calc(100vh / var(--z,1)) - 58px);overflow-y:auto;
   border-right:1px solid var(--line);background:var(--panel);padding:0 0 24px}
 .pg-settings .sidehead{display:flex;align-items:center;justify-content:center;gap:10px;
   height:76px;border-bottom:1px solid var(--line-soft);color:var(--text)}
@@ -168,7 +168,7 @@ html[data-theme="dark"] .pg-settings{
 .pg-settings .item.on{color:var(--text);font-weight:700;background:var(--green-soft);
   box-shadow:inset 2px 0 0 var(--green)}
 
-.pg-settings .main{padding:22px clamp(16px,2vw,30px) 40px;min-width:0}
+.pg-settings .main{padding:22px clamp(16px,calc(2vw / var(--z,1)),30px) 40px;min-width:0}
 .pg-settings .pagehead{font-size:20px;font-weight:600;letter-spacing:-.01em;margin-bottom:16px}
 .pg-settings .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg)}
 .pg-settings .card .chead{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:15px 20px 13px;
@@ -364,7 +364,7 @@ body.locked{overflow:hidden}
 .pg-settings .scrim{position:fixed;inset:0;z-index:120;background:rgba(19,38,63,.42);
   display:none;align-items:center;justify-content:center;padding:20px}
 .pg-settings .scrim.on{display:flex}
-.pg-settings .modal{width:100%;max-width:430px;max-height:calc(100vh - 40px);overflow-y:auto;
+.pg-settings .modal{width:100%;max-width:430px;max-height:calc(calc(100vh / var(--z,1)) - 40px);overflow-y:auto;
   background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:0 30px 70px -20px var(--shadow);animation:min .16s ease-out}
 @keyframes min{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}

@@ -1,6 +1,7 @@
 import { useRef, useState, type JSX, type MouseEvent } from 'react';
 import { MON, MONL, hourLabel, time12, toDate } from '../lib/format';
 import { areaPath, hourOfDay, lastIndexWithValue, linePath, niceMax } from './util';
+import { cssRect, cssX, cssY } from '../lib/screen';
 
 export interface MSeries { id: string; name: string; color: string; values: (number | null)[] }
 export interface Marker { id: string; at: Date; title: string }
@@ -87,8 +88,8 @@ export function MonitorChart({ mode, times, series, width: W, height: H, yTitle,
 
   const onMove = (e: MouseEvent) => {
     const svg = svgRef.current; if (!svg || !n) return;
-    const r = svg.getBoundingClientRect();
-    const vx = (e.clientX - r.left) / r.width * W, vy = (e.clientY - r.top) / r.height * H;
+    const r = cssRect(svg);
+    const vx = (cssX(e) - r.left) / r.width * W, vy = (cssY(e) - r.top) / r.height * H;
     if (vx < ML || vx > W - MR || vy < MT || vy > MT + PH) { setHov(null); return; }
     if (mode === 'days') { setHov(Math.max(0, Math.min(n - 1, Math.floor((vx - ML) / slot)))); return; }
     let best = -1, bd = Infinity;
@@ -99,7 +100,7 @@ export function MonitorChart({ mode, times, series, width: W, height: H, yTitle,
   let tip: JSX.Element | null = null, xh = NaN;
   if (hov !== null && series.length && svgRef.current && wrapRef.current) {
     xh = xs[hov];
-    const r = svgRef.current.getBoundingClientRect(), wr = wrapRef.current.getBoundingClientRect();
+    const r = cssRect(svgRef.current), wr = cssRect(wrapRef.current);
     let lx = (xh / W) * r.width + (r.left - wr.left) + 14; if (lx + 156 > wr.width) lx -= 184;
     const top = Math.max(0, ...series.map(s => s.values[hov] ?? 0));
     const d = dates[hov];

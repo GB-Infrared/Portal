@@ -1,5 +1,6 @@
 import { useRef, useState, type JSX, type MouseEvent } from 'react';
 import { pad } from '../lib/format';
+import { cssRect, cssX, cssY } from '../lib/screen';
 
 export interface ARow { t: number; v1: Record<string, number | null>; v2: Record<string, number | null> }
 export interface ALine { id: string; name: string; which: 1 | 2; color: string; tag: string; unit: string }
@@ -135,13 +136,13 @@ export function AnalysisChart({ from, to, rows, lines, hasY2, y1Label, y2Label, 
 
   const onMove = (e: MouseEvent) => {
     const svg = svgRef.current, wrap = wrapRef.current; if (!svg || !wrap || !rows.length || !lines.length) return;
-    const r = svg.getBoundingClientRect();
-    const vx = (e.clientX - r.left) / r.width * W, vy = (e.clientY - r.top) / r.height * H;
+    const r = cssRect(svg);
+    const vx = (cssX(e) - r.left) / r.width * W, vy = (cssY(e) - r.top) / r.height * H;
     if (vx < ML || vx > W - MR || vy < MT || vy > MT + PH) { setHov(null); return; }
     const t = from + (vx - ML) / PW * (to - from);
     let bi = 0, bd = Infinity;
     rows.forEach((row, i) => { const dd = Math.abs(row.t - t); if (dd < bd) { bd = dd; bi = i; } });
-    setHov({ i: bi, y: e.clientY - wrap.getBoundingClientRect().top });
+    setHov({ i: bi, y: cssY(e) - cssRect(wrap).top });
   };
   let tip: JSX.Element | null = null, xh = NaN;
   if (hov && svgRef.current && wrapRef.current) {
@@ -149,7 +150,7 @@ export function AnalysisChart({ from, to, rows, lines, hasY2, y1Label, y2Label, 
     const items = lines.map(l => ({ l, v: (l.which === 1 ? row.v1 : row.v2)[l.id] })).filter(x => x.v != null && Number.isFinite(x.v));
     if (items.length) {
       xh = xOf(row.t);
-      const r = svgRef.current.getBoundingClientRect(), wr = wrapRef.current.getBoundingClientRect();
+      const r = cssRect(svgRef.current), wr = cssRect(wrapRef.current);
       let lx = (xh / W) * r.width + (r.left - wr.left) + 14; if (lx + 190 > wr.width) lx -= 214;
       tip = (
         <div className="tip" id="tip" style={{ left: Math.max(4, lx), top: Math.max(6, hov.y - 18), opacity: 1 }}>

@@ -1,4 +1,5 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { cssRect, viewH, viewW } from '../../lib/screen';
 
 export interface SsOpt { v: string; t: string; s?: string; none?: boolean }
 
@@ -107,15 +108,15 @@ export function SsSelect({ value, options, onPick, label, any = 'Choose', empty 
 
 function placePanel(b: HTMLElement | null, p: HTMLElement | null) {
   if (!b || !p) return;
-  const r = b.getBoundingClientRect(), gap = 6, edge = 10;
+  const r = cssRect(b), gap = 6, edge = 10;
   p.style.minWidth = Math.max(r.width, 150) + 'px';
   p.style.maxWidth = Math.max(r.width, 300) + 'px';
   p.style.maxHeight = 'none';
   const want = p.offsetHeight;
-  const under = window.innerHeight - r.bottom - edge, over = r.top - edge;
+  const under = viewH() - r.bottom - edge, over = r.top - edge;
   const up = want > under && over > under;
   p.style.maxHeight = Math.max(96, (up ? over : under) - gap) + 'px';
   const h = p.offsetHeight, w = p.offsetWidth;
   p.style.top = (up ? Math.max(edge, r.top - gap - h) : r.bottom + gap) + 'px';
-  p.style.left = Math.max(edge, Math.min(r.left, window.innerWidth - edge - w)) + 'px';
+  p.style.left = Math.max(edge, Math.min(r.left, viewW() - edge - w)) + 'px';
 }

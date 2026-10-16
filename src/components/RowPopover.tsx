@@ -1,4 +1,5 @@
 import { useEffect, useRef, type RefObject } from 'react';
+import { cssX, cssY, viewH, viewW } from '../lib/screen';
 
 function headerLabels(table: HTMLTableElement): string[] {
   const head = table.tHead; if (!head) return [];
@@ -49,9 +50,9 @@ export function RowPopover({ tableRef }: { tableRef: RefObject<HTMLTableElement 
     };
     const place = (e: MouseEvent) => {
       const w = el.offsetWidth, h = el.offsetHeight;
-      let x = e.clientX + 20, y = e.clientY + 18;
-      if (x + w > window.innerWidth - 10) x = e.clientX - w - 20;
-      if (y + h > window.innerHeight - 10) y = Math.max(10, e.clientY - h - 14);
+      let x = cssX(e) + 20, y = cssY(e) + 18;
+      if (x + w > viewW() - 10) x = cssX(e) - w - 20;
+      if (y + h > viewH() - 10) y = Math.max(10, cssY(e) - h - 14);
       el.style.left = x + 'px'; el.style.top = y + 'px';
     };
     const move = (e: MouseEvent) => {

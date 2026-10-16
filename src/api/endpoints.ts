@@ -34,4 +34,6 @@ export const EP = {
   user: (id: string) => `/account/users/${enc(id)}`,
   userStatus: (id: string) => `/account/users/${enc(id)}/status`,
   userRole: (id: string) => `/account/users/${enc(id)}/role`,
+
+  loggerStatus: () => '/data-communications/logger-status',
 };

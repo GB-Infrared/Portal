@@ -2,6 +2,7 @@ import { useMemo, useRef, useState, type JSX, type MouseEvent } from 'react';
 import type { DayPowerSeries } from '../api/types';
 import { hourLabel, time12, toDate, MONL } from '../lib/format';
 import { areaPath, hourOfDay, lastIndexWithValue, linePath, niceMax } from './util';
+import { cssRect, cssX } from '../lib/screen';
 
 const L = 46, R = 58, T = 14, B = 34, IMAX = 1000;
 
@@ -87,8 +88,8 @@ export function PowerChart({ data, width: W, height: H, selected, off, colorOf, 
 
   const onMove = (e: MouseEvent) => {
     const svg = svgRef.current; if (!svg) return;
-    const r = svg.getBoundingClientRect();
-    const vx = (e.clientX - r.left) / r.width * W;
+    const r = cssRect(svg);
+    const vx = (cssX(e) - r.left) / r.width * W;
     let best = -1, bd = Infinity;
     xs.forEach((x, i) => { if (Number.isFinite(x) && Math.abs(x - vx) < bd) { bd = Math.abs(x - vx); best = i; } });
     if (best < 0 || bd > 30 || (lastAny >= 0 && best > lastAny)) { setHover(null); return; }
@@ -103,7 +104,7 @@ export function PowerChart({ data, width: W, height: H, selected, off, colorOf, 
     if (!off.irradiance) rows.push(['var(--amber)', 'Irradiance', fmt(data.irradianceWm2[hover], 0, ' W/m²')]);
     if (rows.length && svgRef.current && wrapRef.current) {
       xh = xs[hover];
-      const r = svgRef.current.getBoundingClientRect(), wr = wrapRef.current.getBoundingClientRect();
+      const r = cssRect(svgRef.current), wr = cssRect(wrapRef.current);
       let lx = (xh / W) * r.width + (r.left - wr.left) + 14; if (lx + 165 > wr.width) lx -= 193;
       const iv = data.irradianceWm2[hover];
       const top = Math.max(4, (Yi(iv ?? 0) / H) * r.height + (r.top - wr.top) - 10);

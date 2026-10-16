@@ -1,6 +1,7 @@
 import { useRef, useState, type JSX, type MouseEvent } from 'react';
 import { MON, MONL } from '../lib/format';
 import { stepDecimals } from './util';
+import { cssRect, cssX, cssY } from '../lib/screen';
 
 export interface BarSeries {
   key: string;
@@ -75,8 +76,8 @@ export function MonthBars({ idp, year, month, series, yMax, yStep, yDecimals = 0
 
   const onMove = (e: MouseEvent) => {
     const svg = svgRef.current; if (!svg) return;
-    const r = svg.getBoundingClientRect();
-    const vx = (e.clientX - r.left) / r.width * W, vy = (e.clientY - r.top) / r.height * H;
+    const r = cssRect(svg);
+    const vx = (cssX(e) - r.left) / r.width * W, vy = (cssY(e) - r.top) / r.height * H;
     if (vx < L || vx > W - R || vy < T || vy > T + PH || !series.length) { setHov(null); return; }
     setHov(Math.max(1, Math.min(DIM, Math.ceil((vx - L) / SLOT))));
   };
@@ -84,7 +85,7 @@ export function MonthBars({ idp, year, month, series, yMax, yStep, yDecimals = 0
   let tip: JSX.Element | null = null;
   if (hov !== null && svgRef.current && wrapRef.current) {
     const cx = L + (hov - 0.5) * SLOT;
-    const r = svgRef.current.getBoundingClientRect(), wr = wrapRef.current.getBoundingClientRect();
+    const r = cssRect(svgRef.current), wr = cssRect(wrapRef.current);
     let lx = (cx / W) * r.width + (r.left - wr.left) + 14; if (lx + 165 > wr.width) lx -= 193;
     const top = Math.max(...series.map(s => s.values[hov - 1] ?? 0), 0);
     tip = (

@@ -14,6 +14,7 @@ import { useToast } from '../components/Toasts';
 import { useApi } from '../hooks/useApi';
 import { DASH, dayMonYear, dt24, fx, isoDay, time12, toDate } from '../lib/format';
 import '../styles/pages/home.css';
+import { cssRect, pageZoom, viewH } from '../lib/screen';
 
 const SERIES = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(--s5)', 'var(--s6)',
   'var(--s7)', 'var(--s8)', 'var(--s9)', 'var(--s10)', 'var(--s11)', 'var(--s12)'];
@@ -288,11 +289,11 @@ export default function Home() {
     const wOf = (c: HTMLElement) => Math.max(280, Math.round(c.clientWidth - 20));
     let line = cur.pw.h, month = cur.en.h;
     if (!apRef.current) {
-      const top = gm.getBoundingClientRect().top + window.scrollY;
+      const top = cssRect(gm).top + (window.scrollY / pageZoom());
       const cg = parseFloat(getComputedStyle(mc).rowGap) || 14;
       const padBottom = parseFloat(getComputedStyle(page).paddingBottom) || 16;
       const lineChrome = pc.offsetHeight - cur.pw.h, monthChrome = ec.offsetHeight - cur.en.h;
-      const budget = document.documentElement.clientHeight - top - padBottom - cg - lineChrome - monthChrome;
+      const budget = viewH() - top - padBottom - cg - lineChrome - monthChrome;
       if (budget > 0) {
         line = Math.floor(Math.min(320, Math.max(150, budget * 0.52)));
         month = Math.floor(Math.min(430, Math.max(140, budget - line)));
@@ -305,7 +306,7 @@ export default function Home() {
     const rail = railRef.current;
     if (rail) {
       const kids = [...mc.children] as HTMLElement[];
-      const h = kids.reduce((t, c) => t + c.getBoundingClientRect().height, 0) + colGap(mc) * Math.max(0, kids.length - 1);
+      const h = kids.reduce((t, c) => t + cssRect(c).height, 0) + colGap(mc) * Math.max(0, kids.length - 1);
       if (h > 0) rail.style.maxHeight = Math.round(h) + 'px';
     }
   }, []);

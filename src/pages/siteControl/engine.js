@@ -1,6 +1,7 @@
 /* eslint-disable */
 // @ts-nocheck
 import { STAR_B64 } from '../../assets/starCatalog';
+import { cssRect, cssX, cssY, pageZoom, viewH, viewW } from '../../lib/screen';
 
 export function startGlobe(OPTS){
 "use strict";
@@ -131,9 +132,9 @@ setPhi(PHI);
 const HUD_H=62, SUM_H=74;
 
 function size(){
-  const r=oc.parentElement.getBoundingClientRect();
+  const r=cssRect(oc.parentElement);
   W=r.width; H=r.height;
-  const dpr=window.devicePixelRatio||1;
+  const dpr=(window.devicePixelRatio||1)*pageZoom();
   oc.width=W*dpr; oc.height=H*dpr;
   oc.style.width=W+'px'; oc.style.height=H+'px';
   ox.setTransform(dpr,0,0,dpr,0,0);
@@ -348,7 +349,7 @@ function basis(){
 
 function drawEarth(sub){
   if(!prog||!texReady) return false;
-  const dpr=window.devicePixelRatio||1;
+  const dpr=(window.devicePixelRatio||1)*pageZoom();
   gl.viewport(0,0,ec.width,ec.height);
   gl.clear(gl.COLOR_BUFFER_BIT);
   const b=basis();
@@ -378,8 +379,8 @@ let drag=null, idle=0;
 let travelled=0;
 
 function localXY(e){
-  const r=oc.getBoundingClientRect();
-  return [e.clientX-r.left, e.clientY-r.top];
+  const r=cssRect(oc);
+  return [cssX(e)-r.left, cssY(e)-r.top];
 }
 function dotAt(mx,my){
   let best=null, bd=24;
@@ -392,7 +393,7 @@ function dotAt(mx,my){
 }
 __on(oc,'pointerdown',function(e){
   travelled=0; idle=0;
-  drag={x:e.clientX,y:e.clientY};
+  drag={x:cssX(e),y:cssY(e)};
   try{ oc.setPointerCapture(e.pointerId); }catch(err){}
   oc.style.cursor='grabbing';
 });
@@ -401,10 +402,10 @@ __on(oc,'pointermove',function(e){
   const xy=localXY(e);
   if(drag){
     const k=0.26*(320/R);
-    travelled+=Math.hypot(e.clientX-drag.x,e.clientY-drag.y);
-    tLAM=LAM-(e.clientX-drag.x)*k;
-    tPHI=Math.max(-78,Math.min(78,PHI+(e.clientY-drag.y)*k));
-    drag={x:e.clientX,y:e.clientY}; idle=0; return;
+    travelled+=Math.hypot(cssX(e)-drag.x,cssY(e)-drag.y);
+    tLAM=LAM-(cssX(e)-drag.x)*k;
+    tPHI=Math.max(-78,Math.min(78,PHI+(cssY(e)-drag.y)*k));
+    drag={x:cssX(e),y:cssY(e)}; idle=0; return;
   }
   oc.style.cursor = dotAt(xy[0],xy[1]) ? 'pointer' : '';
 });
@@ -483,9 +484,9 @@ __on(CARD,'mouseenter',holdOpen);
 __on(CARD,'mouseleave',armShut);
 
 function placeCard(p){
-  const r=p._row2.getBoundingClientRect();
+  const r=cssRect(p._row2);
   const h=CARD.offsetHeight||300;
-  const y=Math.max(88+h/2, Math.min(innerHeight-18-h/2, r.top+r.height/2));
+  const y=Math.max(88+h/2, Math.min(viewH()-18-h/2, r.top+r.height/2));
   CARD.style.top=y+'px';
 }
 
@@ -541,7 +542,7 @@ function open(p){
   LEAVING=true;
   const go=function(){ OPTS.onOpen(p.siteId); };
 
-  if(reduced || !isFinite(p.lat) || !isFinite(p.lng) || innerWidth<=720){ go(); return; }
+  if(reduced || !isFinite(p.lat) || !isFinite(p.lng) || viewW()<=720){ go(); return; }
 
   GOING=p; GOT=0;
   GO={ t:0, dur:GO_MS/1000,
@@ -571,7 +572,7 @@ function cool(){
 let DOCK=null;
 function dock(){
   if(!ACT || !CARD.classList.contains('on')){ DOCK=null; return; }
-  const b=$('theatre').getBoundingClientRect(), r=CARD.getBoundingClientRect();
+  const b=cssRect($('theatre')), r=cssRect(CARD);
   DOCK=[r.right-b.left, r.top-b.top+r.height/2];
 }
 
@@ -1158,11 +1159,11 @@ function drawSites(now,dt){
 
   if(CLOSE>0.002){
     PLATES.length=0;
-    const tb=$('theatre').getBoundingClientRect();
+    const tb=cssRect($('theatre'));
     ['.rail','.sumx'].forEach(function(sel){
       const el=document.querySelector(sel);
       if(!el) return;
-      const r=el.getBoundingClientRect();
+      const r=cssRect(el);
       PLATES.push({x:r.left-tb.left, y:r.top-tb.top, w:r.width, h:r.height});
     });
     PLANTS.filter(function(p){ return p.vis; })

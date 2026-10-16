@@ -39,3 +39,42 @@ html.void,html.void body{background:#070c14}
 .dstate button{margin-top:8px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);
   background:transparent;color:var(--text);font-size:11.5px;font-weight:700}
 .dstate button:hover{border-color:var(--line-hi);background:var(--hover)}
+.notif{position:relative;flex:none}
+.notifbtn{width:30px;height:30px;display:grid;place-items:center;position:relative;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--topbar-fg-2,var(--muted));cursor:pointer;transition:background .12s,border-color .12s,color .12s}
+.notifbtn:hover,.notif.open .notifbtn{border-color:var(--line-hi);background:var(--topbar-hover,var(--hover));color:var(--topbar-fg,var(--text))}
+.notifbtn svg{display:block}
+.ndot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;border:2px solid var(--panel-2)}
+.ndot.ok{background:var(--green)}
+.ndot.bad{background:var(--red)}
+.ndot.wait{background:var(--faint,var(--muted))}
+.notifmenu{position:absolute;top:calc(100% + 8px);right:0;z-index:91;width:300px;max-width:calc(calc(100vw / var(--z,1)) - 24px);background:var(--elev);border:1px solid var(--line);border-radius:var(--r-md,10px);box-shadow:0 18px 44px -16px var(--shadow);padding:6px 0;display:none}
+.notif.open .notifmenu{display:block}
+.nhead{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint,var(--muted));padding:6px 14px 8px}
+.nlist{list-style:none;margin:0;padding:0;max-height:320px;overflow:auto}
+.nrow{padding:10px 14px;font-size:13px;color:var(--text);border-bottom:1px solid var(--line);cursor:pointer}
+.nrow:last-child{border-bottom:0}
+.nrow:hover{background:var(--hover)}
+.nrow b{font-weight:600}
+.nrow.down,.nrow.down b{color:var(--red)}
+.nnone{padding:8px 14px 10px;font-size:12.5px;color:var(--muted)}
+.nfail{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:8px 14px 10px}
+.nfail .k{font-family:var(--mono);font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--red)}
+.nfail .t{font-size:12.5px;font-weight:700;color:var(--text)}
+.nfail button{margin-top:4px;padding:5px 11px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--text);font:inherit;font-size:12px;cursor:pointer}
+.nfail button:hover{border-color:var(--line-hi);background:var(--hover)}
+.navwrap{position:relative;display:flex;flex:none}
+.menubtn{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--topbar-fg-2,var(--muted));cursor:pointer;transition:background .12s,border-color .12s,color .12s}
+.menubtn:hover,.navwrap.open .menubtn{border-color:var(--line-hi);background:var(--topbar-hover,var(--hover));color:var(--topbar-fg,var(--text))}
+.menubtn svg{display:block}
+.navpanel{position:absolute;top:calc(100% + 8px);right:0;z-index:92;width:250px;max-width:calc(100vw / var(--z,1) - 16px);background:var(--elev);border:1px solid var(--line);border-radius:var(--r-md,10px);box-shadow:0 18px 44px -16px var(--shadow);padding:6px;display:none}
+.navwrap.open .navpanel{display:block}
+.nphead{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint,var(--muted));padding:6px 10px}
+.navpanel .npages nav.tabs{display:flex;flex-direction:column;gap:2px;overflow:visible}
+.navpanel .npages nav.tabs .tab{display:block;padding:9px 10px;border-radius:7px}
+.npextra{border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
+.nprow{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:40px;padding:4px 4px 4px 10px}
+.npl{font-size:12.5px;font-weight:600;color:var(--text)}
+:is(.pg-home,.pg-monitoring,.pg-alarms,.pg-analysis,.pg-kpi) .topbar.phone{gap:10px;padding:0 12px}
+:is(.pg-home,.pg-monitoring,.pg-alarms,.pg-analysis,.pg-kpi) .topbar.phone .right{gap:8px}
+:is(.pg-home,.pg-monitoring,.pg-alarms,.pg-analysis,.pg-kpi) .topbar.phone .sitenow{min-width:0;flex:0 1 auto}
+:is(.pg-home,.pg-monitoring,.pg-alarms,.pg-analysis,.pg-kpi) .topbar.phone .sitenow .n{overflow:hidden;text-overflow:ellipsis}

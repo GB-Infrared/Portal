@@ -1,5 +1,6 @@
 import { useEffect, useRef, type InputHTMLAttributes } from 'react';
 import { ignoreErrors } from '../lib/ignoreErrors';
+import { pageZoom } from '../lib/screen';
 
 type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'onChange'> & {
   value: string;
@@ -15,7 +16,7 @@ export function DateInput({ value, onValue, ...rest }: Props) {
     const shut = () => { open.current = false; };
     const docDown = (e: MouseEvent) => { if (e.target !== el) shut(); };
     const down = (e: MouseEvent) => {
-      if (e.offsetX >= el.clientWidth - 26) return;
+      if ((e.offsetX / pageZoom()) >= el.clientWidth - 26) return;
       e.preventDefault();
       if (open.current) { el.blur(); shut(); return; }
       el.focus({ preventScroll: true });

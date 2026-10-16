@@ -408,6 +408,29 @@ negative. `0` ends a correction.
 Users are never deleted, only suspended.
 
 
+## Top bar
+
+### `GET /data-communications/logger-status`
+
+The notification button just before the light/dark button on Home, Monitoring,
+Alarms, Analysis and KPI. Asked when the page opens and again every 3 minutes.
+
+```json
+[
+  { "loggerName": "Sangria logger 1", "status": true },
+  { "loggerName": "Mendoza logger 2", "status": false }
+]
+```
+
+- One row per logger of the signed-in customer.
+- `status`: `true` when the logger's data is live, `false` when it is not.
+  Anything else is shown as a dash.
+- The dot on the button is green only when every logger is `true`. It is red
+  when any is `false`, when the list is empty, or when the call fails.
+- The live sunhub.in site already has this call with these field names:
+  `GET /api/v1/data-communications/logger-status`.
+
+
 ## Stored in the browser (no backend needed)
 
 | Key | What |
