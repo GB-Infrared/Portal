@@ -759,19 +759,6 @@ thead th.sep, tbody td.sep{border-left:1px solid var(--line-soft)}
       <div class="msel rsel" id="refresh-pick"></div>
       <input type="hidden" id="refresh-sel" value="off">
     </div>
-    <!-- NOTIFICATIONS: is every logger sending data? See the LOGGER
-         NOTIFICATIONS script at the end of the page. -->
-    <div class="notif" id="notif">
-      <button class="notifbtn" type="button" id="notifbtn" aria-haspopup="true" aria-expanded="false"
-              title="Notifications" aria-label="Notifications">
-        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M6.5 0C2.91 0 0 2.462 0 5.5c0 1.075.37 2.074 1 2.922V12l2.699-1.542A7.454 7.454 0 006.5 11c3.59 0 6.5-2.462 6.5-5.5S10.09 0 6.5 0z"/><path fill="currentColor" opacity=".55" d="M16 9.5c0-.987-.429-1.897-1.147-2.639C14.124 10.348 10.66 13 6.5 13c-.103 0-.202-.018-.305-.021C7.231 13.617 8.556 14 10 14c.449 0 .886-.04 1.307-.11L15 16v-4h-.012C15.627 11.285 16 10.425 16 9.5z"/></svg>
-        <span class="ndot" id="notifdot"></span>
-      </button>
-      <div class="notifmenu" id="notifmenu" role="menu">
-        <div class="nhead">Notifications</div>
-        <ul class="nlist" id="notiflist"></ul>
-      </div>
-    </div>
     <!-- LIGHT / DARK. Only the portal carries it. The sign-in and the site
          overview are the void by design - they are one continuous arrival
          through space, and a switch offering to make those white would be
@@ -1847,111 +1834,19 @@ window.addEventListener('resize',refit);
 })();
 </script>
 <script>
-/* ===================== LOGGER NOTIFICATIONS =====================
-   The same feature the live dashboard has in its top bar: a
-   button just before the light/dark button, whose dot says at a glance whether every logger of this customer is
-   sending data, and a list that names each logger.
-
-   - The list is GET /api/v1/data-communications/logger-status for the
-     signed-in customer (for someone from the web admin panel, the customer
-     they opened). It answers one row per logger: its name and status, true
-     when its data is live. The live site asks again every 3 minutes, not when
-     the window regains focus, and does not retry a failed call.
-   - The dot is green when every logger is live, and red when any one is not
-     - or when the list is empty or did not load, because then nobody can say
-     the data is live.
-   - Each row reads "Logger name: Data is Live"; a logger that is not live
-     reads "Data is not Live" and the row turns red.
-   - The list opens on the button and closes on the button, on a click
-     anywhere else, on Esc, or on picking a row.
-
-   The mockup has no server, so the list is the customer's five loggers, all
-   live. Add ?loggers=down to the address to see one logger not live, or
-   ?loggers=none for a customer with no loggers. The same block is on every
-   page that carries the top bar. */
-(function(){
-  var LOGGERS=[
-    {loggerName:'Sangria logger 1', status:true},
-    {loggerName:'Sangria logger 2', status:true},
-    {loggerName:'Rioja logger',     status:true},
-    {loggerName:'Mendoza logger 1', status:true},
-    {loggerName:'Mendoza logger 2', status:true}
-  ];
-  var mode=new URLSearchParams(location.search).get('loggers');
-  if(mode==='down') LOGGERS[4].status=false;
-  if(mode==='none') LOGGERS=[];
-
-  var wrap=document.getElementById('notif'), btn=document.getElementById('notifbtn'),
-      dot=document.getElementById('notifdot'), list=document.getElementById('notiflist');
-  if(!wrap) return;
-  var allLive=LOGGERS.length>0 && LOGGERS.every(function(l){ return l.status; });
-  dot.className='ndot '+(allLive?'ok':'bad');
-  dot.title=allLive?'Every logger is live':'A logger is not live';
-
-  list.innerHTML='';
-  if(!LOGGERS.length){
-    var e=document.createElement('li'); e.className='nnone'; e.textContent='No loggers yet'; list.appendChild(e);
-  }
-  LOGGERS.forEach(function(l){
-    var li=document.createElement('li');
-    li.className='nrow'+(l.status?'':' down');
-    li.setAttribute('role','menuitem'); li.tabIndex=-1;
-    var nm=document.createElement('b'); nm.textContent=(l.loggerName||'Unnamed logger')+':';
-    li.appendChild(document.createTextNode('\uD83D\uDCE3 '));
-    li.appendChild(nm);
-    li.appendChild(document.createTextNode(' '+(l.status?'Data is Live':'Data is not Live')));
-    li.addEventListener('click',function(){ shut(); });
-    list.appendChild(li);
-  });
-
-  function shut(){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
-  btn.addEventListener('click',function(ev){
-    ev.stopPropagation();
-    var open=!wrap.classList.contains('open');
-    var acct=document.getElementById('acct'); if(acct) acct.classList.remove('open');
-    wrap.classList.toggle('open',open); btn.setAttribute('aria-expanded',open?'true':'false');
-  });
-  document.addEventListener('click',function(ev){ if(!wrap.contains(ev.target)) shut(); });
-  document.addEventListener('keydown',function(ev){ if(ev.key==='Escape' && wrap.classList.contains('open')){ shut(); btn.focus(); } });
-  var ab=document.getElementById('acctbtn'); if(ab) ab.addEventListener('click',shut);
-
-  var st=document.createElement('style');
-  st.textContent=
-    '.notif{position:relative;flex:none}'
-   +'.notifbtn{width:30px;height:30px;display:grid;place-items:center;position:relative;border-radius:8px;'
-   +'border:1px solid var(--line);background:var(--panel-2);color:var(--topbar-fg-2,var(--muted));cursor:pointer;'
-   +'transition:background .12s,border-color .12s,color .12s}'
-   +'.notifbtn:hover,.notif.open .notifbtn{border-color:var(--line-hi);background:var(--topbar-hover,var(--hover));color:var(--topbar-fg,var(--text))}'
-   +'.notifbtn svg{display:block}'
-   +'.ndot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;border:2px solid var(--panel-2)}'
-   +'.ndot.ok{background:var(--green)}.ndot.bad{background:var(--red)}'
-   +'.notifmenu{position:absolute;top:calc(100% + 8px);right:0;z-index:91;width:300px;max-width:calc(100vw / var(--z,1) - 24px);'
-   +'background:var(--elev);border:1px solid var(--line);border-radius:var(--r-md,10px);'
-   +'box-shadow:0 18px 44px -16px var(--shadow);padding:6px 0;display:none}'
-   +'.notif.open .notifmenu{display:block}'
-   +'.nhead{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint,var(--muted));padding:6px 14px 8px}'
-   +'.nlist{list-style:none;margin:0;padding:0;max-height:320px;overflow:auto}'
-   +'.nrow{padding:10px 14px;font-size:13px;color:var(--text);border-bottom:1px solid var(--line);cursor:pointer}'
-   +'.nrow:last-child{border-bottom:0}.nrow:hover{background:var(--hover)}'
-   +'.nrow b{font-weight:600}.nrow.down,.nrow.down b{color:var(--red)}'
-   +'.nnone{padding:8px 14px 10px;font-size:12.5px;color:var(--muted)}';
-  document.head.appendChild(st);
-})();
-</script>
-<script>
 /* ===================== TOP BAR ON SMALL SCREENS =====================
-   The full bar - wordmark, site, six tabs, clock, Refresh, notifications,
+   The full bar - wordmark, site, six tabs, clock, Refresh,
    light/dark and the avatar - needs about 1240px. Below that it does not
    squeeze: things move into the MENU button at the right end of the bar.
    - Under 1240px (tablets, small laptops, a 1024 x 768 projector): the tabs
      move into the menu. Under 900px the clock is left out.
    - Under 680px (phones): Refresh and light/dark move into the menu too.
-     Notifications and the avatar stay in the bar, so the green or red dot and
-     the account menu are always one tap away. Under 420px the wordmark gives
+     The avatar stays in the bar, so the account menu is always one tap
+     away. Under 420px the wordmark gives
      way to the logo alone.
    The controls are MOVED, not copied, so each keeps working exactly as it does
    in the bar. The menu closes on the button, on a click anywhere else, on Esc
-   and on opening the notifications or the account menu. The same block is on
+   and on opening the account menu. The same block is on
    every page that carries this top bar. */
 (function(){
   var wrap=document.getElementById('navwrap'), btn=document.getElementById('menubtn');
@@ -1984,12 +1879,11 @@ window.addEventListener('resize',refit);
     ev.stopPropagation();
     var open=!wrap.classList.contains('open');
     var acct=document.getElementById('acct'); if(acct) acct.classList.remove('open');
-    var nt=document.getElementById('notif'); if(nt){ nt.classList.remove('open'); var nb=document.getElementById('notifbtn'); if(nb) nb.setAttribute('aria-expanded','false'); }
     wrap.classList.toggle('open',open); btn.setAttribute('aria-expanded',open?'true':'false');
   });
   document.addEventListener('click',function(ev){ if(!wrap.contains(ev.target)) shut(); });
   document.addEventListener('keydown',function(ev){ if(ev.key==='Escape' && wrap.classList.contains('open')){ shut(); btn.focus(); } });
-  ['acctbtn','notifbtn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.addEventListener('click',shut); });
+  ['acctbtn'].forEach(function(id){ var b=document.getElementById(id); if(b) b.addEventListener('click',shut); });
 
   var st=document.createElement('style');
   st.textContent=

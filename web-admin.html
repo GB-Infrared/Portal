@@ -670,6 +670,8 @@ html[data-theme="dark"] .modal{background:var(--elev)}
           <div class="lv" id="acct-lv">Super Admin</div>
         </div>
         <div class="acctdiv"></div>
+        <!-- CUSTOMER ADMIN: the customer panel's Settings, for every role -->
+        <a class="acctitem" role="menuitem" href="settings.html"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.3a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.7 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15.1 4.7a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09A1.7 1.7 0 0 0 21 10.1a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg> Customer Admin</a>
         <a class="acctitem out" role="menuitem" href="login.html" onclick="try{localStorage.removeItem('enerops-seat')}catch(e){}">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
                stroke-linecap="round" stroke-linejoin="round">
@@ -1150,13 +1152,14 @@ writeSeat();
    they added it, and with it that plant's loggers and devices. */
 const myCustomers=()=>LEVEL!=='plant'?CUSTOMERS:CUSTOMERS.filter(c=>((roleOf(SELF.role)||{}).cust||[]).indexOf(c.id)>=0);
 const CAN={
-  account: LEVEL==='super',
+  account: LEVEL!=='plant',
+  customers: LEVEL==='super',
   catalogue: LEVEL!=='plant',
   addCustomer: LEVEL==='super',
   editCustomer: LEVEL==='super',
   deleteCustomer: LEVEL==='super',
-  manageUsers: LEVEL==='super',
-  manageRoles: LEVEL==='super',
+  manageUsers: LEVEL!=='plant',
+  manageRoles: LEVEL!=='plant',
   editProfile: LEVEL!=='plant',
   plant: a => !!a && (LEVEL!=='plant' || a.by===SELF.email)
 };
@@ -1841,7 +1844,11 @@ DRAW.sensors=function(){
    Users, Role and Access Control cover Admins and Plant Admins together; the
    Super Admin is left out of the lists. */
 const TEAM_LEVELS=[{v:'admin',t:'Admin'},{v:'plant',t:'Plant Admin'}];
-const team=()=>OPERATORS.filter(o=>o.level!=='super');
+/* An Admin manages Plant Admins only: their Account Management is the Users
+   page renamed Plant Admin, plus Role and Access Control, and every list there
+   holds Plant Admins alone. The Super Admin sees everyone. */
+const ADMIN_VIEW=LEVEL==='admin';
+const team=()=>OPERATORS.filter(o=>ADMIN_VIEW ? o.level==='plant' : o.level!=='super');
 
 /* ---------- users ---------- */
 const OP_FIELDS=[{k:'first',label:'First name'},{k:'last',label:'Last name'},
@@ -1851,16 +1858,19 @@ const OP_FIELDS=[{k:'first',label:'First name'},{k:'last',label:'Last name'},
   {k:'phone',label:'Contact number',type:'tel',opt:1,span:1,
    hint:'A new user can sign in straight away, but reaches no customer until they are given a role on <b>Access Control</b>.'}];
 DRAW.operators=function(){
-  grid('op','operators',[{t:'First name'},{t:'Last name'},{t:'Email'},{t:'Contact number'},{t:'Role level'},{t:''}],team(),function(o){
+  const cols=[{t:'First name'},{t:'Last name'},{t:'Email'},{t:'Contact number'}].concat(ADMIN_VIEW?[]:[{t:'Role level'}],[{t:''}]);
+  grid('op','operators',cols,team(),function(o){
     return '<tr><td class="nm">'+esc(o.first)+'</td><td class="nm">'+esc(o.last)+'</td><td>'+esc(o.email)+'</td><td>'+esc(dash(o.phone))+'</td>'
-      +'<td>'+LEVELS[o.level]+'</td>'
+      +(ADMIN_VIEW?'':'<td>'+LEVELS[o.level]+'</td>')
       +'<td>'+(CAN.manageUsers?rowBtns(null,"opDel('"+o.id+"')"):'')+'</td></tr>';
-  },'No users yet');
+  },ADMIN_VIEW?'No Plant Admins yet':'No users yet');
 };
 window.opAdd=function(){
-  fOpen({title:'Add user',go:'Add user',fields:OP_FIELDS,
+  const word=ADMIN_VIEW?'Plant Admin':'user';
+  fOpen({title:'Add '+word,go:'Add '+word,fields:ADMIN_VIEW?OP_FIELDS.filter(f=>f.k!=='level'):OP_FIELDS,
     check:v=>OPERATORS.some(o=>o.email.toLowerCase()===v.email.toLowerCase())?['email','Another user already signs in with this.']:null,
-    save:function(v){ OPERATORS.push(Object.assign({id:'op'+(seq++),role:null,company:COMPANY,address:''},v)); DRAW.operators(); return opName(v)+' added as '+LEVELS[v.level]; }});
+    save:function(v){ if(ADMIN_VIEW) v.level='plant';
+      OPERATORS.push(Object.assign({id:'op'+(seq++),role:null,company:COMPANY,address:''},v)); DRAW.operators(); return opName(v)+' added as '+LEVELS[v.level]; }});
 };
 window.opDel=function(id){
   const o=byId(OPERATORS,id);
@@ -1981,6 +1991,8 @@ $('cu-add').hidden=!CAN.addCustomer;
 $('op-add').hidden=!CAN.manageUsers;
 $('ro-add').hidden=!CAN.manageRoles;
 $('g-ops').hidden=!CAN.account;
+document.querySelector('.item[data-p="customers"]').hidden=!CAN.customers;
+if(ADMIN_VIEW) document.querySelector('.item[data-p="operators"]').textContent='Plant Admin';
 $('g-cat').hidden=!CAN.catalogue;
 $('editbtn').hidden=!CAN.editProfile;
 $('acct-lv').textContent=LEVELS[LEVEL];

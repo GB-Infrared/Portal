@@ -1003,6 +1003,7 @@ const PLANTS=[
    lat:26.91, lng:70.92,
    ac:3200, dc:3360, perf:1.05, sky:1.03, dev:11, down:1, warn:1, crit:1}
 ];
+window.SITE_PLANTS=PLANTS;   /* read by PLANT WARNINGS at the end of the page */
 
 /* ?plants=N grows the portfolio, so the map can be reviewed with more than
    three on it — the same switch home.html carries for its picker */
@@ -3526,6 +3527,70 @@ const clock=function(){
   $('clk').textContent=d.toLocaleTimeString('en-IN',{hour12:true,hour:'2-digit',minute:'2-digit',second:'2-digit'});
 };
 clock(); setInterval(clock,1000);
+})();
+</script>
+<script>
+/* ===================== PLANT WARNINGS =====================
+   A pop-up warning for each plant that needs attention, so it is seen the
+   moment Site Control opens instead of being found in the list:
+   the plant's open COMMUNICATION alarms (ALM_991 to ALM_999), listed by
+   code, name, device and time.
+   One card per plant, stacked at the bottom right, critical first. A plant
+   with a critical alarm is red, anything else amber. "Open plant" goes to that
+   plant's Home; the cross dismisses the card until Site Control is opened
+   again. A plant that is fine gets no card.
+   The real version reads the same numbers the rail and the card already show
+   (devices down, critical, warning); this mockup uses the demo fleet's. */
+(function(){
+  /* Only the logger's communication alarms raise a card - ALM_991 to ALM_999.
+     Device and plant alarms (faults, grid events) do not: they stay on the
+     Alarms page. The real version takes each plant's OPEN alarms with these
+     codes; the demo below gives two plants some. */
+  var COMM={ALM_991:'Curator restarting',ALM_992:'SD card fault',ALM_993:'Network problem',ALM_994:'Curator offline',
+    ALM_995:'Data not delivered',ALM_996:'Clock not set',ALM_997:'Invalid response length',ALM_998:'Invalid CRC',ALM_999:'Communication Error'};
+  var OPEN={
+    Mendoza:[{code:'ALM_999',dev:'INV03',at:'05:12 PM'}],
+    Sangria:[{code:'ALM_994',dev:'Sangria logger 1',at:'04:48 PM'},{code:'ALM_993',dev:'Sangria logger 1',at:'04:47 PM'}]
+  };
+  var list=(window.SITE_PLANTS||[]).map(function(p){
+    return {p:p, alarms:(OPEN[p.id]||[]).filter(function(x){ return COMM[x.code]; })};
+  }).filter(function(x){ return x.alarms.length; })
+    .sort(function(a,b){ return b.alarms.length-a.alarms.length; });
+  if(!list.length) return;
+  var box=document.createElement('div'); box.className='pwarn'; box.setAttribute('role','alert');
+  list.forEach(function(it){
+    var p=it.p;
+    var c=document.createElement('div'); c.className='pw warn';
+    c.innerHTML='<div class="pwh"><span class="pwi">!</span><span class="pwn">'+p.id+'</span>'
+      +'<span class="pws">COMMUNICATION</span>'
+      +'<button class="pwx" type="button" aria-label="Dismiss">\u00d7</button></div>'
+      +'<div class="pwb">'+it.alarms.map(function(x){
+        return '<div><b>'+x.code+'</b> · '+COMM[x.code]+' · '+x.dev+' <span class="pwt">'+x.at+'</span></div>'; }).join('')+'</div>'
+      +'<a class="pwgo" href="home.html?plant='+encodeURIComponent(p.id)+'">Open plant</a>';
+    c.querySelector('.pwx').addEventListener('click',function(){ c.remove(); if(!box.children.length) box.remove(); });
+    c.querySelector('.pwgo').addEventListener('click',function(){ try{ localStorage.setItem('enerops-plant',p.id); }catch(e){} });
+    box.appendChild(c);
+  });
+  document.body.appendChild(box);
+  var st=document.createElement('style');
+  st.textContent=
+    '.pwarn{position:fixed;right:20px;bottom:24px;z-index:40;display:flex;flex-direction:column;gap:10px;width:320px;max-width:calc(100vw / var(--z,1) - 24px)}'
+   +'.pw{background:rgba(9,16,28,.92);border:1px solid rgba(255,183,77,.5);border-left:3px solid #ffb74d;border-radius:10px;padding:11px 13px 12px;'
+   +'font-family:var(--mono);color:var(--void-fg);box-shadow:0 14px 40px -12px rgba(0,0,0,.7);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);animation:pwin .35s ease-out}'
+   +'.pw.crit{border-color:rgba(255,107,94,.55);border-left-color:#ff6b5e}'
+   +'@keyframes pwin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}'
+   +'.pwh{display:flex;align-items:center;gap:9px}'
+   +'.pwi{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#0b1220;background:#ffb74d;flex:none}'
+   +'.pw.crit .pwi{background:#ff6b5e}'
+   +'.pwn{font-size:12.5px;letter-spacing:.12em;text-transform:uppercase}'
+   +'.pws{font-size:9.5px;letter-spacing:.2em;color:#ffb74d}.pw.crit .pws{color:#ff6b5e}'
+   +'.pwx{margin-left:auto;background:none;border:none;color:var(--void-dim);font-size:17px;line-height:1;cursor:pointer;padding:0 2px}'
+   +'.pwx:hover{color:var(--void-fg)}'
+   +'.pwb{margin:8px 0 9px;font-size:11px;line-height:1.55;color:var(--void-dim)}.pwb b{color:var(--void-fg);font-weight:600}'
+   +'.pwt{color:var(--void-dim);opacity:.7;margin-left:4px}'
+   +'.pwgo{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--emerald);text-decoration:none}.pwgo:hover{color:var(--void-fg)}'
+   +'@media (max-width:720px){.pwarn{left:12px;right:12px;bottom:12px;width:auto}}';
+  document.head.appendChild(st);
 })();
 </script>
 </body>

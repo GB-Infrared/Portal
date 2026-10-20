@@ -479,8 +479,8 @@ and code that reads the mouse or a box on screen uses `cssRect`, `cssX`, `cssY`,
 | **Refresh** | Off · 5 min · 10 min · 15 min | Header, all six portal pages. Only `monitoring` runs a real timer. `analysis` and `kpi` default to **Off** — a closed historical window does not move while you read it. |
 | **Rows per page** | 25 · 50 · 75 · 100 · 150 · 200 | Table footers. Opens **upward** — a list dropped downward from a page footer opens into the window edge. |
 | **Theme** | ☾ / ☀ | Header. Names *what it will do*, not where you are. |
-| **Notifications** | one row per logger | Header, just before the theme button, on the five portal pages. Same as the live dashboard: the dot is green when every logger is live and red when any is not (or the list is empty); a logger that is not live reads "Data is not Live" in red. The real call is `GET /api/v1/data-communications/logger-status`, asked again every 3 minutes. |
-| **Menu** | ☰ | Header, only on small screens. Under 1240px the tabs move into it; under 680px Refresh and the theme button too. Notifications and the avatar always stay in the bar. |
+| **Plant warnings** | one card per plant | Site Control, bottom right. A plant with open communication alarms (ALM_991 to ALM_999: curator restarting or offline, SD card fault, network problem, data not delivered, clock not set, invalid response length, invalid CRC, communication error) gets a card listing each one with code, device and time. Other alarms do not raise a card. "Open plant" goes to its Home; × dismisses the card. |
+| **Menu** | ☰ | Header, only on small screens. Under 1240px the tabs move into it; under 680px Refresh and the theme button too. The avatar always stays in the bar. |
 | **Escape** | closes any open panel | 19 handlers across the eight files. |
 
 ---
@@ -505,11 +505,6 @@ settings.html?as=user
                    the customer admin: only User Profile and Customer Devices
                    (read-only, no rename), signed in as Priya Nair, Sangria
                    only. Without it the page is the customer admin's.
-
-home.html?loggers=down
-                   one logger not live: red dot, red row. Works on all five
-                   portal pages. ?loggers=none shows a customer with no
-                   loggers.
 
 any key            skips the boot log. Somebody who has seen it once should
                    not have to sit through it again.
