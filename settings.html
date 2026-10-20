@@ -2020,14 +2020,19 @@ window.saveProfile=function(e){
   FIELDS.forEach(function(k){ setVal(k,val[k]); });
 
   /* The header names who is signed in, so it has to change when the name does.
-     Two places showing two different names is worse than either being wrong. */
+     Two places showing two different names is worse than either being wrong.
+     Someone from the web admin panel is the exception: this card is the
+     customer's profile, not theirs, and their menu (the one with a role line)
+     keeps naming them. */
   const name=(val.first+' '+val.last).trim();
   const initial=(val.first||val.email||'?').charAt(0).toUpperCase();
   pcard.querySelector('.who .nm').textContent=name;
   pcard.querySelector('.who .big').textContent=initial;
-  $('acctbtn').textContent=initial;
-  document.querySelector('.acctwho .nm').textContent=name;
-  document.querySelector('.acctwho .em').textContent=val.email;
+  if(!document.querySelector('.acctwho .lv')){
+    $('acctbtn').textContent=initial;
+    document.querySelector('.acctwho .nm').textContent=name;
+    document.querySelector('.acctwho .em').textContent=val.email;
+  }
 
   pcard.classList.remove('editing');
   T('Profile updated');
@@ -3373,7 +3378,9 @@ document.addEventListener('keydown',function(e){
    (Super Admin, Admin or Plant Admin) and offers the way
    back: Web Admin (their own panel), Customer Admin (this customer's Settings -
    left out on Settings itself, as Settings leaves out a link to itself) and
-   Sign out.
+   Sign out. Only the menu is theirs: User Profile on Customer Admin stays the
+   customer's own profile, without Change password, since that password is the
+   customer's.
 
    A PLANT ADMIN READS THIS PANEL BUT CHANGES NOTHING in it: on Settings every
    add, edit, delete and save control is taken away - the toolbar buttons, the
@@ -3417,6 +3424,9 @@ document.addEventListener('keydown',function(e){
     a.innerHTML=it[2]+' '+it[1];
     menu.insertBefore(a,out);
   });
+  if(LV[seat.level] && here==='settings.html'){
+    var pwl=document.querySelector('#p-user-profile .cfoot .linkbtn'); if(pwl) pwl.remove();
+  }
   if(seat.level==='plant' && here==='settings.html'){
     document.documentElement.classList.add('seat-ro');
     var st=document.createElement('style');

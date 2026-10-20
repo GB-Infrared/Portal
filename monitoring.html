@@ -2154,7 +2154,9 @@ window.addEventListener('resize',refit);
    (Super Admin, Admin or Plant Admin) and offers the way
    back: Web Admin (their own panel), Customer Admin (this customer's Settings -
    left out on Settings itself, as Settings leaves out a link to itself) and
-   Sign out.
+   Sign out. Only the menu is theirs: User Profile on Customer Admin stays the
+   customer's own profile, without Change password, since that password is the
+   customer's.
 
    A PLANT ADMIN READS THIS PANEL BUT CHANGES NOTHING in it: on Settings every
    add, edit, delete and save control is taken away - the toolbar buttons, the
@@ -2198,6 +2200,9 @@ window.addEventListener('resize',refit);
     a.innerHTML=it[2]+' '+it[1];
     menu.insertBefore(a,out);
   });
+  if(LV[seat.level] && here==='settings.html'){
+    var pwl=document.querySelector('#p-user-profile .cfoot .linkbtn'); if(pwl) pwl.remove();
+  }
   if(seat.level==='plant' && here==='settings.html'){
     document.documentElement.classList.add('seat-ro');
     var st=document.createElement('style');
