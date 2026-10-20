@@ -21,6 +21,12 @@ const OPENING = [
   { say: 'PREPARING PORTAL', row: 'preparing portal', at: 79 },
   { say: 'OPENING', row: 'opening', at: 100 },
 ];
+const OPENING_ADMIN = [
+  { say: 'CONNECTING', row: 'connecting', at: 16 },
+  { say: 'LOADING CUSTOMERS', row: 'loading customers', at: 48 },
+  { say: 'PREPARING WEB ADMIN', row: 'preparing web admin', at: 79 },
+  { say: 'OPENING', row: 'opening', at: 100 },
+];
 const isEmail = (v: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v);
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -47,7 +53,7 @@ function Secret({ id, value, onChange, onEnter, auto, placeholder, bad, onCaps }
 export default function Login() {
   const nav = useNavigate();
   const loc = useLocation();
-  const { status, signIn } = useAuth();
+  const { status, user, signIn } = useAuth();
   const root = useRef<HTMLDivElement>(null);
   const skyRef = useRef<HTMLCanvasElement>(null), limbRef = useRef<HTMLCanvasElement>(null);
   const fly = useRef<(t: number) => void>(() => {});
@@ -72,7 +78,7 @@ export default function Login() {
     document.title = 'ENEROPS OS · Sign in';
     return () => document.documentElement.classList.remove('void');
   }, []);
-  useEffect(() => { if (status === 'in' && !running.current) nav(from || '/home', { replace: true }); }, [status, nav, from]);
+  useEffect(() => { if (status === 'in' && !running.current) nav(from || (user?.level === 'super' ? '/admin' : '/home'), { replace: true }); }, [status, user, nav, from]);
 
   useEffect(() => {
     const stopSky = skyRef.current ? startSky(skyRef.current) : () => {};
@@ -116,12 +122,17 @@ export default function Login() {
     const red = reducedMotion();
     paint(0);
     const runT0 = performance.now();
-    let siteCount = 0;
+    let run = OPENING, dest = from || '/sites';
+    const many = (n: number, one: string) => n + ' ' + one + (n === 1 ? '' : 'S');
 
     const work: (() => Promise<string>)[] = [
-      async () => { await signIn(email, password); return 'LINKED'; },
-      async () => { const s = await api.getSites(); siteCount = s.length; return siteCount + (siteCount === 1 ? ' SITE' : ' SITES'); },
-      async () => { await import('./SiteControl'); return 'READY'; },
+      async () => {
+        const u = await signIn(email, password);
+        if (u.level === 'super') { run = OPENING_ADMIN; dest = from || '/admin'; run.forEach((s, n) => put(n, '.ln', s.row)); }
+        return 'LINKED';
+      },
+      async () => (run === OPENING_ADMIN ? many((await api.waGetCustomers()).length, 'CUSTOMER') : many((await api.getSites()).length, 'SITE')),
+      async () => { await (run === OPENING_ADMIN ? import('./WebAdmin') : import('./SiteControl')); return 'READY'; },
       async () => 'GO',
     ];
 
@@ -129,7 +140,7 @@ export default function Login() {
       const kind: FailureKind = e instanceof ApiError ? e.kind : 'NO RESPONSE';
       mark(n, 'fail'); put(n, '.lt', clock(performance.now() - runT0)); put(n, '.lv', kind);
       bar.classList.add('bad'); pct.classList.add('bad'); bar.setAttribute('aria-invalid', 'true');
-      say.textContent = OPENING[n].say + ' FAILED: ' + kind;
+      say.textContent = run[n].say + ' FAILED: ' + kind;
       running.current = false;
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'lgo retry'; b.id = 'load-retry';
@@ -143,10 +154,9 @@ export default function Login() {
       foot.appendChild(b); b.focus();
     };
 
-    const dest = from || '/sites';
     let pFrom = 0;
     const step = (n: number) => {
-      const s = OPENING[n], to = s.at;
+      const s = run[n], to = s.at;
       say.textContent = s.say; mark(n, 'run'); bar.setAttribute('aria-valuenow', String(to));
       let result: string | null = null, error: unknown = null, settled = false;
       work[n]().then(r => { result = r; settled = true; }, e => { error = e; settled = true; });
@@ -161,7 +171,7 @@ export default function Login() {
         if (k < 1 || !settled) { requestAnimationFrame(frame); return; }
         if (error) { fail(n, error); return; }
         pFrom = to; mark(n, 'done'); put(n, '.lt', clock(performance.now() - runT0)); put(n, '.lv', result as string);
-        if (n + 1 < OPENING.length) step(n + 1);
+        if (n + 1 < run.length) step(n + 1);
         else window.setTimeout(() => nav(dest, { replace: true }), red ? 150 : 620);
       };
       requestAnimationFrame(frame);

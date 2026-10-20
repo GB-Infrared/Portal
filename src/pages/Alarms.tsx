@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import * as api from '../api/portal';
 import type { Alarm, Severity } from '../api/types';
+import { useAuth } from '../auth/AuthContext';
 import { useSite } from '../auth/SiteContext';
 import { DateInput } from '../components/DateInput';
 import { Failed, Waiting, NoSite } from '../components/DataState';
@@ -12,12 +13,14 @@ import { useToast } from '../components/Toasts';
 import { useApi } from '../hooks/useApi';
 import { downloadCsv } from '../lib/csv';
 import { DASH, MON, WDAY, dt24, isoDay, parseIsoDay, toDate } from '../lib/format';
+import { why } from './settings/common';
 import '../styles/pages/alarms.css';
 
 const COLDEF: { k: keyof typeof RAW; t: string }[] = [
   { k: 'recv', t: 'Received Time' },
   { k: 'res', t: 'Resolved Time' },
   { k: 'status', t: 'Status' },
+  { k: 'ack', t: 'Acknowledged' },
   { k: 'text', t: 'Alarms Text' },
   { k: 'id', t: 'Alarm Id' },
   { k: 'sev', t: 'Severity' },
@@ -32,16 +35,50 @@ const RAW = {
   id: (a: Alarm) => a.id,
   sev: (a: Alarm) => SEVWORD(a.severity),
   dev: (a: Alarm) => a.deviceName,
+  ack: (a: Alarm) => (a.ack ? a.ack.by + ' ' + dt24(toDate(a.ack.at)) + (a.ack.note ? ' (' + a.ack.note + ')' : '') : ''),
 };
 
 const SEV_OPTS = [{ v: 'alarm', t: 'Alarm' }, { v: 'event', t: 'Event' }, { v: 'warn', t: 'Warning' }, { v: 'critical', t: 'Critical' }];
-const ST_OPTS = [{ v: 'active', t: 'Active' }, { v: 'resolved', t: 'Resolved' }];
+const ST_OPTS = [{ v: 'active', t: 'Active' }, { v: 'acknowledged', t: 'Acknowledged' }, { v: 'resolved', t: 'Resolved' }];
+
+function AckDialog({ a, onClose, onDone }: { a: Alarm; onClose: () => void; onDone: (note: string) => Promise<void> }) {
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
+  const box = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    box.current?.focus();
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', key);
+    return () => document.removeEventListener('keydown', key);
+  }, [onClose]);
+  return (
+    <div className="ackscrim on" role="dialog" aria-modal="true" aria-labelledby="ack-title" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="ackdlg">
+        <div className="ah" id="ack-title">Acknowledge alarm</div>
+        <div className="ab">
+          <div className="aw"><b>Alarm</b><span>{a.text}</span><b>Device</b><span>{a.deviceName}</span><b>Received</b><span>{dt24(toDate(a.receivedAt))}</span><b>Alarm Id</b><span>{a.id}</span></div>
+          <label htmlFor="ack-note">Note<span className="o">optional</span></label>
+          <textarea id="ack-note" ref={box} maxLength={200} placeholder="e.g. Technician sent to site" value={note} onChange={e => setNote(e.target.value)} />
+          <div className="hint">The alarm stays open until the device clears it. Your name and the time are recorded.</div>
+        </div>
+        <div className="af">
+          <button className="b" type="button" onClick={onClose}>Cancel</button>
+          <button className="b go" type="button" id="ack-go" disabled={busy}
+                  onClick={async () => { setBusy(true); try { await onDone(note.trim()); } finally { setBusy(false); } }}>Acknowledge</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const dayKey = (d: Date) => (d.getFullYear() * 100 + d.getMonth()) * 100 + d.getDate();
 
 export default function Alarms() {
   const { site, error: siteErr, loading: siteLoading, reloadSites } = useSite();
   const toast = useToast();
+  const { user } = useAuth();
+  const cols = useMemo(() => COLDEF.filter(c => c.k !== 'ack' || !!user?.level), [user?.level]);
+  const [ackFor, setAckFor] = useState<Alarm | null>(null);
   const [refresh, setRefresh] = useState<Refresh>('300');
   const siteId = site?.id ?? null;
 
@@ -110,6 +147,7 @@ export default function Alarms() {
   }
 
   const act = rows.filter(a => a.status === 'active').length;
+  const acked = rows.filter(a => a.status === 'acknowledged').length;
   const of = (k: Severity) => rows.filter(a => a.severity === k).length;
   const alarm = of('alarm'), event = of('event'), warn = of('warn'), crit = of('critical');
   const tile = (k: string, v: number | string, cls: string) => (
@@ -122,8 +160,8 @@ export default function Alarms() {
   let lastDay: number | null = null;
 
   const exportCsv = () => {
-    downloadCsv('Alarms_' + fromD + '.csv', [COLDEF.map(c => c.t), ...rows.map(a => COLDEF.map(c => RAW[c.k](a)))]);
-    toast('Exported ' + rows.length + ' rows · ' + COLDEF.length + ' columns');
+    downloadCsv('Alarms_' + fromD + '.csv', [cols.map(c => c.t), ...rows.map(a => cols.map(c => RAW[c.k](a)))]);
+    toast('Exported ' + rows.length + ' rows · ' + cols.length + ' columns');
   };
 
   const devOpts = (devices.data ?? []).map(d => ({ v: d.id, t: d.name }));
@@ -151,7 +189,8 @@ export default function Alarms() {
         <div className="sumbar" id="sumbar">
           {[tile('All', ready ? rows.length : DASH, 'all'),
             tile('Active', ready ? act : DASH, act ? 'alarm' : 'ok'),
-            tile('Resolved', ready ? rows.length - act : DASH, 'ok'),
+            tile('Acknowledged', ready ? acked : DASH, acked ? 'ack' : 'ok'),
+            tile('Resolved', ready ? rows.filter(a => a.status === 'resolved').length : DASH, 'ok'),
             tile('Alarm', ready ? alarm : DASH, alarm ? 'alarm' : 'ok'),
             tile('Event', ready ? event : DASH, 'event'),
             tile('Warning', ready ? warn : DASH, warn ? 'warn' : 'ok'),
@@ -169,17 +208,17 @@ export default function Alarms() {
           <div className="tablewrap">
             <table ref={tableRef}>
               <thead>
-                <tr>{COLDEF.map(c => <th key={c.k} className={ready && log.data!.length ? undefined : 'ph'}>{c.t}</th>)}</tr>
+                <tr>{cols.map(c => <th key={c.k} className={ready && log.data!.length ? undefined : 'ph'}>{c.t}</th>)}<th /></tr>
               </thead>
               <tbody>
                 {!ready ? (
-                  <tr><td colSpan={COLDEF.length}>
+                  <tr><td colSpan={cols.length + 1}>
                     {log.error ? <Failed error={log.error} what="the alarm log" onRetry={log.reload} /> : <Waiting what="Loading alarms" />}
                   </td></tr>
                 ) : !log.data!.length ? (
-                  <tr><td colSpan={COLDEF.length}><div className="empty-note tall">No alarms in this window</div></td></tr>
+                  <tr><td colSpan={cols.length + 1}><div className="empty-note tall">No alarms in this window</div></td></tr>
                 ) : !slice.length ? (
-                  <tr><td colSpan={COLDEF.length}><div className="empty-note tall">No alarms match these filters</div></td></tr>
+                  <tr><td colSpan={cols.length + 1}><div className="empty-note tall">No alarms match these filters</div></td></tr>
                 ) : slice.map(a => {
                   const d = toDate(a.receivedAt);
                   const k = d ? dayKey(d) : -1;
@@ -189,7 +228,7 @@ export default function Alarms() {
                   return (
                     <Fragment key={a.id}>
                       {head && (
-                        <tr className="dh"><td colSpan={COLDEF.length}>
+                        <tr className="dh"><td colSpan={cols.length + 1}>
                           <span className="d">{WDAY[d.getDay()] + ' · ' + d.getDate() + ' ' + MON[d.getMonth()]}</span>
                           <span className="n">{n + (n === 1 ? ' alarm' : ' alarms')}</span>
                         </td></tr>
@@ -198,10 +237,15 @@ export default function Alarms() {
                         <td className="ts">{dt24(d)}</td>
                         {a.resolvedAt ? <td className="ts">{dt24(toDate(a.resolvedAt))}</td> : <td className="dim">{DASH}</td>}
                         <td><span className={'stt ' + a.status}>{a.status.toUpperCase()}</span></td>
+                        {!!user?.level && (a.ack ? (
+                          <td className="ackc"><span className="who">{a.ack.by}</span><span className="when">{dt24(toDate(a.ack.at))}</span>
+                            {a.ack.note && <span className="nt" title={a.ack.note} aria-label={'Note: ' + a.ack.note}>i</span>}</td>
+                        ) : <td className="dim">{DASH}</td>)}
                         <td className="msg">{a.text}</td>
                         <td>{a.id}</td>
                         <td><span className={'sev ' + a.severity}>{SEVWORD(a.severity)}</span></td>
                         <td>{a.deviceName}</td>
+                        <td className="act">{a.status === 'active' && <button className="ackbtn" type="button" onClick={() => setAckFor(a)}>ACKNOWLEDGE</button>}</td>
                       </tr>
                     </Fragment>
                   );
@@ -214,6 +258,12 @@ export default function Alarms() {
         </div>
       </div>
       <RowPopover tableRef={tableRef} />
+      {ackFor && (
+        <AckDialog a={ackFor} onClose={() => setAckFor(null)} onDone={async note => {
+          try { await api.acknowledgeAlarm(site.id, ackFor.id, note); setAckFor(null); log.reload(); toast(ackFor.id + ' acknowledged'); }
+          catch (x) { toast('Could not acknowledge: ' + why(x), true); }
+        }} />
+      )}
     </div>
   );
 }

@@ -5,8 +5,8 @@ to a backend. It has no sample data. Every number on screen comes from the API.
 
 The mockup branch is still the reference for how things look and behave.
 
-**Status:** all eight screens are done, and they match the mockup in light and
-dark mode. The portal is not yet connected to the real sunhub.in backend. The
+**Status:** all eight screens and the web admin panel are done, and they match
+the mockup in light and dark mode. The portal is not yet connected to the real sunhub.in backend. The
 API in [docs/API.md](docs/API.md) was designed from the screens, so expect to
 change paths and field names when connecting it (see below).
 
@@ -63,22 +63,38 @@ To point the portal at existing backend routes:
 The screens do not need to change.
 
 
-## Two kinds of account
+## Accounts
 
-This portal is the customer admin panel. The web admin panel (designed later)
-creates the customer admin, and the customer admin creates users.
+This app has two panels:
 
-| Account | Settings |
-|---|---|
-| Customer admin | All ten screens |
-| User | User Profile and Customer Devices only. Devices are read-only. |
+- The customer panel: Site Control, Home, Monitoring, Alarms, Analysis, KPI and
+  Settings.
+- The web admin panel at `/admin`: the EnerOps team sets customers up there,
+  with their plants, loggers and devices.
 
-Every other page is the same for both. The backend says which one is signed in
-with `accountType` (`"admin"` or `"user"`) on `/auth/me` and on login. If it is
-missing, the portal treats the person as a user. The backend must still refuse
-admin calls from a user. See "Who sees what" in [docs/API.md](docs/API.md).
+The web admin panel creates the customer admin, and the customer admin creates
+users.
 
-In the Settings sidebar every section starts closed, for both accounts.
+| Account | Lands on | Settings |
+|---|---|---|
+| Customer admin | Site Control | All ten screens |
+| User | Site Control | User Profile and Customer Devices only. Devices are read-only. |
+| Super Admin | Web admin panel | All ten, opened as Customer Admin from the account menu |
+| Admin | Site Control | All ten |
+| Plant Admin | Site Control | All ten, read-only |
+
+The backend says who is signed in with `accountType` (`"admin"` or `"user"`)
+and, for the EnerOps team only, `level` (`"super"`, `"admin"` or `"plant"`) on
+`/auth/me` and on login. If `accountType` is missing, the portal treats the
+person as a user. The backend must still refuse calls a person is not allowed
+to make. See "Who sees what" and "Web admin panel" in
+[docs/API.md](docs/API.md).
+
+A web admin user's account menu has Web Admin, Customer Admin and Sign out.
+In Customer Admin, User Profile is the customer's profile, not theirs.
+
+In both sidebars every section starts closed, except My Profile in the web
+admin panel.
 
 
 ## Where things are
@@ -91,7 +107,9 @@ src/api/            everything about the backend
   portal.ts           one function per call
   client.ts           fetch, auth, errors
 src/pages/          one file per screen
-  Login, SiteControl, Home, Monitoring, Alarms, Analysis, Kpi, Settings
+  Login, SiteControl, Home, Monitoring, Alarms, Analysis, Kpi, Settings, WebAdmin
+  settings/           the Settings screens
+  webadmin/           the web admin screens, with one form and one table for all
 src/charts/         the charts
 src/components/     header, dropdowns, date and month pickers, table footer
 src/config/         parameter (tag) list for Monitoring and Analysis
@@ -125,6 +143,9 @@ public/textures/    the globe's Earth and sky images
     in CSS are written as `calc(100vh / var(--z,1))`. New code should do the same.
   - Under 1240px wide the header's tabs move into a menu button; under 680px
     (phones) Refresh and light/dark move there too.
+- **Type-check** with `npm run typecheck`. Do not run `tsc -b`: it writes a
+  `.js` file next to every source file, and Vite then builds those old copies
+  instead of the `.tsx`.
 - **npm scripts** call `node` directly. The usual shortcuts break when the folder
   path has an `&` in it (like `Portal & Mobile App`).
 - **No comments in the code**, on purpose. Explanations live in this file,

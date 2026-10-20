@@ -1,6 +1,7 @@
 export type Iso = string;
 
 export type AccountType = 'admin' | 'user';
+export type AdminLevel = 'super' | 'admin' | 'plant';
 
 export interface User {
   id: string;
@@ -8,6 +9,7 @@ export interface User {
   email: string;
   role?: string | null;
   accountType: AccountType;
+  level: AdminLevel | null;
 }
 
 export interface LoginResult {
@@ -132,7 +134,8 @@ export interface KpiBucket {
 }
 
 export type Severity = 'critical' | 'alarm' | 'warn' | 'event';
-export type AlarmStatus = 'active' | 'resolved';
+export type AlarmStatus = 'active' | 'acknowledged' | 'resolved';
+export interface AlarmAck { by: string; at: Iso; note: string }
 
 export interface Alarm {
   id: string;
@@ -144,6 +147,7 @@ export interface Alarm {
   deviceId: string;
   deviceName: string;
   category: string | null;
+  ack: AlarmAck | null;
 }
 
 export interface Profile {
@@ -171,4 +175,31 @@ export interface Role { id: string; name: string; siteIds: string[] }
 
 export interface AccountUser { id: string; first: string; last: string; email: string; phone: string; roleId: string | null; active: boolean }
 
-export interface LoggerStatus { name: string | null; live: boolean | null }
+export interface CommAlarm { siteId: string; code: string; text: string | null; deviceName: string; receivedAt: Iso }
+
+export interface WaCustomer {
+  id: string; name: string; legalName: string; companyEmail: string; phone: string; address: string;
+  adminFirst: string; adminLast: string; adminEmail: string;
+  plantCount: number | null; loggerCount: number | null; deviceCount: number | null;
+}
+export type Metric = 'pr' | 'cuf' | 'grid' | 'plant' | 'yield' | 'loss';
+export type EnergySource = 'inverter' | 'meter';
+export interface SourcePick { source: EnergySource; meter: string }
+export interface KpiSetting { bar: boolean; aux: boolean; poi: boolean }
+export interface WaPlant {
+  id: string; customerId: string; name: string; area: string; city: string; state: string; country: string; zip: string;
+  lat: number | null; lng: number | null; address: string; description: string;
+  acKw: number | null; dcKwp: number | null; pstcKwp: number | null; moduleWp: number | null; minIrradiance: number | null;
+  installedOn: string | null; irradiationSensors: string[]; pages: string[]; irradiance: 'inclined' | 'horizontal'; timezone: string;
+  energySource: SourcePick; metricMeters: Record<Metric, string>; homeKpi: Metric; kpi: Record<Metric, KpiSetting>;
+  homeSources: { power: SourcePick; energy: SourcePick; generation: SourcePick };
+  addedBy: string | null; loggerCount: number | null; deviceCount: number | null;
+}
+export type WaPlantInput = Omit<WaPlant, 'id' | 'addedBy' | 'loggerCount' | 'deviceCount'>;
+export interface WaLogger { id: string; plantId: string; name: string; description: string; deviceCount: number | null }
+export type DeviceCategory = 'Inverter' | 'MFM' | 'WMS';
+export interface WaDevice { id: string; loggerId: string; modelId: string; name: string; serial: string }
+export interface CatalogModel { id: string; name: string; category: DeviceCategory; model: string; mapping: string }
+export interface CatalogSensor { name: string; code: string; tag: string; unit: string; category: string }
+export interface TeamUser { id: string; first: string; last: string; email: string; phone: string; level: 'admin' | 'plant'; roleId: string | null }
+export interface TeamRole { id: string; name: string; customerIds: string[] }

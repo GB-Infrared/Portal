@@ -40,6 +40,7 @@ export function RowPopover({ tableRef }: { tableRef: RefObject<HTMLTableElement 
       const labels = headerLabels(table);
       let body = '';
       cells.forEach((td, i) => {
+        if (td.classList.contains('act')) return;
         const v = (td.textContent || '').trim();
         body += '<span class="rp-k">' + esc(labels[i] || 'Column ' + (i + 1)) + '</span>' +
           '<span class="rp-v' + (v === '—' || v === '' ? ' nil' : '') + '">' + esc(v || '—') + '</span>';

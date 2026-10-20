@@ -1,7 +1,8 @@
 import type {
   DeviceLive, TimeSeries, KpiBucket, PortfolioToday, Profile, Company, RatePeriod, EnergyOffset, AlarmRecipient, Role, AccountUser,
   Alarm, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric, LoginResult,
-  Reading, Severity, Site, SiteState, SiteSummary, User, LoggerStatus,
+  Reading, Severity, Site, SiteState, SiteSummary, User, CommAlarm, AdminLevel,
+  WaCustomer, WaPlant, WaLogger, WaDevice, CatalogModel, CatalogSensor, TeamUser, TeamRole, Metric, SourcePick, KpiSetting, DeviceCategory,
 } from './types';
 
 type Raw = Record<string, any>;  // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -21,8 +22,9 @@ const reading = (r: Raw | undefined | null): Reading => ({
   updatedAt: str(r?.updatedAt),
 });
 
+const LEVELS: unknown[] = ['super', 'admin', 'plant'];
 export function adaptUser(r: Raw): User {
-  return { id: String(r.id ?? r.email ?? ''), name: String(r.name ?? ''), email: String(r.email ?? ''), role: str(r.role), accountType: r.accountType === 'admin' ? 'admin' : 'user' };
+  return { id: String(r.id ?? r.email ?? ''), name: String(r.name ?? ''), email: String(r.email ?? ''), role: str(r.role), accountType: r.accountType === 'admin' ? 'admin' : 'user', level: LEVELS.includes(r.level) ? (r.level as AdminLevel) : null };
 }
 
 export function adaptLogin(r: Raw): LoginResult {
@@ -120,12 +122,13 @@ export function adaptAlarm(r: Raw): Alarm {
     id: String(r.id),
     receivedAt: String(r.receivedAt),
     resolvedAt: str(r.resolvedAt),
-    status: r.resolvedAt ? 'resolved' : (str(r.status) === 'resolved' ? 'resolved' : 'active'),
+    status: r.resolvedAt || str(r.status) === 'resolved' ? 'resolved' : r.acknowledgedAt || str(r.status) === 'acknowledged' ? 'acknowledged' : 'active',
     text: String(r.text ?? ''),
     severity: (SEVERITIES as string[]).includes(sev) ? (sev as Severity) : 'event',
     deviceId: String(r.deviceId ?? ''),
     deviceName: String(r.deviceName ?? r.deviceId ?? ''),
     category: str(r.category),
+    ack: r.acknowledgedAt ? { by: String(r.acknowledgedBy ?? ''), at: String(r.acknowledgedAt), note: String(r.acknowledgeNote ?? '') } : null,
   };
 }
 export const adaptAlarms = (r: unknown): Alarm[] => arr(r).map(adaptAlarm);
@@ -186,7 +189,52 @@ export const adaptPortfolio = (r: Raw): PortfolioToday => ({
   times: Array.isArray(r.times) ? r.times.map(String) : [], kw: numArr(r.kw),
 });
 
-export const adaptLoggerStatus = (r: unknown): LoggerStatus[] => arr(r).map(l => ({
-  name: str(l.loggerName ?? l.name),
-  live: typeof l.status === 'boolean' ? l.status : null,
+export const adaptCommAlarms = (r: unknown): CommAlarm[] => arr(r).map(a => ({
+  siteId: String(a.siteId ?? ''),
+  code: String(a.code ?? ''),
+  text: str(a.text),
+  deviceName: String(a.deviceName ?? a.deviceId ?? ''),
+  receivedAt: String(a.receivedAt ?? ''),
 }));
+
+const s0 = (v: unknown) => (v === null || v === undefined ? '' : String(v));
+const strs = (v: unknown) => (Array.isArray(v) ? v.map(String) : []);
+const METRICS: Metric[] = ['pr', 'cuf', 'grid', 'plant', 'yield', 'loss'];
+const pick = (r: Raw | undefined | null): SourcePick => ({ source: r?.source === 'meter' ? 'meter' : 'inverter', meter: s0(r?.meter) });
+const kpiOf = (r: Raw | undefined | null): KpiSetting => ({ bar: !!r?.bar, aux: !!r?.aux, poi: !!r?.poi });
+
+export const adaptWaCustomers = (r: unknown): WaCustomer[] => arr(r).map(c => ({
+  id: s0(c.id), name: s0(c.name), legalName: s0(c.legalName), companyEmail: s0(c.companyEmail), phone: s0(c.phone), address: s0(c.address),
+  adminFirst: s0(c.adminFirst), adminLast: s0(c.adminLast), adminEmail: s0(c.adminEmail),
+  plantCount: num(c.plantCount), loggerCount: num(c.loggerCount), deviceCount: num(c.deviceCount),
+}));
+export const adaptWaPlants = (r: unknown): WaPlant[] => arr(r).map(a => ({
+  id: s0(a.id), customerId: s0(a.customerId), name: s0(a.name), area: s0(a.area), city: s0(a.city), state: s0(a.state),
+  country: s0(a.country), zip: s0(a.zip), lat: num(a.lat), lng: num(a.lng), address: s0(a.address), description: s0(a.description),
+  acKw: num(a.acKw), dcKwp: num(a.dcKwp), pstcKwp: num(a.pstcKwp), moduleWp: num(a.moduleWp), minIrradiance: num(a.minIrradiance),
+  installedOn: str(a.installedOn), irradiationSensors: strs(a.irradiationSensors), pages: strs(a.pages),
+  irradiance: a.irradiance === 'horizontal' ? 'horizontal' : 'inclined', timezone: s0(a.timezone) || 'Asia/Kolkata',
+  energySource: pick(a.energySource),
+  metricMeters: Object.fromEntries(METRICS.map(m => [m, s0(a.metricMeters?.[m])])) as Record<Metric, string>,
+  homeKpi: (METRICS as unknown[]).includes(a.homeKpi) ? (a.homeKpi as Metric) : 'pr',
+  kpi: Object.fromEntries(METRICS.map(m => [m, kpiOf(a.kpi?.[m])])) as Record<Metric, KpiSetting>,
+  homeSources: { power: pick(a.homeSources?.power), energy: pick(a.homeSources?.energy), generation: pick(a.homeSources?.generation) },
+  addedBy: str(a.addedBy), loggerCount: num(a.loggerCount), deviceCount: num(a.deviceCount),
+}));
+export const adaptWaLoggers = (r: unknown): WaLogger[] => arr(r).map(l => ({
+  id: s0(l.id), plantId: s0(l.plantId), name: s0(l.name), description: s0(l.description), deviceCount: num(l.deviceCount),
+}));
+export const adaptWaDevices = (r: unknown): WaDevice[] => arr(r).map(d => ({
+  id: s0(d.id), loggerId: s0(d.loggerId), modelId: s0(d.modelId), name: s0(d.name), serial: s0(d.serial),
+}));
+const CATS: unknown[] = ['Inverter', 'MFM', 'WMS'];
+export const adaptCatalog = (r: unknown): CatalogModel[] => arr(r).map(d => ({
+  id: s0(d.id), name: s0(d.name), category: (CATS.includes(d.category) ? d.category : 'Inverter') as DeviceCategory, model: s0(d.model), mapping: s0(d.mapping),
+}));
+export const adaptSensors = (r: unknown): CatalogSensor[] => arr(r).map(x => ({
+  name: s0(x.name), code: s0(x.code), tag: s0(x.tag), unit: s0(x.unit), category: s0(x.category),
+}));
+export const adaptTeam = (r: unknown): TeamUser[] => arr(r).filter(u => u.level === 'admin' || u.level === 'plant').map(u => ({
+  id: s0(u.id), first: s0(u.first), last: s0(u.last), email: s0(u.email), phone: s0(u.phone), level: u.level as 'admin' | 'plant', roleId: str(u.roleId),
+}));
+export const adaptTeamRoles = (r: unknown): TeamRole[] => arr(r).map(x => ({ id: s0(x.id), name: s0(x.name), customerIds: strs(x.customerIds) }));

@@ -3,12 +3,10 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useSite } from '../auth/SiteContext';
 import { time12 } from '../lib/format';
+import { LEVEL_NAME } from '../lib/levels';
 import { toggleTheme, isDark } from '../lib/theme';
 import { SingleSelect } from './Select';
 import { useToast } from './Toasts';
-import { useApi } from '../hooks/useApi';
-import { getLoggerStatus } from '../api/portal';
-import { ApiError } from '../api/client';
 
 export type Refresh = 'off' | '300' | '600' | '900';
 export const refreshMs = (r: Refresh) => (r === 'off' ? 0 : Number(r) * 1000);
@@ -42,61 +40,15 @@ function ThemeButton() {
   );
 }
 
-const LOGGER_POLL_MS = 180000;
+const I_GEAR = <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3.1" /><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.3a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.7 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15.1 4.7a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09A1.7 1.7 0 0 0 21 10.1a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z" /></svg>;
+const I_SHIELD = <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3.2 5 6v5.4c0 4.2 2.9 7.6 7 9.4 4.1-1.8 7-5.2 7-9.4V6l-7-2.8z" /><path d="M9.2 12.2l2 2 3.8-4" /></svg>;
 
-function Notifications() {
-  const [open, setOpen] = useState(false);
-  const wrap = useRef<HTMLDivElement>(null);
-  const btn = useRef<HTMLButtonElement>(null);
-  const st = useApi(signal => getLoggerStatus({ signal }), [], LOGGER_POLL_MS);
-  useEffect(() => {
-    if (!open) return;
-    const away = (e: MouseEvent) => { if (!wrap.current?.contains(e.target as Node)) setOpen(false); };
-    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') { setOpen(false); btn.current?.focus(); } };
-    document.addEventListener('click', away, true);
-    document.addEventListener('keydown', key);
-    return () => { document.removeEventListener('click', away, true); document.removeEventListener('keydown', key); };
-  }, [open]);
-  const list = st.data;
-  const allLive = !!list && list.length > 0 && list.every(l => l.live === true);
-  const dot = !list && st.loading ? 'wait' : allLive ? 'ok' : 'bad';
-  const dotTitle = dot === 'wait' ? 'Checking the loggers' : allLive ? 'Every logger is live' : 'A logger is not live';
-  return (
-    <div className={'notif' + (open ? ' open' : '')} ref={wrap}>
-      <button className="notifbtn" type="button" ref={btn} title="Notifications" aria-label="Notifications"
-              aria-haspopup="true" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
-          <path fill="currentColor" d="M6.5 0C2.91 0 0 2.462 0 5.5c0 1.075.37 2.074 1 2.922V12l2.699-1.542A7.454 7.454 0 006.5 11c3.59 0 6.5-2.462 6.5-5.5S10.09 0 6.5 0z" />
-          <path fill="currentColor" opacity=".55" d="M16 9.5c0-.987-.429-1.897-1.147-2.639C14.124 10.348 10.66 13 6.5 13c-.103 0-.202-.018-.305-.021C7.231 13.617 8.556 14 10 14c.449 0 .886-.04 1.307-.11L15 16v-4h-.012C15.627 11.285 16 10.425 16 9.5z" />
-        </svg>
-        <span className={'ndot ' + dot} title={dotTitle} />
-      </button>
-      <div className="notifmenu" role="menu">
-        <div className="nhead">Notifications</div>
-        <ul className="nlist">
-          {st.error && !list && (
-            <li className="nfail" role="alert">
-              <span className="k">{st.error instanceof ApiError ? st.error.kind : 'FAILED'}</span>
-              <span className="t">Could not load notifications</span>
-              <button type="button" onClick={st.reload}>Try again</button>
-            </li>
-          )}
-          {!list && !st.error && <li className="nnone">Loading…</li>}
-          {list && !list.length && <li className="nnone">No loggers yet</li>}
-          {list?.map((l, i) => (
-            <li key={i} className={'nrow' + (l.live === false ? ' down' : '')} role="menuitem" onClick={() => setOpen(false)}>
-              {'\u{1F4E3} '}<b>{(l.name ?? 'Unnamed logger') + ':'}</b>{' '}
-              {l.live === true ? 'Data is Live' : l.live === false ? 'Data is not Live' : '—'}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-}
-
-function Account({ showSettings = true }: { showSettings?: boolean }) {
+function Account({ where = 'portal' }: { where?: 'portal' | 'settings' | 'admin' }) {
   const { user, signOut } = useAuth();
+  const level = user?.level ?? null;
+  const links: { to: string; t: string; icon: ReactNode }[] = [];
+  if (level && where !== 'admin') links.push({ to: '/admin', t: 'Web Admin', icon: I_SHIELD });
+  if (where !== 'settings' && (level || where === 'portal')) links.push({ to: '/settings', t: level ? 'Customer Admin' : 'Settings', icon: I_GEAR });
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -116,13 +68,10 @@ function Account({ showSettings = true }: { showSettings?: boolean }) {
         <div className="acctwho">
           <div className="nm">{user?.name || '—'}</div>
           <div className="em">{user?.email || ''}</div>
+          {level && <div className="lv">{LEVEL_NAME[level]}</div>}
         </div>
         <div className="acctdiv" />
-        {showSettings && (
-          <Link className="acctitem" role="menuitem" to="/settings">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3.1" /><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.3a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.7 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15.1 4.7a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09A1.7 1.7 0 0 0 21 10.1a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z" /></svg> Settings
-          </Link>
-        )}
+        {links.map(l => <Link key={l.to} className="acctitem" role="menuitem" to={l.to}>{l.icon} {l.t}</Link>)}
         <button className="acctitem out" role="menuitem" type="button"
                 onClick={async () => { await signOut(); nav('/login'); }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M15.5 16.5v1.8a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2V5.7a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v1.8" /><path d="M19.8 12H9.4m10.4 0-3.2-3.2M19.8 12l-3.2 3.2" /></svg> Sign out
@@ -230,7 +179,6 @@ export function TopBar({ refresh, onRefresh }: Props) {
       <div className="right">
         {!noClock && <Clock />}
         {!phone && refreshCtl}
-        <Notifications />
         {!phone && <ThemeButton />}
         <Account />
         {tablet && <Menu tabs={tabs} extra={extra} />}
@@ -248,7 +196,22 @@ export function SettingsBar() {
       </Link>
       <div className="right">
         <ThemeButton />
-        <Account showSettings={false} />
+        <Account where="settings" />
+      </div>
+    </header>
+  );
+}
+
+export function AdminBar() {
+  return (
+    <header className="topbar">
+      <Link className="brand" to="/home" title="Go to the customer dashboard" aria-label="Go to the customer dashboard">
+        <img className="logo" src="/logo/logo-mark.png" alt="EnerOps Data Systems Pvt Ltd" />
+        <span className="btext"><span className="word">ENEROPS OS</span><span className="sub adm">Web admin</span></span>
+      </Link>
+      <div className="right">
+        <ThemeButton />
+        <Account where="admin" />
       </div>
     </header>
   );

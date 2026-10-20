@@ -12,6 +12,7 @@ const Alarms = lazy(() => import('./pages/Alarms'));
 const Analysis = lazy(() => import('./pages/Analysis'));
 const Kpi = lazy(() => import('./pages/Kpi'));
 const Settings = lazy(() => import('./pages/Settings'));
+const WebAdmin = lazy(() => import('./pages/WebAdmin'));
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { status } = useAuth();
@@ -22,9 +23,9 @@ function RequireAuth({ children }: { children: ReactNode }) {
 }
 
 function Root() {
-  const { status } = useAuth();
+  const { status, user } = useAuth();
   if (status === 'checking') return null;
-  return <Navigate to={status === 'in' ? '/home' : '/login'} replace />;
+  return <Navigate to={status !== 'in' ? '/login' : user?.level === 'super' ? '/admin' : '/home'} replace />;
 }
 
 const guard = (el: ReactNode) => <RequireAuth>{el}</RequireAuth>;
@@ -45,6 +46,7 @@ export function App() {
               <Route path="/analysis" element={guard(<Analysis />)} />
               <Route path="/kpi" element={guard(<Kpi />)} />
               <Route path="/settings" element={guard(<Settings />)} />
+              <Route path="/admin" element={guard(<WebAdmin />)} />
               <Route path="*" element={<Root />} />
             </Routes>
           </Suspense>

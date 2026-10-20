@@ -106,7 +106,7 @@ export function SsSelect({ value, options, onPick, label, any = 'Choose', empty 
   );
 }
 
-function placePanel(b: HTMLElement | null, p: HTMLElement | null) {
+export function placePanel(b: HTMLElement | null, p: HTMLElement | null) {
   if (!b || !p) return;
   const r = cssRect(b), gap = 6, edge = 10;
   p.style.minWidth = Math.max(r.width, 150) + 'px';

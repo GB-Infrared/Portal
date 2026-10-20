@@ -80,9 +80,11 @@ function PasswordDialog({ onClose }: { onClose: () => void }) {
   );
 }
 
-export function UserProfilePane({ on, onSaved }: { on: boolean; onSaved: (name: string, email: string) => void }) {
+export function UserProfilePane({ on, onSaved, readOnly, bare, role, customer }: {
+  on: boolean; onSaved?: (name: string, email: string) => void; readOnly?: boolean; bare?: boolean; role?: string; customer?: boolean;
+}) {
   const toast = useToast();
-  const p = useApi(s => api.getProfile({ signal: s }), []);
+  const p = useApi(s => (customer ? api.getCustomerProfile : api.getProfile)({ signal: s }), [customer]);
   const [editing, setEditing] = useState(false);
   const [vals, setVals] = useState<Record<string, string>>({});
   const [errs, setErrs] = useState<Errs>({});
@@ -102,8 +104,8 @@ export function UserProfilePane({ on, onSaved }: { on: boolean; onSaved: (name: 
     setErrs(e); if (Object.keys(e).length) return;
     setBusy(true);
     try {
-      await api.saveProfile(v as Omit<Profile, 'roleLabel'>);
-      setEditing(false); p.reload(); onSaved((v.first + ' ' + v.last).trim(), v.email); toast('Profile updated');
+      await (customer ? api.saveCustomerProfile : api.saveProfile)(v as Omit<Profile, 'roleLabel'>);
+      setEditing(false); p.reload(); onSaved?.((v.first + ' ' + v.last).trim(), v.email); toast('Profile updated');
     } catch (x) { toast('Could not save: ' + why(x), true); }
     finally { setBusy(false); }
   };
@@ -112,15 +114,15 @@ export function UserProfilePane({ on, onSaved }: { on: boolean; onSaved: (name: 
   return (
     <section className={'panel card' + (on ? ' on' : '') + (editing ? ' editing' : '')} id="p-user-profile">
       <div className="chead">
-        <div className="title">User Profile</div>
+        {!bare && <div className="title">User Profile</div>}
         <span className="editing-tag">Editing</span>
-        <div className="tools"><button className="tbtn edit" type="button" onClick={start} disabled={!d}>EDIT</button></div>
+        <div className="tools">{!readOnly && <button className="tbtn edit" type="button" onClick={start} disabled={!d}>EDIT</button>}</div>
       </div>
       {!d ? <DataGate loading={p.loading} error={p.error} what="your profile" onRetry={p.reload} /> : (
         <>
           <div className="who">
             <div className="big">{(d.first || d.email || '?').charAt(0).toUpperCase()}</div>
-            <div><div className="nm">{name || '—'}</div><div className="ro">{d.roleLabel ?? ''}</div></div>
+            <div><div className="nm">{name || '—'}</div><div className="ro">{role ?? d.roleLabel ?? ''}</div></div>
           </div>
           <form noValidate onSubmit={e => { e.preventDefault(); save(); }}>
             <div className="fields">
@@ -146,7 +148,7 @@ export function UserProfilePane({ on, onSaved }: { on: boolean; onSaved: (name: 
           </form>
           <div className="cfoot">
             <span className="k">Password</span><span className="sp" />
-            <button className="linkbtn" type="button" onClick={() => setPwOpen(true)}>Change password</button>
+            {!customer && <button className="linkbtn" type="button" onClick={() => setPwOpen(true)}>Change password</button>}
           </div>
         </>
       )}

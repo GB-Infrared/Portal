@@ -1,12 +1,12 @@
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as api from '../api/portal';
-import type { PortfolioToday, Site } from '../api/types';
+import type { CommAlarm, PortfolioToday, Site } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { useSite } from '../auth/SiteContext';
 import { Failed, Waiting } from '../components/DataState';
 import { useApi } from '../hooks/useApi';
-import { toDate } from '../lib/format';
+import { time12, toDate } from '../lib/format';
 import { startGlobe, type GlobePortfolio, type GlobeSite } from './siteControl/engine';
 import '../styles/pages/plants.css';
 
@@ -20,6 +20,41 @@ function toGlobe(s: Site): GlobeSite {
     peak: s.peakKwToday, state: s.state,
   };
 }
+const COMM: Record<string, string> = {
+  ALM_991: 'Curator restarting', ALM_992: 'SD card fault', ALM_993: 'Network problem', ALM_994: 'Curator offline',
+  ALM_995: 'Data not delivered', ALM_996: 'Clock not set', ALM_997: 'Invalid response length', ALM_998: 'Invalid CRC', ALM_999: 'Communication Error',
+};
+
+function PlantWarnings({ sites, onOpen }: { sites: Site[]; onOpen: (id: string) => void }) {
+  const a = useApi(s => api.getCommAlarms({ signal: s }), [], REFRESH_MS);
+  const [gone, setGone] = useState<string[]>([]);
+  const bySite = useMemo(() => {
+    const m = new Map<string, CommAlarm[]>();
+    for (const x of a.data ?? []) if (COMM[x.code]) m.set(x.siteId, [...(m.get(x.siteId) ?? []), x]);
+    return [...m.entries()].filter(([id]) => !gone.includes(id)).sort((p, q) => q[1].length - p[1].length);
+  }, [a.data, gone]);
+  if (!bySite.length) return null;
+  return (
+    <div className="pwarn" role="alert">
+      {bySite.map(([id, list]) => (
+        <div className="pw warn" key={id}>
+          <div className="pwh">
+            <span className="pwi">!</span><span className="pwn">{sites.find(s => s.id === id)?.name ?? id}</span>
+            <span className="pws">COMMUNICATION</span>
+            <button className="pwx" type="button" aria-label="Dismiss" onClick={() => setGone(g => [...g, id])}>{'\u00d7'}</button>
+          </div>
+          <div className="pwb">
+            {list.map((x, i) => (
+              <div key={i}><b>{x.code}</b> · {x.text ?? COMM[x.code]} · {x.deviceName} <span className="pwt">{time12(toDate(x.receivedAt))}</span></div>
+            ))}
+          </div>
+          <button className="pwgo" type="button" onClick={() => onOpen(id)}>Open plant</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const hourOf = (iso: string) => { const d = toDate(iso); return d ? d.getHours() + d.getMinutes() / 60 : NaN; };
 
 export default function SiteControl() {
@@ -143,6 +178,7 @@ export default function SiteControl() {
       </aside>
 
       <div className="fallback"><div className="flist" id="flist" /></div>
+      <PlantWarnings sites={sites.data ?? []} onOpen={id => { setSiteId(id); nav('/home'); }} />
     </div>
   );
 }

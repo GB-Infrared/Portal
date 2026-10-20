@@ -39,7 +39,8 @@ const CHEV = <svg className="chev" width="13" height="13" viewBox="0 0 24 24" fi
 export default function Settings() {
   const { site, sites, error: siteErr, loading: siteLoading, reloadSites } = useSite();
   const { user, patchUser } = useAuth();
-  const admin = user?.accountType === 'admin';
+  const admin = user?.accountType === 'admin' || !!user?.level;
+  const ro = user?.level === 'plant';
   const groups = useMemo(() => groupsFor(admin), [admin]);
   const all = useMemo(() => screensOf(groups), [groups]);
   const [cur, setCur] = useState(() => fromHash(all));
@@ -67,7 +68,8 @@ export default function Settings() {
   const is = (p: string) => item.p === p;
 
   return (
-    <div className="pg-settings">
+    <div className={'pg-settings' + (ro ? ' seat-ro' : '')}
+         onKeyDownCapture={ro ? e => { if ((e.target as HTMLElement).closest('.pad .mbtn')) { e.preventDefault(); e.stopPropagation(); } } : undefined}>
       <AskProvider>
         <SettingsBar />
         <div className="shell">
@@ -88,7 +90,7 @@ export default function Settings() {
 
           <main className="main">
             <h1 className="pagehead">{item.g}</h1>
-            <UserProfilePane on={is('user-profile')} onSaved={(name, email) => patchUser({ name, email })} />
+            <UserProfilePane on={is('user-profile')} customer={!!user?.level} onSaved={user?.level ? undefined : (name, email) => patchUser({ name, email })} />
             {admin && <CompanyPane on={is('company-profile')} />}
             {site ? (
               <>

@@ -39,9 +39,9 @@ Set `VITE_AUTH_MODE` to match the backend:
 
 | Call | Sends | Returns |
 |---|---|---|
-| `POST /auth/login` | `{ email, password }` | `{ token, user: { id, name, email, role, accountType } }` |
+| `POST /auth/login` | `{ email, password }` | `{ token, user: { id, name, email, role, accountType, level } }` |
 | `POST /auth/logout` | – | anything |
-| `GET /auth/me` | – | `{ id, name, email, role, accountType }` (the signed-in user) |
+| `GET /auth/me` | – | `{ id, name, email, role, accountType, level }` (the signed-in user) |
 | `POST /auth/password-reset` | `{ email, newPassword }` | anything |
 
 Notes:
@@ -54,6 +54,11 @@ Notes:
   panel creates) and `"user"` for a user the customer admin creates. Anything
   else, or a missing value, is treated as `"user"`. The portal never shows admin
   screens by mistake. See "Who sees what" under Settings.
+- `level` is only for the EnerOps team who use the web admin panel:
+  `"super"` (Super Admin), `"admin"` (Admin) or `"plant"` (Plant Admin). For
+  everyone else it is `null` or left out. See "Web admin panel" below.
+- After sign-in a Super Admin lands on the web admin panel (`/admin`). Everyone
+  else, an Admin and a Plant Admin included, lands on Site Control.
 - Password reset: the portal only sends the request. The backend should confirm
   it (emailed link or code) before the new password works. The screen tells the
   user to check their email.
@@ -208,7 +213,7 @@ Used by Home (open alarms) and the Alarms page (full log).
 
 | Query | Meaning |
 |---|---|
-| `status=active` | only alarms that are still open (Home) |
+| `status=active` | only alarms that are still open, acknowledged ones included (Home) |
 | `from`, `to` | ISO times. Alarms received in this window (Alarms page) |
 
 ```json
@@ -222,15 +227,35 @@ Used by Home (open alarms) and the Alarms page (full log).
     "severity": "event",
     "deviceId": "31076873",
     "deviceName": "INV06",
-    "category": "inverter"
+    "category": "inverter",
+    "acknowledgedBy": null,
+    "acknowledgedAt": null,
+    "acknowledgeNote": null
   }
 ]
 ```
 
 - `severity`: `critical`, `alarm`, `warn` (or `warning`), `event`.
+- `status`: `active`, `acknowledged` or `resolved`. An acknowledged alarm is
+  still open. It becomes `resolved` when the device clears it.
+- `acknowledgedBy`, `acknowledgedAt`, `acknowledgeNote`: filled once someone
+  acknowledges the alarm, otherwise `null`. `acknowledgedBy` is the person's
+  name, as it should be shown.
 - The Alarms page filters by device, severity and status in the browser, so
   return the whole window. If windows get very large, tell us and we will move the
   filters to the server.
+
+### `POST /sites/{siteId}/alarms/{alarmId}/acknowledge`
+
+The ACKNOWLEDGE button on an open alarm, on the Alarms page.
+
+Sends `{ "note": "Technician sent to site" }`. The note can be empty. The
+backend records who did it and when (from the session) and returns anything.
+After this, `GET /sites/{siteId}/alarms` returns the alarm with
+`status: "acknowledged"` and the three acknowledge fields filled.
+
+The Acknowledged column (who, when, note) is shown only to web admin users
+(`level` set). Customers can acknowledge but do not see the column.
 
 
 ## Monitoring and Analysis
@@ -329,6 +354,7 @@ If a device does not report a tag, return `null` values for it (not zeros).
 |---|---|
 | Customer admin (`accountType: "admin"`) | All ten: User Profile, Company Profile, Customer Devices, Emission Rate, Electricity Rate, Energy Offset, Alarms config, Role, User, Access Control |
 | User (`accountType: "user"`) | User Profile and Customer Devices only. Devices are read-only (no rename). |
+| Web admin user (`level` set), opened from the account menu as Customer Admin | All ten. A Plant Admin sees them read-only: no add, edit, delete or save, and no role pickers. |
 
 For a user, the portal does not call any of the admin-only calls below. The
 backend must still refuse them (`403`), because hiding a screen is not
@@ -342,6 +368,12 @@ security:
 A user can still read and edit their own profile and change their own password.
 `GET /sites` should return only the sites the user's role reaches.
 
+For a web admin user, every `/account/...` call means the customer account they
+are looking at. Their User Profile here is that customer's profile (the customer
+admin's), read with `GET /account/company/admin`, not their own. Change password
+is not offered on it. The backend must refuse every change from a Plant Admin
+(`403`) on these screens.
+
 ### Profile and company
 
 | Call | Sends | Returns |
@@ -350,6 +382,8 @@ A user can still read and edit their own profile and change their own password.
 | `PUT /account/profile` | `{ first, last, company, address, email, phone }` | anything |
 | `POST /account/password` | `{ current, next }` | anything; wrong `current` → `403` with a message |
 | `GET /account/company` | – | `{ name, address, companyEmail, adminEmail, phone, serviceActive }` |
+| `GET /account/company/admin` | – | the customer admin's profile, same shape as `GET /account/profile`. Only called for web admin users. |
+| `PUT /account/company/admin` | same as `PUT /account/profile` | anything. Super Admin and Admin only. |
 
 ### Devices
 
@@ -408,27 +442,184 @@ negative. `0` ends a correction.
 Users are never deleted, only suspended.
 
 
-## Top bar
+## Site Control: plant warnings
 
-### `GET /data-communications/logger-status`
+### `GET /alarms/communication`
 
-The notification button just before the light/dark button on Home, Monitoring,
-Alarms, Analysis and KPI. Asked when the page opens and again every 3 minutes.
+Open communication alarms across all the customer's sites. Site Control shows
+one warning card per plant at the bottom right, with "Open plant" and a close
+button. Asked when Site Control opens and again every 5 minutes.
 
 ```json
 [
-  { "loggerName": "Sangria logger 1", "status": true },
-  { "loggerName": "Mendoza logger 2", "status": false }
+  { "siteId": "SANGRIA-01", "code": "ALM_994", "text": "Curator offline", "deviceName": "Sangria logger 1", "receivedAt": "2026-07-27T16:48:00+05:30" },
+  { "siteId": "MENDOZA-01", "code": "ALM_999", "text": "Communication Error", "deviceName": "INV03", "receivedAt": "2026-07-27T17:12:00+05:30" }
 ]
 ```
 
-- One row per logger of the signed-in customer.
-- `status`: `true` when the logger's data is live, `false` when it is not.
-  Anything else is shown as a dash.
-- The dot on the button is green only when every logger is `true`. It is red
-  when any is `false`, when the list is empty, or when the call fails.
-- The live sunhub.in site already has this call with these field names:
-  `GET /api/v1/data-communications/logger-status`.
+- Only codes `ALM_991` to `ALM_999` make a card. Other codes are ignored.
+- `text` can be left out. The portal then uses its own name for the code:
+
+| Code | Name |
+|---|---|
+| `ALM_991` | Curator restarting |
+| `ALM_992` | SD card fault |
+| `ALM_993` | Network problem |
+| `ALM_994` | Curator offline |
+| `ALM_995` | Data not delivered |
+| `ALM_996` | Clock not set |
+| `ALM_997` | Invalid response length |
+| `ALM_998` | Invalid CRC |
+| `ALM_999` | Communication Error |
+
+- Return only alarms that are still open. When the list is empty there are no
+  cards.
+- `siteId` must match an `id` from `GET /sites`.
+
+
+## Web admin panel
+
+The panel the EnerOps team uses to set customers up. It opens at `/admin`, only
+for a user with `level` set. Anyone else who opens `/admin` is sent to Home.
+
+| Level | What they can do |
+|---|---|
+| Super Admin (`super`) | Everything below. |
+| Admin (`admin`) | Everything except customers. Their user screen is called Plant Admin: it lists only Plant Admins, and a user they add is always a Plant Admin. |
+| Plant Admin (`plant`) | No Account Management and no Device catalogue screens. Sees only the customers their role reaches. Adds plants for those customers, and changes or deletes only the plants they added, with those plants' loggers and devices. Their profile is read-only, but they can change their password. |
+
+The screens hide what a level cannot do. The backend must refuse it as well
+(`403`).
+
+IDs are made by the backend. The Add plant form shows "Made when saved" where
+the ID goes.
+
+Their own profile uses the same calls as Settings: `GET` / `PUT /account/profile`
+and `POST /account/password`.
+
+### Customers
+
+| Call | Sends | Returns |
+|---|---|---|
+| `GET /admin/customers` | – | `[ { id, name, legalName, companyEmail, phone, address, adminFirst, adminLast, adminEmail, plantCount, loggerCount, deviceCount } ]` |
+| `POST /admin/customers` | `{ name, legalName, companyEmail, phone, address, adminFirst, adminLast, adminEmail }` | anything |
+| `PUT /admin/customers/{id}` | same | anything |
+| `DELETE /admin/customers/{id}` | – | anything. Its plants, loggers and devices go with it. |
+
+- Only a Super Admin adds, edits or deletes. An Admin and a Plant Admin still
+  call `GET`, to pick a customer on the plant screens. For a Plant Admin, return
+  only the customers their role reaches.
+- `adminEmail` signs in to the customer panel. If another customer already uses
+  it, answer `409` with a message.
+
+### Plants
+
+| Call | Sends | Returns |
+|---|---|---|
+| `GET /admin/plants?customerId=...` | – | `[ plant ]` |
+| `POST /admin/plants` | a plant without `id`, `addedBy`, `loggerCount`, `deviceCount` | anything |
+| `PUT /admin/plants/{id}` | same | anything |
+| `DELETE /admin/plants/{id}` | – | anything. Its loggers and devices go with it. |
+
+```json
+{
+  "id": "52807316",
+  "customerId": "48210375",
+  "name": "Sangria",
+  "area": "Nathwana", "city": "Hanumangarh", "state": "Rajasthan", "country": "India", "zip": "335073",
+  "lat": 29.80, "lng": 74.47,
+  "address": "2 DLP, Kikarwali Road, Nathwana",
+  "description": "Ground-mount, fixed tilt",
+  "acKw": 2500, "dcKwp": 2500, "pstcKwp": 2500, "moduleWp": 540, "minIrradiance": 50,
+  "installedOn": "2021-03-12",
+  "irradiationSensors": ["WMS01"],
+  "pages": ["Home", "Monitoring", "Alarms", "Analysis", "KPI"],
+  "irradiance": "inclined",
+  "timezone": "Asia/Kolkata",
+  "homeSources": {
+    "power":      { "source": "meter",    "meter": "MET01" },
+    "energy":     { "source": "inverter", "meter": "" },
+    "generation": { "source": "inverter", "meter": "" }
+  },
+  "energySource": { "source": "meter", "meter": "MET01" },
+  "metricMeters": { "pr": "MET01", "cuf": "MET01", "grid": "", "plant": "", "yield": "", "loss": "" },
+  "homeKpi": "pr",
+  "kpi": { "pr": { "bar": false, "aux": false, "poi": false }, "cuf": { "bar": true, "aux": false, "poi": false } },
+  "addedBy": "admin@enerops.in",
+  "loggerCount": 2,
+  "deviceCount": 10
+}
+```
+
+- `pages` always has Home, Monitoring and Alarms. Analysis and KPI are a choice.
+- `irradiance` is `inclined` (POA) or `horizontal` (GHI).
+- `homeSources` is the Home Page Data Source block: where Home's Plant Power,
+  Plant Energy and Energy Generation come from. `source` is `inverter` or
+  `meter`. With `meter`, `meter` names one meter of this plant.
+- Meters and irradiation sensors are named by their customer device name
+  (`MET01`, `WMS01`), which is unique within a plant.
+- `kpi` has one entry per metric: `pr`, `cuf`, `grid`, `plant`, `yield`, `loss`.
+  `homeKpi` is the one Home shows first.
+- `addedBy` is the email of whoever added the plant. The backend sets it on
+  `POST`. A Plant Admin may `PUT` or `DELETE` a plant only when it is theirs.
+
+### Loggers
+
+| Call | Sends | Returns |
+|---|---|---|
+| `GET /admin/loggers?plantId=...` | – | `[ { id, plantId, name, description, deviceCount } ]` |
+| `POST /admin/loggers` | `{ plantId, name, description }` | anything |
+| `PUT /admin/loggers/{id}` | same | anything |
+| `DELETE /admin/loggers/{id}` | – | anything. Its devices go with it. |
+
+### Customer devices
+
+| Call | Sends | Returns |
+|---|---|---|
+| `GET /admin/devices?loggerId=...` | – | `[ { id, loggerId, modelId, name, serial } ]` |
+| `GET /admin/devices?plantId=...` | – | the same, for every logger of the plant |
+| `POST /admin/devices` | `{ loggerId, modelId, name, serial }` | anything |
+| `PUT /admin/devices/{id}` | same | anything |
+| `DELETE /admin/devices/{id}` | – | anything |
+
+- `name` is what the customer panel shows (`INV01`). It must be unique within
+  the plant. The form checks this, but answer `409` if it is not.
+- `?plantId=` is used by the plant form to list the plant's meters and weather
+  stations.
+
+### Device catalogue
+
+Read-only. Models are added with the firmware, not from the panel.
+
+| Call | Returns |
+|---|---|
+| `GET /admin/catalog/models` | `[ { id, name, category, model, mapping } ]`. `category` is `Inverter`, `MFM` or `WMS`. |
+| `GET /admin/catalog/models/{id}/sensors` | `[ { name, code, tag, unit, category } ]` |
+
+A Plant Admin does not see these screens, but the device form still calls
+`GET /admin/catalog/models`.
+
+### Users, roles and access
+
+Super Admin and Admin only.
+
+| Call | Sends | Returns |
+|---|---|---|
+| `GET /admin/team` | – | `[ { id, first, last, email, phone, level, roleId } ]` |
+| `POST /admin/team` | `{ first, last, email, phone, level }` | anything |
+| `DELETE /admin/team/{id}` | – | anything |
+| `PUT /admin/team/{id}/role` | `{ roleId }` (`null` = no role) | anything |
+| `GET /admin/roles` | – | `[ { id, name, customerIds } ]` |
+| `POST /admin/roles` | `{ name, customerIds }` | anything |
+| `PUT /admin/roles/{id}` | `{ name, customerIds }` | anything |
+| `DELETE /admin/roles/{id}` | – | anything. Users who held it are left with no role. |
+
+- `level` is `admin` or `plant`. Leave the Super Admin out of the list.
+- For an Admin, return only Plant Admins, and treat any user they add as a
+  Plant Admin whatever `level` says.
+- An email that already signs in somewhere answers `409` with a message.
+- A role decides which customers someone reaches. Their level decides what they
+  can do there.
 
 
 ## Stored in the browser (no backend needed)

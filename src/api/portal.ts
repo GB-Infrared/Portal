@@ -4,7 +4,8 @@ import * as A from './adapters';
 import type {
   Alarm, AlarmStatus, DeviceLive, TimeSeries, KpiBucket, KpiMetric,
   Profile, Company, RateKind, RatePeriod, EnergyOffset, AlarmRecipient, Role, AccountUser, Severity, DailyEnergy, DailyKpi, DayPowerSeries, Device, HomeKpiMetric,
-  LoginResult, PortfolioToday, Site, SiteSummary, User, LoggerStatus,
+  LoginResult, PortfolioToday, Site, SiteSummary, User, CommAlarm,
+  WaCustomer, WaPlant, WaPlantInput, WaLogger, WaDevice, CatalogModel, CatalogSensor, TeamUser, TeamRole,
 } from './types';
 
 type Sig = { signal?: AbortSignal };
@@ -93,6 +94,8 @@ export async function saveProfile(p: Omit<Profile, 'roleLabel'>): Promise<void> 
 export async function changePassword(current: string, next: string): Promise<void> {
   await request(EP.password(), { method: 'POST', body: { current, next }, skipAuthRedirect: true });
 }
+export async function getCustomerProfile(o: Sig = {}): Promise<Profile> { return A.adaptProfile(await request(EP.customerProfile(), { signal: o.signal })); }
+export async function saveCustomerProfile(p: Omit<Profile, 'roleLabel'>): Promise<void> { await request(EP.customerProfile(), { method: 'PUT', body: p }); }
 export async function getCompany(o: Sig = {}): Promise<Company> { return A.adaptCompany(await request(EP.company(), { signal: o.signal })); }
 
 export async function renameDevice(siteId: string, deviceId: string, name: string): Promise<void> {
@@ -138,6 +141,56 @@ export async function saveUser(id: string | null, x: { first: string; last: stri
 export async function setUserActive(id: string, active: boolean): Promise<void> { await request(EP.userStatus(id), { method: 'PUT', body: { active } }); }
 export async function setUserRole(id: string, roleId: string | null): Promise<void> { await request(EP.userRole(id), { method: 'PUT', body: { roleId } }); }
 
-export async function getLoggerStatus(o: Sig = {}): Promise<LoggerStatus[]> {
-  return A.adaptLoggerStatus(await request(EP.loggerStatus(), { signal: o.signal }));
+export async function getCommAlarms(o: Sig = {}): Promise<CommAlarm[]> {
+  return A.adaptCommAlarms(await request(EP.commAlarms(), { signal: o.signal }));
 }
+export async function acknowledgeAlarm(siteId: string, alarmId: string, note: string): Promise<void> {
+  await request(EP.alarmAck(siteId, alarmId), { method: 'POST', body: { note } });
+}
+
+export type WaCustomerInput = Omit<WaCustomer, 'id' | 'plantCount' | 'loggerCount' | 'deviceCount'>;
+export async function waGetCustomers(o: Sig = {}): Promise<WaCustomer[]> { return A.adaptWaCustomers(await request(EP.waCustomers(), { signal: o.signal })); }
+export async function waSaveCustomer(id: string | null, x: WaCustomerInput): Promise<void> {
+  await request(id ? EP.waCustomer(id) : EP.waCustomers(), { method: id ? 'PUT' : 'POST', body: x });
+}
+export async function waRemoveCustomer(id: string): Promise<void> { await request(EP.waCustomer(id), { method: 'DELETE' }); }
+
+export async function waGetPlants(customerId: string, o: Sig = {}): Promise<WaPlant[]> {
+  return A.adaptWaPlants(await request(EP.waPlants(), { query: { customerId }, signal: o.signal }));
+}
+export async function waSavePlant(id: string | null, x: WaPlantInput): Promise<void> {
+  await request(id ? EP.waPlant(id) : EP.waPlants(), { method: id ? 'PUT' : 'POST', body: x });
+}
+export async function waRemovePlant(id: string): Promise<void> { await request(EP.waPlant(id), { method: 'DELETE' }); }
+
+export async function waGetLoggers(plantId: string, o: Sig = {}): Promise<WaLogger[]> {
+  return A.adaptWaLoggers(await request(EP.waLoggers(), { query: { plantId }, signal: o.signal }));
+}
+export async function waSaveLogger(id: string | null, x: { plantId: string; name: string; description: string }): Promise<void> {
+  await request(id ? EP.waLogger(id) : EP.waLoggers(), { method: id ? 'PUT' : 'POST', body: x });
+}
+export async function waRemoveLogger(id: string): Promise<void> { await request(EP.waLogger(id), { method: 'DELETE' }); }
+
+export async function waGetDevices(q: { loggerId?: string; plantId?: string }, o: Sig = {}): Promise<WaDevice[]> {
+  return A.adaptWaDevices(await request(EP.waDevices(), { query: { ...q }, signal: o.signal }));
+}
+export async function waSaveDevice(id: string | null, x: { loggerId: string; modelId: string; name: string; serial: string }): Promise<void> {
+  await request(id ? EP.waDevice(id) : EP.waDevices(), { method: id ? 'PUT' : 'POST', body: x });
+}
+export async function waRemoveDevice(id: string): Promise<void> { await request(EP.waDevice(id), { method: 'DELETE' }); }
+
+export async function waGetModels(o: Sig = {}): Promise<CatalogModel[]> { return A.adaptCatalog(await request(EP.waModels(), { signal: o.signal })); }
+export async function waGetSensors(modelId: string, o: Sig = {}): Promise<CatalogSensor[]> { return A.adaptSensors(await request(EP.waSensors(modelId), { signal: o.signal })); }
+
+export async function waGetTeam(o: Sig = {}): Promise<TeamUser[]> { return A.adaptTeam(await request(EP.waTeam(), { signal: o.signal })); }
+export async function waAddTeamUser(x: { first: string; last: string; email: string; phone: string; level: 'admin' | 'plant' }): Promise<void> {
+  await request(EP.waTeam(), { method: 'POST', body: x });
+}
+export async function waRemoveTeamUser(id: string): Promise<void> { await request(EP.waTeamUser(id), { method: 'DELETE' }); }
+export async function waSetTeamRole(id: string, roleId: string | null): Promise<void> { await request(EP.waTeamRole(id), { method: 'PUT', body: { roleId } }); }
+
+export async function waGetRoles(o: Sig = {}): Promise<TeamRole[]> { return A.adaptTeamRoles(await request(EP.waRoles(), { signal: o.signal })); }
+export async function waSaveRole(id: string | null, x: { name: string; customerIds: string[] }): Promise<void> {
+  await request(id ? EP.waRole(id) : EP.waRoles(), { method: id ? 'PUT' : 'POST', body: x });
+}
+export async function waRemoveRole(id: string): Promise<void> { await request(EP.waRole(id), { method: 'DELETE' }); }
