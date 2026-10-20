@@ -47,7 +47,7 @@ no toolchain on it.
 | 1 | `login.html` | 1,603 | 150 KB | The front door. A void with 8,920 real stars and the Earth's limb across the foot. |
 | 2 | `plants.html` | 3,488 | **2.24 MB** | Site Control. The globe — the whole planet, falling to the fleet, landing on terrain. |
 | 3 | `home.html` | 2,402 | 134 KB | Portfolio dashboard: KPI tiles, power-vs-irradiance, energy, plant KPI. |
-| 4 | `monitoring.html` | 2,090 | 111 KB | Device rail, live power curve, gauge, history table. |
+| 4 | `monitoring.html` | 2,439 | 134 KB | Device rail, live curve, device read-out, history table - all for the chosen device type and data point. |
 | 5 | `alarms.html` | 1,537 | 81 KB | The alarm log, newest first under a heading per day, with device / severity / status filters and a window. Tiles: All, Active, Resolved, Alarm, Event, Warning, Critical. |
 | 6 | `analysis.html` | 2,370 | 118 KB | Multi-device parameter comparison. **One frame, four series.** |
 | 7 | `kpi.html` | 1,713 | 89 KB | One site, one metric, examined closely: actual vs simulated vs forecast. |
@@ -364,11 +364,23 @@ lands on satellite terrain with the sites labelled on the ground.
 
 ### `monitoring.html`
 
-Device rail on the left, live power curve, gauge, history table. Two devices are
-plotted — **INV06 and INV07, wearing `--s1` and `--s2`.** They used to wear
-`--green` and `--blue`, which meant the plotted line and the health dot beside it
-were the same colour: *"this is the series"* and *"this device is healthy"* said in
-one hue.
+Device rail on the left, live curve, device read-out, history table.
+
+**Everything follows the Device type and Data point in the bar.** Inverter lists
+INV01-INV07; MFM lists MET01 (export meter) and MET02 (check meter); Weather
+station lists WMS01; Transformer says *No transformer devices on this site*,
+because Sangria has none. The chart title, the axis and its scale, the tooltip,
+the table header, FILTER and the CSV all follow the data point, and the scale
+re-fits to the reading (0-300 kW for power, 0-1.2 for a power factor). Hovering
+a device opens its own read-out: an inverter keeps the gauge against its rating,
+a meter shows its power and grid side, the weather station shows sun and
+temperature. A meter or weather station reads **ONLINE**, not PRODUCING.
+
+The plotted devices are the ones ticked in FILTER (on arrival, the type's first
+two that are reporting), each wearing the next series colour, **`--s1` to
+`--s8`.** They used to wear `--green` and `--blue`, which meant the plotted line
+and the health dot beside it were the same colour: *"this is the series"* and
+*"this device is healthy"* said in one hue.
 
 The **Online / Offline tally** at the foot of the rail is gone. It restated what
 the cards above it already said, more plainly, and counting them is both quicker

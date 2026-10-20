@@ -495,7 +495,7 @@ select:focus{border-color:var(--line-hi);background-color:var(--hover)}
 .gl.v{stroke:var(--grid-v)}
 .axt{fill:var(--faint);font-size:10.5px;font-family:var(--mono)}
 /* SVG follows the theme tokens — CSS wins over presentation attributes */
-/* THE TWO CURVES WEAR SERIES TOKENS, NOT --green AND --blue.
+/* THE CURVES WEAR SERIES TOKENS, NOT --green AND --blue.
 
    They were painted with the portal's semantic green and blue, which are
    re-picked per theme so that "healthy" and "link" stay legible on each ground.
@@ -504,16 +504,16 @@ select:focus{border-color:var(--line-hi);background-color:var(--hover)}
    coincidence, the same colour - so a curve dropping to zero and a device
    marked healthy were being said in one hue.
 
-   --s1 and --s2 are identities and hold their value in both themes. See the
-   note beside them in :root. */
-#g6 stop{stop-color:var(--s1)} #g7 stop{stop-color:var(--s2)}
-#l06{stroke:var(--s1)} #l07{stroke:var(--s2)}
+   --s1 to --s8 are identities and hold their value in both themes. See the
+   note beside them in :root. Each plotted device takes the next one, in the
+   order it stands in the fleet, and the script writes it onto the line, the
+   fill, the dot and the legend chip, so all four always agree. */
 #dropm path{fill:var(--amber)}
 #nowl{stroke:var(--muted)}
 #nowtag rect{fill:var(--panel-2);stroke:var(--line)}
 #nowtxt{fill:var(--muted)}
-#d06 circle{fill:var(--s1)} #d07 circle{fill:var(--s2)}
-#d06 circle:not(.pulse),#d07 circle:not(.pulse){stroke:var(--panel)}
+#dots circle:not(.pulse){stroke:var(--panel)}
+#cnote{fill:var(--faint)}
 #xh{stroke:var(--text)}
 .gtrack{stroke:var(--line-soft)}
 #garc{stroke:var(--green)}
@@ -1046,55 +1046,26 @@ td.warn{color:var(--amber)}
       </div>
       <div class="pinfo">
         <div class="nm"><span id="lp-name">INV07</span><span class="pill on" id="lp-pill">Online</span></div>
-        <div class="mdl">HVERTER SI-350K-NO</div>
+        <div class="mdl" id="lp-mdl">HVERTER SI-350K-NO</div>
       </div>
       <button class="iconbtn mclose" onclick="closePanel()" title="Close (Esc)" aria-label="Close">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </div>
 
-    <div class="pbody">
-      <div class="gaugebox">
-        <svg width="66" height="66" viewBox="0 0 72 72">
-          <circle class="gtrack" cx="36" cy="36" r="30" fill="none" stroke-width="7"/>
-          <circle id="garc" cx="36" cy="36" r="30" fill="none" stroke-width="7" stroke-linecap="round"
-            stroke-dasharray="188.5" stroke-dashoffset="116" transform="rotate(-90 36 36)" style="transition:stroke-dashoffset .6s"/>
-          <text id="gpct" x="36" y="41" text-anchor="middle" font-size="14" font-weight="800" font-family="ui-monospace,monospace">38%</text>
-        </svg>
-        <div class="txt">
-          <div class="big"><span id="lp-p">134.60</span><span class="u">kW</span></div>
-          <div class="cap">P_AC · of 350 kW rated</div>
-        </div>
-      </div>
-
-      <div class="ptitle">AC output</div>
-      <div class="pgrid">
-        <div class="pv"><div class="v"><span id="lp-s">134.60</span><span class="u">kVA</span></div><div class="l">S_AC</div></div>
-        <div class="pv"><div class="v"><span id="lp-q">0.00</span><span class="u">kVAR</span></div><div class="l">Q_AC</div></div>
-        <div class="pv"><div class="v"><span id="lp-f">49.88</span><span class="u">Hz</span></div><div class="l">F_AC</div></div>
-        <div class="pv"><div class="v"><span id="lp-pf">1.000</span></div><div class="l">COS_PHI</div></div>
-      </div>
-
-      <div class="ptitle">AC current</div>
-      <div class="pgrid three">
-        <div class="pv"><div class="v"><span id="lp-i1">93.99</span><span class="u">A</span></div><div class="l">I_AC1</div></div>
-        <div class="pv"><div class="v"><span id="lp-i2">93.53</span><span class="u">A</span></div><div class="l">I_AC2</div></div>
-        <div class="pv"><div class="v"><span id="lp-i3">94.11</span><span class="u">A</span></div><div class="l">I_AC3</div></div>
-      </div>
-    </div>
+    <!-- the read-out is the device's own, written by paintPanel() -->
+    <div class="pbody" id="pbody"></div>
     </div>
 
       <div class="card">
         <div class="chead">
-          <div class="title">Active Power</div>
-          <div class="legend">
+          <div class="title" id="ch-title">Active Power</div>
+          <div class="legend" id="legend">
             <!-- the chips wear the SERIES tokens, the same two the lines are
                  drawn with. They were --green and --blue, which are the health
                  colours - so the swatch beside INV06 was saying "healthy" and
                  "this is the line" in one mark, and stopped matching its own
                  line the moment the series hues were fixed across the themes. -->
-            <span class="lg" id="lg06" onclick="TOG('06')"><i style="background:var(--s1)"></i><span class="n">INV06</span><span class="v" id="lg06v">242.2 kW</span></span>
-            <span class="lg" id="lg07" onclick="TOG('07')"><i style="background:var(--s2)"></i><span class="n">INV07</span><span class="v" id="lg07v">134.6 kW</span></span>
           </div>
           <div class="tools">
             <div class="seg">
@@ -1105,20 +1076,13 @@ td.warn{color:var(--amber)}
 
         <div class="chartwrap" id="chartwrap">
           <svg id="chart" viewBox="0 0 1300 300" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="g6" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-opacity=".32"/><stop offset="1" stop-opacity="0"/>
-              </linearGradient>
-              <linearGradient id="g7" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-opacity=".26"/><stop offset="1" stop-opacity="0"/>
-              </linearGradient>
-            </defs>
+            <!-- one fill per series colour, --s1 to --s8, built by the script -->
+            <defs id="sdefs"></defs>
             <g id="axes"></g>
-            <path id="a06" fill="url(#g6)"/><path id="a07" fill="url(#g7)"/>
-            <!-- week and month are bars: one column per day, per inverter -->
+            <g id="areas"></g>
+            <!-- week and month are bars: one column per day, per device -->
             <g id="bars"></g>
-            <path id="l06" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-            <path id="l07" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+            <g id="lines"></g>
             <g id="dropm">
               <path d="M-5 -8 L5 -8 L0 0 Z"/>
               <title>INV07 deviation started 10:34 AM</title>
@@ -1128,8 +1092,8 @@ td.warn{color:var(--amber)}
               <rect x="0" y="0" width="58" height="17" rx="4"/>
               <text id="nowtxt" x="29" y="12" text-anchor="middle" font-size="10" font-family="ui-monospace,monospace" font-weight="700">12:10 PM</text>
             </g>
-            <g id="d06"><circle class="pulse" r="5" opacity=".6"/><circle r="3.6" stroke-width="1.4"/></g>
-            <g id="d07"><circle class="pulse" r="5" opacity=".6"/><circle r="3.6" stroke-width="1.4"/></g>
+            <g id="dots"></g>
+            <text id="cnote" class="axt" text-anchor="middle" style="font-size:12px"></text>
             <line id="xh" y1="14" y2="266" stroke-width="1" opacity="0"/>
           </svg>
           <div class="tip" id="tip"></div>
@@ -1240,7 +1204,7 @@ function fmtT(t,withS){t=((t%24)+24)%24;let h=Math.floor(t),m=Math.floor((t-h)*6
 const axf=h=>{const hh=h%24,ap=hh<12?'AM':'PM';let x=hh%12;if(x===0)x=12;return x+ap;};
 
 /* ---------- telemetry model ---------- */
-const SUNRISE=6.2,SUNSET=19.35,SPAN=SUNSET-SUNRISE,YMAX=300,STEP=1/12;
+const SUNRISE=6.2,SUNSET=19.35,SPAN=SUNSET-SUNRISE,STEP=1/12;
 const rnd=i=>{const s=Math.sin(i*12.9898)*43758.5453;return s-Math.floor(s)-.5;};
 const bell=t=>(t<=SUNRISE||t>=SUNSET)?0:Math.sin(Math.PI*(t-SUNRISE)/SPAN);
 const cloud=t=>(t>9.05&&t<9.5)?(.86+.07*Math.sin((t-9.05)*22)):1;
@@ -1252,25 +1216,90 @@ const fGrid=t=>49.88+rnd(Math.round(t*120)+55)*.06;
 const plantScale=t=>Math.max(0,p06(t)/242.2);
 
 const BASE_I6=[169.4,168.7,169.9], BASE_I7=[93.99,93.53,94.11];
-function offDev(seen){return{st:0,p:0,s:0,q:0,pf:0,i:[0,0,0],tot:0,seen:seen};}
+function offDev(seen){return{type:'Inverter',st:0,p:0,s:0,q:0,pf:0,i:[0,0,0],tot:0,seen:seen};}
+/* EVERY DEVICE ON THE SITE, OF EVERY TYPE - Sangria's register as the web
+   admin panel holds it: seven inverters, MET01 the export meter and MET02 its
+   check meter, and one weather station. No transformer is wired to a logger
+   here, so Transformer in the bar is a real choice with an honest empty answer. */
 const DEV={
   INV01:offDev('07:41:22 AM'),INV02:offDev('07:41:25 AM'),INV03:offDev('06:58:10 AM'),
   INV04:offDev('07:12:47 AM'),INV05:offDev('09:03:31 AM'),
-  INV06:{st:1,p:242.2,s:242.4,q:.6,pf:.999,i:BASE_I6.slice(),tot:62359.2},
-  INV07:{st:1,p:134.6,s:134.6,q:0,pf:1,i:BASE_I7.slice(),tot:35063.9,warn:1}
+  INV06:{type:'Inverter',st:1,p:242.2,s:242.4,q:.6,pf:.999,i:BASE_I6.slice(),tot:62359.2},
+  INV07:{type:'Inverter',st:1,p:134.6,s:134.6,q:0,pf:1,i:BASE_I7.slice(),tot:35063.9,warn:1},
+  MET01:{type:'MFM',st:1,tot:101158.9,share:1},
+  MET02:{type:'MFM',st:1,tot:100755.3,share:.996},
+  WMS01:{type:'Weather station',st:1}
 };
 /* ?devices=N renders a larger fleet so the 1-10 / 11-20 pager can be reviewed */
 (function(){
   const N=parseInt(new URLSearchParams(location.search).get('devices')||'0',10);
   for(let k=8;k<=N;k++){
     const id='INV'+String(k).padStart(2,'0'), f=0.72+((k*37)%23)/100;
-    DEV[id]={st:1,p:242.2*f,s:242.4*f,q:.4,pf:.998,i:BASE_I6.map(v=>v*f),tot:41000+k*820,gen:f};
+    DEV[id]={type:'Inverter',st:1,p:242.2*f,s:242.4*f,q:.4,pf:.998,i:BASE_I6.map(v=>v*f),tot:41000+k*820,gen:f};
   }
 })();
 const IDS=Object.keys(DEV);
-/* the plotted devices, by identity rather than by health - see the note on
-   #l06 / #l07 in the stylesheet */
-const COLORS={INV06:'var(--s1)',INV07:'var(--s2)'};
+/* WHICH DEVICES THE PAGE IS ON. The device type in the bar narrows everything
+   below it - the rail, the chart, the table, the filter and the export all list
+   the devices of that one type, so picking Weather station puts WMS01 in front
+   of the reader instead of seven inverters under a column headed GHI. */
+const TYPE=()=>$('dt-sel').value;
+const LIST=()=>IDS.filter(id=>DEV[id].type===TYPE());
+/* the type as a word in a sentence: "weather station", but MFM stays MFM */
+const typeWord=()=>{const t=TYPE(); return t===t.toUpperCase()?t:t.toLowerCase();};
+const MODEL={'Inverter':'HVERTER SI-350K-NO','MFM':'Secure Elite 440','Weather station':'Kipp & Zonen SMP10 station'};
+
+/* WHAT A DEVICE READS, for any tag it reports, at a time of day in hours. null
+   is "no reading" - an inverter asleep at night, a device that is down - and is
+   drawn as a gap and printed as a dash, never as a zero. A meter reads what the
+   inverters deliver; the weather station reads the same sun they do. */
+const invP=(id,t)=>{
+  if(t<SUNRISE||t>SUNSET) return null;
+  if(id==='INV06') return p06(t);
+  if(id==='INV07') return p07(t);
+  return 242.2*(DEV[id].gen||1)*plantScale(t);
+};
+const ghi=t=>{const v=bell(t)*885*cloud(t);return v<=0?0:Math.max(0,v+rnd(Math.round(t*60)+311)*9);};
+const tAmb=t=>27.4+7.6*Math.max(0,Math.sin(Math.PI*(t-8.5)/16))+rnd(Math.round(t*12)+71)*.3;
+function val(id,dp,t){
+  const d=DEV[id]; if(!d||!d.st) return null;
+  let r;
+  if(d.type==='Inverter'){
+    const p=invP(id,t); if(p==null) return null;
+    r={P_AC:p,S_AC:p+.4,Q_AC:p>0?.6:0,COS_PHI:p>0?.999:0,F_AC:fGrid(t),I_AC:p/242.2*169.3};
+  } else if(d.type==='MFM'){
+    const p=(p06(t)+p07(t))*d.share, on=p>1;
+    r={P_AC:p,S_AC:on?p/.998:0,Q_AC:on?p*.063:0,COS_PHI:on?.998:0,F_AC:fGrid(t),
+       V_AC:415.2+rnd(Math.round(t*60)+19)*1.8,I_AC:on?p*1000/(1.732*415*.998):0};
+  } else if(d.type==='Weather station'){
+    const g=ghi(t);
+    r={GHI:g,POA:g*1.08,T_AMB:tAmb(t),T_MOD:tAmb(t)+g*1.08*.031};
+  } else return null;
+  return r[dp]==null?null:r[dp];
+}
+/* the reading's own name heads the chart and its axis - the title said Active
+   Power whatever was picked */
+const DP_NAME={P_AC:'Active Power',S_AC:'Apparent Power',Q_AC:'Reactive Power',COS_PHI:'Power Factor',
+  F_AC:'Frequency',I_AC:'AC Current',V_AC:'AC Voltage',GHI:'GHI',POA:'POA Irradiance',
+  T_AMB:'Ambient Temperature',T_MOD:'Module Temperature',T_OIL:'Oil Temperature'};
+/* a power factor is read to the third place; everything else to the first */
+const DIG=dp=>dp==='COS_PHI'?3:1;
+const POWERISH={P_AC:1,S_AC:1,I_AC:1};
+
+/* THE SERIES COLOURS, by identity rather than by health - see the note on the
+   series tokens in the stylesheet. Each plotted device takes the next token in
+   the order it stands in the fleet. */
+const SLOT=['var(--s1)','var(--s2)','var(--s3)','var(--s4)','var(--s5)','var(--s6)','var(--s7)','var(--s8)'];
+let COLORS={};
+function setColors(){ COLORS={}; COLS.forEach(function(id,i){ COLORS[id]=SLOT[i%SLOT.length]; }); }
+/* a plotted device can be taken off the chart from its legend chip without
+   leaving FILTER, the way a chip did for INV06 and INV07 */
+let hidden={};
+const plotIds=()=>COLS.filter(id=>!hidden[id]);
+$('sdefs').innerHTML=SLOT.map(function(c,k){
+  return '<linearGradient id="sg'+k+'" x1="0" y1="0" x2="0" y2="1">'+
+    '<stop offset="0" stop-opacity=".30" style="stop-color:'+c+'"/><stop offset="1" stop-opacity="0" style="stop-color:'+c+'"/></linearGradient>';
+}).join('');
 let eToday=1604.8;
 
 /* ---------- device rail cards ---------- */
@@ -1278,17 +1307,26 @@ const strip=$('strip');
 /* Every device lives in one list; the list itself scrolls inside the rail.
    No paging — the scrollbar is the only way through a large fleet. */
 let PAGE=IDS.length, page=0;
-const pages=()=>Math.max(1,Math.ceil(IDS.length/PAGE));
+const pages=()=>Math.max(1,Math.ceil(LIST().length/PAGE));
 function renderList(){
-  const from=page*PAGE, slice=IDS.slice(from,from+PAGE);
+  const ids=LIST();
+  if(!ids.length){
+    /* a type this site has none of is a real answer, said in words */
+    strip.innerHTML='<div class="empty-note tall">No '+typeWord()+' devices on this site</div>';
+    renderPager(); return;
+  }
+  const from=page*PAGE, slice=ids.slice(from,from+PAGE);
   strip.innerHTML=slice.map(id=>{
     const d=DEV[id], on=!!d.st, cls=on?(d.warn?'warn':'on'):'off';
-    const label=on?(d.warn?'CHECK':'PRODUCING'):'OFFLINE';
-    return '<div class="dcard'+(on?'':' is-off')+(COLORS[id]?' plotted':'')+'" data-dev="'+id+'"'+
-      (COLORS[id]?' style="--ring:'+COLORS[id]+'"':'')+'>'+
+    /* PRODUCING is an inverter's word: a meter or a weather station measures,
+       it does not produce, so those read ONLINE */
+    const label=on?(d.warn?'CHECK':(d.type==='Inverter'?'PRODUCING':'ONLINE')):'OFFLINE';
+    const plotted=COLS.indexOf(id)>=0&&!hidden[id];
+    return '<div class="dcard'+(on?'':' is-off')+(plotted?' plotted':'')+'" data-dev="'+id+'"'+
+      (plotted?' style="--ring:'+COLORS[id]+'"':'')+'>'+
       '<div class="head"><span class="name"><i class="sdot '+cls+'"></i>'+id+'</span>'+
       '<span class="status '+cls+'">'+label+'</span></div>'+
-      (on?('<div class="foot"><span class="etot" id="et-'+id+'"></span>'+
+      (on&&d.tot!=null?('<div class="foot"><span class="etot" id="et-'+id+'"></span>'+
            '<span class="edelta" id="ed-'+id+'"></span></div>'):'')+
       '</div>';
   }).join('');
@@ -1305,7 +1343,7 @@ const MAXCHIPS=4;                 /* beyond this the chips cannot fit the rail *
 /* energy delivered + gap from the fleet average, shown on each device card */
 function paintCards(){
   const m=fleetAvg('tot');
-  IDS.forEach(id=>{
+  LIST().forEach(id=>{
     const d=DEV[id], e=$('et-'+id), g=$('ed-'+id);
     if(e) e.innerHTML=nf(d.tot)+'<span class="eu">kWh</span>';
     if(g){
@@ -1318,7 +1356,7 @@ function paintCards(){
   });
 }
 function fleetAvg(key){
-  const on=IDS.filter(i=>DEV[i].st);
+  const on=LIST().filter(i=>DEV[i].st&&DEV[i][key]!=null);
   return on.length?on.reduce((t,i)=>t+DEV[i][key],0)/on.length:0;
 }
 function renderPager(){
@@ -1328,12 +1366,12 @@ function renderPager(){
   if(tp<=MAXCHIPS){
     body='';
     for(let i=0;i<tp;i++){
-      const a=i*PAGE+1, b=Math.min((i+1)*PAGE,IDS.length);
+      const a=i*PAGE+1, b=Math.min((i+1)*PAGE,LIST().length);
       body+='<button class="pchip'+(i===page?' on':'')+'" data-p="'+i+'">'+a+'–'+b+'</button>';
     }
   }else{                                        /* large fleet — compact readout */
-    const a=page*PAGE+1, b=Math.min((page+1)*PAGE,IDS.length);
-    body='<div class="prange">'+a+'–'+b+'<span class="of">of '+IDS.length+'</span></div>';
+    const a=page*PAGE+1, b=Math.min((page+1)*PAGE,LIST().length);
+    body='<div class="prange">'+a+'–'+b+'<span class="of">of '+LIST().length+'</span></div>';
   }
   slot.innerHTML='<div class="pager"><button class="parrow" id="pprev"'+(page===0?' disabled':'')+'>‹</button>'+
     '<div class="pg">'+body+'</div>'+
@@ -1351,10 +1389,22 @@ function sparks(){}
 let W=1300,H=300;
 const ML=46,MR=16,MT=14,MB=34;
 let PW=W-ML-MR, PH=H-MT-MB;
+/* THE SCALE FOLLOWS THE READING. It was fixed at 0-300 kW, which was right for
+   one inverter's power and wrong for everything else the bar can ask for - a
+   power factor of 0.999 on a 300 scale is a line glued to the floor. The top is
+   the peak plus headroom, rounded up to a step that gives at most six
+   divisions; the floor stays at zero, so a bar's height is still its value. */
+const FINE=[0.1,0.2,0.25,0.5,1,2,2.5,5,10,20,25,50,100,200,250,500,1000,2000,2500,5000,10000];
+let YMAX=300, YSTEP=50;
+function setScale(peak){
+  const p=(peak>0?peak:1)*1.08;
+  for(const st of FINE){ const n=Math.ceil(p/st); if(n<=6){ YMAX=st*n; YSTEP=st; return; } }
+  YSTEP=Math.pow(10,Math.ceil(Math.log10(p/6))); YMAX=Math.ceil(p/YSTEP)*YSTEP;
+}
 const X=t=>ML+t/24*PW, Y=v=>MT+(1-v/YMAX)*PH;
 function buildAxes(){
   let s='';
-  for(let v=0;v<=YMAX;v+=50){const y=Y(v);
+  for(let k=0;k*YSTEP<=YMAX+1e-9;k++){const v=+(k*YSTEP).toFixed(3), y=Y(v);
     s+='<line class="gl" x1="'+ML+'" y1="'+y+'" x2="'+(W-MR)+'" y2="'+y+'"/>';
     s+='<text class="axt" x="'+(ML-8)+'" y="'+(y+3.5)+'" text-anchor="end">'+v+'</text>';}
   let foot;
@@ -1382,7 +1432,9 @@ function buildAxes(){
       : (MONL[DSEL.m].toUpperCase()+' '+DSEL.y+' · DAILY PEAK');
   }
   s+='<text class="axt" x="'+(W/2)+'" y="'+(H-1)+'" text-anchor="middle" style="letter-spacing:.08em">'+foot+'</text>';
-  s+='<text class="axt" transform="translate(11,'+(MT+PH/2)+') rotate(-90)" text-anchor="middle" style="letter-spacing:.14em">ACTIVE POWER · kW</text>';
+  const ydp=$('dp-sel').value, yu=DP_UNIT[ydp];
+  s+='<text class="axt" transform="translate(11,'+(MT+PH/2)+') rotate(-90)" text-anchor="middle" style="letter-spacing:.14em">'+
+     (DP_NAME[ydp]||ydp).toUpperCase()+(yu?' · '+yu:'')+'</text>';
   $('axes').innerHTML=s;
 }
 /* height tracks width but stays inside a readable band */
@@ -1454,72 +1506,130 @@ window.setDate=function(v){
   T(RANGE==='day'?('Showing '+v):('Showing '+MONL[DSEL.m]+' '+DSEL.y));
 };
 
-let PTS={t:[],a:[],b:[]};
+let PTS={t:[],v:{}};
+const lineOf=(ts,arr)=>{let s='',pen=false;
+  arr.forEach(function(v,i){ if(v==null){pen=false;return;} s+=(pen?'L':'M')+X(ts[i]).toFixed(1)+' '+Y(v).toFixed(1)+' '; pen=true; });
+  return s;};
+/* the fill under a curve is one closed shape per unbroken run of readings, so a
+   gap in the readings is a gap in the fill as well as in the line */
+const areaOf=(ts,arr)=>{let s='',run=[];
+  const flush=()=>{
+    if(run.length>1){
+      s+='M'+X(ts[run[0]]).toFixed(1)+' '+Y(0).toFixed(1)+' ';
+      run.forEach(function(i){ s+='L'+X(ts[i]).toFixed(1)+' '+Y(arr[i]).toFixed(1)+' '; });
+      s+='L'+X(ts[run[run.length-1]]).toFixed(1)+' '+Y(0).toFixed(1)+' Z ';
+    }
+    run=[];
+  };
+  arr.forEach(function(v,i){ if(v==null) flush(); else run.push(i); });
+  flush();
+  return s;};
+/* an empty plot says why it is empty, in the middle of the plot */
+function chartNote(msg){
+  const n=$('cnote');
+  n.textContent=msg||''; n.setAttribute('x',ML+PW/2); n.setAttribute('y',MT+PH/2);
+}
+function emptyMsg(){
+  if(NODATA) return 'No data';
+  if(!LIST().length) return 'No '+typeWord()+' devices on this site';
+  return COLS.length?'':'No devices selected - choose them in FILTER below';
+}
 function render(){
   if(RANGE!=='day') return renderDays();
-  const nt=Math.min(nowT(),SUNSET);
-  PTS={t:[],a:[],b:[]};
-  for(let t=SUNRISE;t<nt;t+=STEP){PTS.t.push(t);PTS.a.push(p06(t));PTS.b.push(p07(t));}
-  PTS.t.push(nt);PTS.a.push(p06(nt));PTS.b.push(p07(nt));
-  const line=arr=>arr.map((v,i)=>(i?'L':'M')+X(PTS.t[i]).toFixed(1)+' '+Y(v).toFixed(1)).join(' ');
-  const area=arr=>line(arr)+' L'+X(nt).toFixed(1)+' '+Y(0).toFixed(1)+' L'+X(SUNRISE).toFixed(1)+' '+Y(0).toFixed(1)+' Z';
-  $('l06').setAttribute('d',line(PTS.a));$('a06').setAttribute('d',area(PTS.a));
-  $('l07').setAttribute('d',line(PTS.b));$('a07').setAttribute('d',area(PTS.b));
+  const dp=$('dp-sel').value, ids=plotIds();
+  const nt=Math.min(nowT(),24);
+  PTS={t:[],v:{}};
+  for(let t=0;t<nt;t+=STEP) PTS.t.push(t);
+  PTS.t.push(nt);
+  let peak=0;
+  ids.forEach(function(id){
+    PTS.v[id]=PTS.t.map(t=>val(id,dp,t));
+    PTS.v[id].forEach(function(v){ if(v!=null&&v>peak) peak=v; });
+  });
+  setScale(peak); buildAxes();
+  let ar='', ln='', dt='';
+  ids.forEach(function(id){
+    const c=COLORS[id], k=SLOT.indexOf(c), arr=PTS.v[id];
+    ar+='<path d="'+areaOf(PTS.t,arr)+'" fill="url(#sg'+k+')"/>';
+    ln+='<path d="'+lineOf(PTS.t,arr)+'" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" style="stroke:'+c+'"/>';
+    /* the live dot sits on the last reading - for an inverter after sunset
+       that is where it went to sleep, not the edge of the plot */
+    let j=arr.length-1; while(j>=0&&arr[j]==null) j--;
+    if(j>=0) dt+='<g transform="translate('+X(PTS.t[j]).toFixed(1)+' '+Y(arr[j]).toFixed(1)+')">'+
+      '<circle class="pulse" r="5" opacity=".6" style="fill:'+c+'"/><circle r="3.6" stroke-width="1.4" style="fill:'+c+'"/></g>';
+  });
+  $('areas').innerHTML=ar; $('lines').innerHTML=ln; $('dots').innerHTML=dt;
   const xe=X(nt);
   $('nowl').setAttribute('x1',xe);$('nowl').setAttribute('x2',xe);
   const tx=(xe>W-MR-72)?xe-66:xe+7;
   $('nowtag').setAttribute('transform','translate('+tx+' '+(MT+3)+')');
   $('nowtxt').textContent=fmtT(nt);
-  $('d06').setAttribute('transform','translate('+xe+' '+Y(PTS.a[PTS.a.length-1])+')');
-  $('d07').setAttribute('transform','translate('+xe+' '+Y(PTS.b[PTS.b.length-1])+')');
-  $('dropm').setAttribute('transform','translate('+X(10.567)+' '+(Y(p07(10.63))-13)+')');
+  /* the deviation flag is INV07's output falling away at 10:34 - it means
+     something only while that curve is a power-shaped reading on the plot */
+  const flag=TYPE()==='Inverter'&&ids.indexOf('INV07')>=0&&POWERISH[dp]&&nt>10.567;
+  if(flag) $('dropm').setAttribute('transform','translate('+X(10.567)+' '+(Y(val('INV07',dp,10.63))-13)+')');
+  $('dropm').style.display=flag?'':'none';
   $('bars').innerHTML='';
-  ['nowl','nowtag','d06','d07','a06','a07'].forEach(id=>{const e=$(id); if(e) e.style.display='';});
-  if($('dropm')) $('dropm').style.display=shown['07']?'':'none';
+  ['nowl','nowtag','areas','lines','dots'].forEach(id=>{const e=$(id); if(e) e.style.display='';});
+  chartNote(ids.length?'':emptyMsg());
 }
 
-/* Week and month are BARS, one column per day per inverter.
+/* Week and month are BARS, one column per day per device.
    A line implies you could read a value between its points, and between two
    days there is nothing to read - the value IS the day. Day view stays a line
    because a power curve genuinely is continuous. The "now" marker, the fill and
    the deviation flag all belong to that single day, so they are put away here
    rather than left pointing at nothing. */
-let DPTS={d:[],a:[],b:[]};
+let DPTS={d:[],v:{}};
 const XDAY=(i,n)=>ML+(i+0.5)*(PW/Math.max(1,n));
+/* a day's peak of the chosen reading. The weather moves the sun-driven ones -
+   power, current, irradiance - by the day's own factor; the grid's frequency
+   and voltage and a power factor barely move, and temperature sits between */
+const SUNNY={P_AC:1,S_AC:1,Q_AC:1,I_AC:1,GHI:1,POA:1};
+function dayPeakOf(id,dp,x){
+  let mx=null;
+  for(let t=0;t<24;t+=.25){ const v=val(id,dp,t); if(v!=null&&(mx==null||v>mx)) mx=v; }
+  if(mx==null) return null;
+  const k=dayK(x.y,x.m,x.d);
+  return mx*(SUNNY[dp]?k:dp==='T_MOD'?.86+.14*k:dp==='T_AMB'?.95+.05*k:1+(k-.86)*.004);
+}
 function renderDays(){
-  const days=rangeDays();
-  DPTS={d:days,a:days.map(x=>dayPeak(p06,x.y,x.m,x.d)),b:days.map(x=>dayPeak(p07,x.y,x.m,x.d))};
-  const n=days.length, slot=PW/Math.max(1,n);
-  /* Two bars share the day's slot; one series on its own takes the pair's width
+  const dp=$('dp-sel').value, ids=plotIds(), days=rangeDays();
+  DPTS={d:days,v:{}};
+  let peak=0;
+  ids.forEach(function(id){
+    DPTS.v[id]=days.map(x=>dayPeakOf(id,dp,x));
+    DPTS.v[id].forEach(function(v){ if(v!=null&&v>peak) peak=v; });
+  });
+  setScale(peak); buildAxes();
+  const n=days.length, slot=PW/Math.max(1,n), k=ids.length;
+  /* The bars share the day's slot; one series on its own takes a pair's width
      so the day still reads as a column rather than a sliver off to one side.
      The width is CAPPED: a week is seven slots across the same plot a month
      puts thirty-one in, so a pure fraction gave the week 50px slabs. Past ~26px
      a bar carries no more information, only more ink, so the extra space stays
      as breathing room and the two ranges read as the same chart. */
-  const live=(shown['06']?1:0)+(shown['07']?1:0);
-  const bw=Math.min(26,slot*(live<2?0.52:0.30)), gap=Math.min(6,slot*0.06);
-  const group=bw*Math.max(1,live)+gap*Math.max(0,live-1);
+  const bw=Math.min(26,slot*(k<2?0.52:k===2?0.30:0.6/k)), gap=Math.min(6,slot*0.06);
+  const group=bw*Math.max(1,k)+gap*Math.max(0,k-1);
   let g='';
   for(let i=0;i<n;i++){
     const x0=XDAY(i,n)-group/2;
-    let k=0;
-    [['06','var(--s1)',DPTS.a[i]],['07','var(--s2)',DPTS.b[i]]].forEach(function(sr){
-      if(!shown[sr[0]]) return;
-      const x=x0+k*(bw+gap); k++;
-      g+='<rect class="bar" x="'+x.toFixed(1)+'" y="'+Y(sr[2]).toFixed(1)+'" width="'+bw.toFixed(1)+
-         '" height="'+Math.max(0,Y(0)-Y(sr[2])).toFixed(1)+'" rx="2" fill="'+sr[1]+'" opacity=".9"/>';
+    ids.forEach(function(id,j){
+      const v=DPTS.v[id][i]; if(v==null) return;
+      const x=x0+j*(bw+gap);
+      g+='<rect class="bar" x="'+x.toFixed(1)+'" y="'+Y(v).toFixed(1)+'" width="'+bw.toFixed(1)+
+         '" height="'+Math.max(0,Y(0)-Y(v)).toFixed(1)+'" rx="2" fill="'+COLORS[id]+'" opacity=".9"/>';
     });
   }
   $('bars').innerHTML=g;
-  $('l06').setAttribute('d','');
-  $('l07').setAttribute('d','');
-  ['a06','a07','nowl','nowtag','d06','d07','dropm'].forEach(id=>{
-    const e=$(id); if(e) e.style.display='none';});
+  $('areas').innerHTML=''; $('lines').innerHTML=''; $('dots').innerHTML='';
+  ['nowl','nowtag','areas','lines','dots','dropm'].forEach(id=>{const e=$(id); if(e) e.style.display='none';});
+  chartNote(ids.length?'':emptyMsg());
 }
 
 /* hover crosshair + tooltip */
 const svg=$('chart'),tip=$('tip'),xh=$('xh'),wrap=$('chartwrap');
-const row=(c,n,v)=>'<div class="tr"><i style="background:'+c+'"></i>'+n+'<b>'+v.toFixed(1)+' kW</b></div>';
+const row=(c,n,v,dp)=>'<div class="tr"><i style="background:'+c+'"></i>'+n+'<b>'+v.toFixed(DIG(dp))+(DP_UNIT[dp]?' '+DP_UNIT[dp]:'')+'</b></div>';
 svg.addEventListener('mousemove',e=>{
   const r=cssRect(svg);
   const vx=(cssX(e)-r.left)/r.width*W;
@@ -1527,6 +1637,7 @@ svg.addEventListener('mousemove',e=>{
   /* only the plotted rectangle is hoverable — not the axis gutters or the
      margins above/below it, so the tip cannot linger outside the plot */
   if(vx<ML||vx>W-MR||vy<MT||vy>MT+PH){hideTip();return;}
+  const dp=$('dp-sel').value, ids=plotIds();
 
   /* week and month read a DAY, not an instant - snap to the nearest point */
   if(RANGE!=='day'){
@@ -1535,9 +1646,8 @@ svg.addEventListener('mousemove',e=>{
     i=Math.max(0,Math.min(n-1,i));
     const xd=XDAY(i,n);
     xh.setAttribute('x1',xd);xh.setAttribute('x2',xd);xh.style.opacity=.25;
-    let r2='';
-    if(shown['06']) r2+=row('var(--s1)','INV06',DPTS.a[i]);
-    if(shown['07']) r2+=row('var(--s2)','INV07',DPTS.b[i]);
+    let r2='', top=0;
+    ids.forEach(function(id){ const v=DPTS.v[id]&&DPTS.v[id][i]; if(v==null) return; r2+=row(COLORS[id],id,v,dp); if(v>top) top=v; });
     if(!r2){hideTip();return;}
     const dd=DPTS.d[i];
     tip.innerHTML='<div class="tt">'+dd.d+' '+MONL[dd.m].slice(0,3)+' '+dd.y+' · peak</div>'+r2;
@@ -1545,46 +1655,46 @@ svg.addEventListener('mousemove',e=>{
     let lx2=(xd/W)*r.width+(r.left-wr2.left)+14;
     if(lx2+156>wr2.width) lx2-=184;
     tip.style.left=lx2+'px';
-    tip.style.top=Math.max(6,(Y(Math.max(DPTS.a[i],DPTS.b[i]))/H)*r.height+(r.top-wr2.top)-14)+'px';
+    tip.style.top=Math.max(6,(Y(top)/H)*r.height+(r.top-wr2.top)-14)+'px';
     tip.style.opacity=1;
     return;
   }
 
   const t=(vx-ML)/PW*24, nt=PTS.t[PTS.t.length-1];
-  if(t<SUNRISE||t>nt){hideTip();return;}
-  let i=Math.round((t-SUNRISE)/STEP);i=Math.max(0,Math.min(PTS.t.length-1,i));
+  if(t>nt){hideTip();return;}
+  let i=Math.round(t/STEP);i=Math.max(0,Math.min(PTS.t.length-1,i));
   const xt=X(PTS.t[i]);
   xh.setAttribute('x1',xt);xh.setAttribute('x2',xt);xh.style.opacity=.25;
-  /* a series switched off in the legend is not listed here either */
-  let rows='';
-  if(shown['06']) rows+=row('var(--s1)','INV06',PTS.a[i]);
-  if(shown['07']) rows+=row('var(--s2)','INV07',PTS.b[i]);
+  /* a series switched off in the legend is not listed here either, and a
+     device with no reading at that moment has no row */
+  let rows='', top=0;
+  ids.forEach(function(id){ const v=PTS.v[id]&&PTS.v[id][i]; if(v==null) return; rows+=row(COLORS[id],id,v,dp); if(v>top) top=v; });
   if(!rows){hideTip();return;}
   tip.innerHTML='<div class="tt">'+fmtT(PTS.t[i])+'</div>'+rows;
   const wr=cssRect(wrap);
   const ox=r.left-wr.left, oy=r.top-wr.top;
   let lx=(xt/W)*r.width+ox+14;if(lx+156>wr.width)lx-=184;
   tip.style.left=lx+'px';
-  tip.style.top=Math.max(6,(Y(Math.max(PTS.a[i],PTS.b[i]))/H)*r.height+oy-14)+'px';
+  tip.style.top=Math.max(6,(Y(top)/H)*r.height+oy-14)+'px';
   tip.style.opacity=1;
 });
 svg.addEventListener('mouseleave',hideTip);
 function hideTip(){tip.style.opacity=0;xh.style.opacity=0;}
 
-/* legend toggles series + card rings */
-const shown={'06':true,'07':true};
-window.TOG=function(k){
-  shown[k]=!shown[k];const on=shown[k];
-  /* bars are drawn, not hidden: switching a series off has to re-lay the
-     remaining one across the slot rather than leave a gap where it was */
-  if(RANGE!=='day') setTimeout(renderDays,0);
-  ['l','a','d'].forEach(p=>{$(p+k).style.display=on?'':'none';});
-  /* the deviation marker belongs to INV07 - it has no meaning once that
-     series is switched off, so it goes with it */
-  if(k==='07') $('dropm').style.display=on?'':'none';
-  $('lg'+k).classList.toggle('off',!on);
-  const card=document.querySelector('[data-dev="INV'+k+'"]');
-  if(card)card.classList.toggle('plotted',on);
+/* the legend is the plotted devices in their series colours; a click takes one
+   off the chart, and its card's ring with it */
+function renderLegend(){
+  const dp=$('dp-sel').value, u=DP_UNIT[dp];
+  $('legend').innerHTML=COLS.map(function(id){
+    const arr=PTS.v[id]||[]; let last=null;
+    for(let j=arr.length-1;j>=0;j--) if(arr[j]!=null){ last=arr[j]; break; }
+    return '<span class="lg'+(hidden[id]?' off':'')+'" onclick="TOG(\''+id+'\')"><i style="background:'+COLORS[id]+'"></i>'+
+      '<span class="n">'+id+'</span><span class="v">'+(last==null?'—':last.toFixed(DIG(dp))+(u?' '+u:''))+'</span></span>';
+  }).join('');
+}
+window.TOG=function(id){
+  hidden[id]=!hidden[id];
+  render(); renderLegend(); renderList();
 };
 
 /* ---------- device detail · hover panel over the graph ---------- */
@@ -1618,36 +1728,55 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!pan.hidden)window
 function setPanel(id){
   cur=id;const d=DEV[id];
   $('lp-name').textContent=id;
+  $('lp-mdl').textContent=MODEL[d.type]||'—';
   const pill=$('lp-pill');
   if(d.st){pill.textContent='Online';pill.className='pill on';}
   else{pill.textContent='Offline';pill.className='pill offp';}
-  setVals(d);gauge(d.p);
-  const idx=IDS.indexOf(id); if(idx>=0){const pg=Math.floor(idx/PAGE); if(pg!==page){page=pg;renderList();return;}}
+  paintPanel();
+  const idx=LIST().indexOf(id); if(idx>=0){const pg=Math.floor(idx/PAGE); if(pg!==page){page=pg;renderList();return;}}
   document.querySelectorAll('.dcard').forEach(c=>c.classList.toggle('sel',c.dataset.dev===id));
 }
-function setVals(d){
-  $('lp-p').textContent=d.p.toFixed(2);
-  $('lp-s').textContent=d.s.toFixed(2);
-  $('lp-q').textContent=d.q.toFixed(2);$('lp-pf').textContent=d.pf.toFixed(3);
-  $('lp-f').textContent=(d.st?fGrid(nowT()):0).toFixed(2);
-  for(let k=0;k<3;k++) $('lp-i'+(k+1)).textContent=d.i[k].toFixed(2);
-}
-function gauge(p){
-  const pct=Math.max(0,Math.min(1,p/350)),C=2*Math.PI*30;
-  $('garc').style.strokeDashoffset=(C*(1-pct)).toFixed(1);
-  $('gpct').textContent=Math.round(pct*100)+'%';
+/* THE READ-OUT IS THE DEVICE'S OWN. An inverter is read against its rating, so
+   it keeps the gauge; a meter has no rating to fill, so its power is stated
+   plainly over the grid side; a weather station reports sun and temperature,
+   and nothing else - a panel of empty AC boxes would read as a fault. */
+const pv=(v,u,l)=>'<div class="pv"><div class="v"><span>'+v+'</span>'+(u?'<span class="u">'+u+'</span>':'')+'</div><div class="l">'+l+'</div></div>';
+function paintPanel(){
+  const d=DEV[cur]; if(!d) return;
+  const t=nowT(), r=(dp,k)=>{ const x=val(cur,dp,t); return x==null?'—':x.toFixed(k==null?2:k); };
+  let h;
+  if(d.type==='Inverter'){
+    const pct=Math.max(0,Math.min(1,d.p/350)),C=2*Math.PI*30;
+    h='<div class="gaugebox"><svg width="66" height="66" viewBox="0 0 72 72">'+
+        '<circle class="gtrack" cx="36" cy="36" r="30" fill="none" stroke-width="7"/>'+
+        '<circle id="garc" cx="36" cy="36" r="30" fill="none" stroke-width="7" stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="'+(C*(1-pct)).toFixed(1)+'" transform="rotate(-90 36 36)"/>'+
+        '<text id="gpct" x="36" y="41" text-anchor="middle" font-size="14" font-weight="800" font-family="ui-monospace,monospace">'+Math.round(pct*100)+'%</text></svg>'+
+      '<div class="txt"><div class="big"><span>'+d.p.toFixed(2)+'</span><span class="u">kW</span></div><div class="cap">P_AC · of 350 kW rated</div></div></div>'+
+      '<div class="ptitle">AC output</div><div class="pgrid">'+
+        pv(d.s.toFixed(2),'kVA','S_AC')+pv(d.q.toFixed(2),'kVAR','Q_AC')+pv((d.st?fGrid(t):0).toFixed(2),'Hz','F_AC')+pv(d.pf.toFixed(3),'','COS_PHI')+'</div>'+
+      '<div class="ptitle">AC current</div><div class="pgrid three">'+
+        [0,1,2].map(k=>pv(d.i[k].toFixed(2),'A','I_AC'+(k+1))).join('')+'</div>';
+  } else if(d.type==='MFM'){
+    h='<div class="gaugebox"><div class="txt"><div class="big"><span>'+r('P_AC')+'</span><span class="u">kW</span></div>'+
+        '<div class="cap">P_AC · active power</div></div></div>'+
+      '<div class="ptitle">AC output</div><div class="pgrid">'+
+        pv(r('S_AC'),'kVA','S_AC')+pv(r('Q_AC'),'kVAR','Q_AC')+pv(r('F_AC'),'Hz','F_AC')+pv(r('COS_PHI',3),'','COS_PHI')+'</div>'+
+      '<div class="ptitle">Grid side</div><div class="pgrid">'+
+        pv(r('V_AC'),'V','V_AC')+pv(r('I_AC'),'A','I_AC')+'</div>';
+  } else {
+    h='<div class="gaugebox"><div class="txt"><div class="big"><span>'+r('GHI',0)+'</span><span class="u">W/m²</span></div>'+
+        '<div class="cap">GHI · global horizontal irradiance</div></div></div>'+
+      '<div class="ptitle">Readings</div><div class="pgrid three">'+
+        pv(r('POA',0),'W/m²','POA')+pv(r('T_AMB',1),'°C','T_AMB')+pv(r('T_MOD',1),'°C','T_MOD')+'</div>';
+  }
+  $('pbody').innerHTML=h;
 }
 
 /* ---------- historical table ---------- */
 /* One reading per device per timestamp. A device that was not reporting has no
    value to give, so it returns null and prints as a dash rather than a zero -
    nothing generated and nothing measured are different facts. */
-function devSeries(id,t){
-  const d=DEV[id]; if(!d||!d.st) return null;
-  if(id==='INV06') return p06(t);
-  if(id==='INV07') return p07(t);
-  return 242.2*(d.gen||1)*plantScale(t);
-}
+function devSeries(id,t){ return val(id,$('dp-sel').value,t); }
 const TROWS=12, TSTEP=5/60;
 /* ?empty=1 renders the unconnected state, so the header the table keeps before a
    backend exists can be reviewed - the demo data is otherwise always present */
@@ -1673,7 +1802,20 @@ function stamp(t){
 }
 
 /* which device columns are on; the timestamp is always there and is not in here */
-let COLS=NODATA?[]:IDS.filter(id=>DEV[id].st).slice(0,2);
+let COLS=NODATA?[]:LIST().filter(id=>DEV[id].st).slice(0,2);
+setColors();
+/* a new device type is a new set of devices: the plotted ones become that
+   type's first two that are reporting, as on arrival, and a panel open on a
+   device of the old type closes rather than describe one no longer listed */
+function onType(){
+  COLS=NODATA?[]:LIST().filter(id=>DEV[id].st).slice(0,2);
+  hidden={}; page=0; setColors();
+  if(LIST().indexOf(cur)<0){
+    window.closePanel();
+    const l=LIST(); cur=l.filter(id=>DEV[id].st)[0]||l[0]||cur;
+  }
+  colClose();
+}
 
 /* With nothing to show the table still states its shape: device over variable,
    time stamp down the side. The header is the contract, so it is drawn whether or
@@ -1736,9 +1878,9 @@ function renderTable(){
       COLS.map(function(id){
         const v=devSeries(id,t);
         if(v==null) return '<td class="ts">—</td>';
-        const warn=(id==='INV07'&&t>10.567);
+        const warn=(id==='INV07'&&POWERISH[$('dp-sel').value]&&t>10.567);
         return '<td class="'+(warn?'warn':'')+'"'+(warn?' title="Below expected — see alarms"':'')+'>'+
-               v.toFixed(2)+'</td>';
+               v.toFixed(DIG($('dp-sel').value)===3?3:2)+'</td>';
       }).join('')+'</tr>';
   }).join('');
 }
@@ -1746,11 +1888,11 @@ function renderTable(){
 /* ---------- column picker ---------- */
 function renderColPanel(){
   $('colpanel').innerHTML=
-    '<div class="colhead">Shown in the table and the export</div>'+
+    '<div class="colhead">Shown in the chart, the table and the export</div>'+
     '<label class="colrow locked"><input type="checkbox" checked disabled>Time Stamp'+
       '<span class="req">REQUIRED</span></label>'+
     '<div class="coldiv"></div>'+
-    IDS.map(function(id){
+    LIST().map(function(id){
       const live=!!DEV[id].st, on=COLS.indexOf(id)>=0;
       return '<label class="colrow"><input type="checkbox"'+(on?' checked':'')+
         ' onchange="colSet(\''+id+'\',this.checked)">'+
@@ -1773,11 +1915,11 @@ window.colSet=function(id,on){
   const i=COLS.indexOf(id);
   if(on&&i<0) COLS.push(id); else if(!on&&i>=0) COLS.splice(i,1);
   COLS.sort((a,b)=>IDS.indexOf(a)-IDS.indexOf(b));   /* keep the fleet's own order */
-  renderTable();
+  setColors(); renderTable(); render(); renderLegend(); renderList();
 };
 window.colAll=function(on){
-  COLS=on?IDS.slice():[];
-  renderColPanel(); renderTable();
+  COLS=on?LIST():[];
+  setColors(); renderColPanel(); renderTable(); render(); renderLegend(); renderList();
 };
 document.addEventListener('click',function(e){ if(!$('colpick').contains(e.target)) colClose(); });
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') colClose(); });
@@ -1792,7 +1934,7 @@ window.exportCsv=function(){
   const varRow=['Time Stamp'].concat(COLS.map(()=>UNIT)).join(',');
   const body=rowTimes().map(function(t){
     return [stamp(t)].concat(COLS.map(function(id){
-      const v=devSeries(id,t); return v==null?'':v.toFixed(2);
+      const v=devSeries(id,t); return v==null?'':v.toFixed(DIG($('dp-sel').value)===3?3:2);
     })).join(',');
   });
   const csv=[devRow,varRow].concat(body).join('\r\n');
@@ -1819,13 +1961,13 @@ function tick(){
   d6.p=a;d6.s=a+.4;d6.i=BASE_I6.map(v=>v*a/242.2+(Math.random()-.5)*.5);
   d7.p=b;d7.s=b+.05;d7.i=BASE_I7.map(v=>v*b/134.6+(Math.random()-.5)*.4);
   d6.tot+=a*TICK/3600000;d7.tot+=b*TICK/3600000;eToday+=(a+b)*TICK/3600000;
+  DEV.MET01.tot+=(a+b)*TICK/3600000; DEV.MET02.tot+=(a+b)*DEV.MET02.share*TICK/3600000;
   const setIf=(id,v)=>{const e=$(id); if(e)e.textContent=v;};
   IDS.forEach(id=>{const d=DEV[id]; if(d.gen) d.p=242.2*d.gen*plantScale(nt);});   /* keep sim values fresh for the hover panel */
   paintCards();
-  $('lg06v').textContent=a.toFixed(1)+' kW';$('lg07v').textContent=b.toFixed(1)+' kW';
   $('kpi-p').textContent=(a+b).toFixed(1);$('kpi-e').textContent=nf(eToday);
   $('clk').textContent=fmtT(nt,true);
-  if(DEV[cur].st){setVals(DEV[cur]);gauge(DEV[cur].p);}
+  if(!pan.hidden&&DEV[cur]&&DEV[cur].st) paintPanel();
   render();
 }
 function setTimer(){
@@ -1892,7 +2034,8 @@ setInterval(()=>{$('clk').textContent=fmtT(nowT(),true);},1000);
    applyQuery for a fetch; the wiring around it does not change. */
 window.applyQuery=function(what){
   setUnit($('dp-sel').value);
-  buildAxes(); render(); renderTable(); renderList();
+  $('ch-title').textContent=DP_NAME[$('dp-sel').value]||$('dp-sel').value;
+  buildAxes(); render(); renderLegend(); renderTable(); renderList();
   if(what) T(what);
 };
 /* Every dropdown on this bar is one panel idiom, and only one of them is ever
@@ -1987,6 +2130,7 @@ singleSelect({mount:'rows-pick', value:'per', head:'Rows per page',
 
 /* the device type narrows the data point, so the pair is one decision */
 $('dt-sel').addEventListener('change',function(){
+  onType();
   DPPICK.options(dpFor(this.value));
 });
 /* and the pair is made honest on arrival too: the two hidden inputs carry their
@@ -2031,7 +2175,8 @@ $('dsel').addEventListener('change',function(){ setDate(this.value); });
 
 /* ---------- init ---------- */
 setUnit($('dp-sel').value);
-fitChart(true);render();setPanel('INV07');renderList();
+$('ch-title').textContent=DP_NAME[$('dp-sel').value]||$('dp-sel').value;
+fitChart(true);render();setPanel('INV07');renderList();renderLegend();
 setTimer();
 /* BOTH, not one or the other - the same gap Home had: the observer reports the
    wrapper changing SIZE, which follows the column's width, while a window that
