@@ -550,6 +550,42 @@ tbody tr:not(.dh):hover td:not(.nil){color:var(--text)}
 .stt{font-family:var(--sans);font-size:9.5px;font-weight:800;letter-spacing:.08em}
 .stt.active{color:var(--red)}
 .stt.resolved{color:var(--green)}
+/* ACKNOWLEDGED: someone has seen it and taken it on, but the device has not
+   cleared it yet - between the red of active and the green of resolved */
+.stt.acknowledged{color:var(--amber)}
+td.ackc{white-space:nowrap}
+td.ackc .who{font-weight:600}
+td.ackc .when{margin-left:7px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+td.ackc .nt{display:inline-grid;place-items:center;width:15px;height:15px;margin-left:6px;vertical-align:-2px;
+  border-radius:4px;background:var(--amber-soft);color:var(--amber);font-size:10px;font-weight:800;cursor:help}
+td.act{text-align:right;white-space:nowrap}
+.ackbtn{padding:5px 10px;border-radius:7px;border:1px solid var(--line);background:var(--panel-2);color:var(--text);
+  font-family:inherit;font-size:10.5px;font-weight:800;letter-spacing:.06em;cursor:pointer;
+  transition:background .12s,border-color .12s}
+.ackbtn:hover{border-color:var(--line-hi);background:var(--hover)}
+.sum.ack .v{color:var(--amber)}
+/* the acknowledge dialog */
+.ackscrim{position:fixed;inset:0;z-index:120;display:none;place-items:center;padding:16px;background:rgba(10,18,30,.42)}
+.ackscrim.on{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center}
+.ackdlg{width:100%;max-width:460px;background:var(--elev);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 24px 60px -18px var(--shadow);color:var(--text)}
+.ackdlg .ah{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line-soft);font-size:14px;font-weight:700}
+.ackdlg .ab{padding:14px 18px 6px}
+.ackdlg .aw{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;padding:10px 12px;margin-bottom:14px;
+  border:1px solid var(--line-soft);border-radius:var(--r-sm);background:var(--panel-2);font-size:12.5px}
+.ackdlg .aw b{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);align-self:center}
+.ackdlg label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}
+.ackdlg label .o{font-weight:600;font-size:11px;color:var(--faint);margin-left:6px}
+.ackdlg textarea{width:100%;min-height:70px;resize:vertical;padding:8px 11px;border-radius:var(--r-sm);border:1px solid var(--line);
+  background:var(--panel-2);color:var(--text);font-family:inherit;font-size:13px}
+.ackdlg textarea:focus{outline:none;border-color:var(--line-hi);background:var(--hover)}
+.ackdlg .hint{font-size:11.5px;color:var(--muted);margin-top:6px}
+.ackdlg .af{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px 16px}
+.ackdlg .b{padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--text);
+  font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+.ackdlg .b:hover{border-color:var(--line-hi);background:var(--hover)}
+.ackdlg .b.go{background:var(--green);border-color:var(--green);color:var(--on-accent,#fff)}
+.ackdlg .b.go:hover{background:var(--green-deep);border-color:var(--green-deep)}
 
 /* ---------- column picker ---------- */
 /* The column picker is the filter: what is ticked here is what the table shows
@@ -895,6 +931,23 @@ tbody tr:not(.dh):hover td:not(.nil){color:var(--text)}
 
 </div>
 
+<!-- ACKNOWLEDGE: see ACKNOWLEDGED in the script -->
+<div class="ackscrim" id="ackdlg" role="dialog" aria-modal="true" aria-labelledby="ack-title">
+  <div class="ackdlg">
+    <div class="ah" id="ack-title">Acknowledge alarm</div>
+    <div class="ab">
+      <div class="aw" id="ack-who"></div>
+      <label for="ack-note">Note<span class="o">optional</span></label>
+      <textarea id="ack-note" maxlength="200" placeholder="e.g. Technician sent to site"></textarea>
+      <div class="hint">The alarm stays open until the device clears it. Your name and the time are recorded.</div>
+    </div>
+    <div class="af">
+      <button class="b" type="button" onclick="ackShut()">Cancel</button>
+      <button class="b go" type="button" id="ack-go" onclick="ackSave()">Acknowledge</button>
+    </div>
+  </div>
+</div>
+
 <div id="toasts"></div>
 
 <script>
@@ -1036,6 +1089,34 @@ const ROWS=parseInt(Q.get('rows')||'46',10);
    number on three cards, which reads as a stuck readout rather than as data.
    Derived from the plant, so the card and the table cannot disagree. */
 const rowsFor=id=>Math.max(6,ROWS+(seedOf(id)%19)-9);
+/* ---------- ACKNOWLEDGED ----------
+   A customer can ACKNOWLEDGE an active alarm: say they have seen it and are
+   dealing with it, with an optional note ("technician sent"). Who and when
+   are recorded. The alarm stays open - its status reads ACKNOWLEDGED - until
+   the device clears it, and then it is RESOLVED like any other, still showing
+   who acknowledged it. Only an active alarm can be acknowledged, one at a time,
+   from the button on its row.
+   The acknowledgements live apart from the log, keyed by the alarm, because
+   the log is rebuilt whenever the dates change. A backend keeps them on the
+   alarm itself. The demo starts with a few already acknowledged. */
+var ACKS={};
+function esc(v){ return String(v==null?'':v).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+const ACK_NOTES=['Technician sent to site','Grid side, reported to the DISCOM',''];
+function seedAck(a){
+  const h=seedOf(a.key)%6;
+  if(h>1) return null;
+  let at=a.recv+(6+h*19)*60000;
+  if(a.res!=null && at>=a.res) at=a.recv+(a.res-a.recv)/2;
+  return {by:'Vikram Sethi',at:at,note:ACK_NOTES[h]};
+}
+function applyAcks(){
+  LOG.forEach(function(a){
+    a.key=a.id+'@'+a.recv;
+    if(!(a.key in ACKS)) ACKS[a.key]=seedAck(a);
+    a.ack=ACKS[a.key]||null;
+    a.status=a.res!=null?'resolved':(a.ack?'acknowledged':'active');
+  });
+}
 let LOG=[];
 /* one place the log comes from - a backend refetches here and nothing else
    about the page changes */
@@ -1046,6 +1127,7 @@ function reload(){
   const ids=PSEL.length?PSEL:PLANTS.map(function(p){ return p.id; });
   LOG=[];
   ids.forEach(function(id){ LOG=LOG.concat(buildLog(rowsFor(id),id,w[0],w[1])); });
+  applyAcks();
 }
 reload();
 
@@ -1058,10 +1140,12 @@ const COLDEF=[
   {k:'recv',   t:'Received Time'},
   {k:'res',    t:'Resolved Time'},
   {k:'status', t:'Status'},
+  {k:'ack',    t:'Acknowledged'},
   {k:'text',   t:'Alarms Text'},
   {k:'id',     t:'Alarm Id'},
   {k:'sev',    t:'Severity'},
-  {k:'dev',    t:'Device Name'}
+  {k:'dev',    t:'Device Name'},
+  {k:'act',    t:''}
   /* NO PLANT COLUMN. The table is one site's log - the portal is on one site,
      and it is named in the bar at the top of every page - so a column repeating
      that name on all two hundred rows is the same word two hundred times, in
@@ -1069,7 +1153,17 @@ const COLDEF=[
 ];
 /* Every column, always - in the table and in the export, which is why both
    still ask this one function rather than each keeping its own list. */
-const shown=()=>COLDEF.slice();
+/* The Acknowledged column - who acknowledged an alarm, when, and their note -
+   is for the EnerOps team only: it shows when someone from the web admin
+   panel (Super Admin, Admin or Plant Admin) is on this page, and not for the
+   customer's own accounts. A customer still sees the ACKNOWLEDGED status and
+   can still acknowledge. The table and the export follow the same rule. */
+const STAFF=(function(){
+  let raw=null; try{ raw=localStorage.getItem('enerops-seat'); }catch(e){ return false; }
+  if(raw==='webadmin') return true;
+  try{ const s=JSON.parse(raw); return !!(s&&s.level); }catch(e){ return false; }
+})();
+const shown=()=>COLDEF.filter(c=>c.k!=='ack'||STAFF);
 
 /* ---------- filter + order + page state ---------- */
 let F={dev:[],sev:[],status:[]};          /* empty list = no narrowing at all */
@@ -1118,7 +1212,10 @@ const CELL={
   text:  a=>['msg',a.text],
   sev:   a=>['','<span class="sev '+a.sev+'">'+(a.sev==='warn'?'WARNING':a.sev.toUpperCase())+'</span>'],
   id:    a=>['',a.id],
-  dev:   a=>['',a.dev]
+  dev:   a=>['',a.dev],
+  ack:   a=>a.ack?['ackc','<span class="who">'+esc(a.ack.by)+'</span><span class="when">'+fmtDT(a.ack.at)+'</span>'
+          +(a.ack.note?'<span class="nt" title="'+esc(a.ack.note)+'" aria-label="Note: '+esc(a.ack.note)+'">i</span>':'')]:['dim','—'],
+  act:   a=>a.status==='active'?['act','<button class="ackbtn" type="button" onclick="ackOpen(\''+a.key+'\')">ACKNOWLEDGE</button>']:['act','']
 };
 /* the export reads plain text where the table reads markup, so a CSV cell is
    never a stray <span> */
@@ -1129,7 +1226,9 @@ const RAW={
   text:  a=>a.text,
   sev:   a=>a.sev==='warn'?'WARNING':a.sev.toUpperCase(),
   id:    a=>a.id,
-  dev:   a=>a.dev
+  dev:   a=>a.dev,
+  ack:   a=>a.ack?a.ack.by+' '+fmtDT(a.ack.at)+(a.ack.note?' ('+a.ack.note+')':''):'',
+  act:   a=>''
 };
 
 function renderTable(){
@@ -1176,6 +1275,29 @@ function renderTable(){
   renderSummary(rows);
 }
 
+/* ---------- acknowledge one alarm ---------- */
+let ACK_KEY=null;
+const signedIn=()=>{ const n=document.querySelector('.acctwho .nm'); return n&&n.textContent.trim()||'You'; };
+window.ackOpen=function(key){
+  const a=LOG.filter(x=>x.key===key)[0]; if(!a||a.status!=='active') return;
+  ACK_KEY=key;
+  $('ack-who').innerHTML='<b>Alarm</b><span>'+esc(a.text)+'</span><b>Device</b><span>'+esc(a.dev)+'</span>'
+    +'<b>Received</b><span>'+fmtDT(a.recv)+'</span><b>Alarm Id</b><span>'+esc(a.id)+'</span>';
+  $('ack-note').value='';
+  $('ackdlg').classList.add('on');
+  requestAnimationFrame(function(){ $('ack-note').focus(); });
+};
+window.ackShut=function(){ $('ackdlg').classList.remove('on'); ACK_KEY=null; };
+window.ackSave=function(){
+  const a=LOG.filter(x=>x.key===ACK_KEY)[0]; if(!a){ ackShut(); return; }
+  const w=winRange(), end=w?w[1]:Date.now();
+  ACKS[a.key]={by:signedIn(),at:Math.max(a.recv+60000,Math.min(Date.now(),end)),note:$('ack-note').value.trim()};
+  applyAcks(); ackShut(); renderTable();
+  T(a.id+' acknowledged');
+};
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&$('ackdlg').classList.contains('on')){ e.stopPropagation(); ackShut(); } },true);
+$('ackdlg').addEventListener('mousedown',function(e){ if(e.target===this) ackShut(); });
+
 window.pageBy=function(d){ PAGE=Math.max(0,PAGE+d); renderTable(); };
 $('per').addEventListener('change',function(){ PER=parseInt(this.value,10); PAGE=0; renderTable(); });
 
@@ -1188,6 +1310,7 @@ $('per').addEventListener('change',function(){ PER=parseInt(this.value,10); PAGE
    made sense while there was no All tile to add up to. */
 function renderSummary(rows){
   const act=rows.filter(a=>a.status==='active').length;
+  const acked=rows.filter(a=>a.status==='acknowledged').length;
   const of=k=>rows.filter(a=>a.sev===k).length;
   const alarm=of('alarm'), event=of('event'), warn=of('warn'), crit=of('critical');
   /* A count and what it is counting, nothing else. The caption under each number
@@ -1197,7 +1320,8 @@ function renderSummary(rows){
   $('sumbar').innerHTML=
     tile('All',rows.length,'all')+
     tile('Active',act,act?'alarm':'ok')+
-    tile('Resolved',rows.length-act,'ok')+
+    tile('Acknowledged',acked,acked?'ack':'ok')+
+    tile('Resolved',rows.filter(a=>a.status==='resolved').length,'ok')+
     tile('Alarm',alarm,alarm?'alarm':'ok')+
     tile('Event',event,'event')+
     tile('Warning',warn,warn?'warn':'ok')+
@@ -1215,7 +1339,7 @@ function tile(k,v,cls){
    filters allow - not just the page on screen. A real file, not a toast, so the
    choice can actually be checked. */
 window.exportCsv=function(){
-  const cols=shown();
+  const cols=shown().filter(c=>c.k!=='act');
   const q=s=>/[",\r\n]/.test(s)?'"'+String(s).replace(/"/g,'""')+'"':String(s);
   const head=cols.map(c=>q(c.t)).join(',');
   const body=sorted(filtered()).map(a=>cols.map(c=>q(RAW[c.k](a))).join(','));
@@ -1320,7 +1444,7 @@ multiSelect({mount:'m-dev',key:'dev',any:'All devices',head:'Devices',
 multiSelect({mount:'m-sev',key:'sev',any:'Any severity',head:'Severity',
   options:[{v:'alarm',t:'Alarm'},{v:'event',t:'Event'},{v:'warn',t:'Warning'},{v:'critical',t:'Critical'}]});
 multiSelect({mount:'m-st',key:'status',any:'Any status',head:'Status',
-  options:[{v:'active',t:'Active'},{v:'resolved',t:'Resolved'}]});
+  options:[{v:'active',t:'Active'},{v:'acknowledged',t:'Acknowledged'},{v:'resolved',t:'Resolved'}]});
 
 /* ---- one-of-several, for the header's refresh control ----
    This page had multiSelect and nothing else: three tick-many filters, because
@@ -1555,6 +1679,7 @@ renderTable();
     if(cells.length<2) return false;
     let body='';
     cells.forEach(function(td,i){
+      if(td.classList.contains('act')) return;
       const v=td.textContent.trim();
       body+='<span class="rp-k">'+esc(labels[i]||('Column '+(i+1)))+'</span>'+
             '<span class="rp-v'+(v==='\u2014'||v===''?' nil':'')+'">'+esc(v||'\u2014')+'</span>';
