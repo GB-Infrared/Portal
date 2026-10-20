@@ -276,6 +276,20 @@ The device panel on Monitoring (hover a device).
 }
 ```
 
+`values` holds the tags this kind of device reports, and the panel shows them
+in its own layout:
+
+| Device | `values` the panel reads |
+|---|---|
+| Inverter (`INV`) | `P_AC` (against `ratedKw`), `S_AC`, `Q_AC`, `F_AC`, `COS_PHI`, `I_AC1`, `I_AC2`, `I_AC3` |
+| Meter (`MFM`) | `P_AC`, `S_AC`, `Q_AC`, `F_AC`, `COS_PHI`, `V_AC`, `I_AC` |
+| Weather station (`WMS`) | `GHI`, `POA`, `T_AMB`, `T_MOD` |
+| Transformer (`TRF`) | `P_AC`, `V_AC`, `I_AC`, `T_OIL` |
+
+Monitoring lists only the devices of the type chosen in Device type (by
+`kind` from `GET /sites/{siteId}/devices`), and charts the chosen data point
+for them with `GET /sites/{siteId}/timeseries`.
+
 ### `GET /sites/{siteId}/timeseries`
 
 Any parameter for any devices over a time window. Used for the Monitoring chart

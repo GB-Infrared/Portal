@@ -9,6 +9,17 @@ export function niceMax(peak: number): { max: number; step: number } {
   return { max: Math.ceil(p / s) * s, step: s };
 }
 
+const FINE = [0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000];
+export function fineMax(peak: number): { max: number; step: number } {
+  const p = (peak > 0 ? peak : 1) * 1.08;
+  for (const s of FINE) {
+    const n = Math.ceil(p / s);
+    if (n <= 6) return { max: s * n, step: s };
+  }
+  const s = Math.pow(10, Math.ceil(Math.log10(p / 6)));
+  return { max: Math.ceil(p / s) * s, step: s };
+}
+
 export function niceSteps(max: number, bands: number): { max: number; step: number } {
   const raw = Math.max(max, 1e-9) * 1.05 / bands;
   const mag = Math.pow(10, Math.floor(Math.log10(raw)));

@@ -1,6 +1,6 @@
 import { useRef, useState, type JSX, type MouseEvent } from 'react';
 import { MON, MONL, hourLabel, time12, toDate } from '../lib/format';
-import { areaPath, hourOfDay, lastIndexWithValue, linePath, niceMax } from './util';
+import { areaPath, fineMax, hourOfDay, lastIndexWithValue, linePath } from './util';
 import { cssRect, cssX, cssY } from '../lib/screen';
 
 export interface MSeries { id: string; name: string; color: string; values: (number | null)[] }
@@ -18,18 +18,19 @@ interface Props {
   live: boolean;
   markers: Marker[];
   emptyNote?: string;
+  digits?: number;
 }
 
 const ML = 46, MR = 16, MT = 14, MB = 34;
 
-export function MonitorChart({ mode, times, series, width: W, height: H, yTitle, unit, foot, live, markers, emptyNote }: Props) {
+export function MonitorChart({ mode, times, series, width: W, height: H, yTitle, unit, foot, live, markers, emptyNote, digits = 1 }: Props) {
   const svgRef = useRef<SVGSVGElement>(null), wrapRef = useRef<HTMLDivElement>(null);
   const [hov, setHov] = useState<number | null>(null);
   const PW = W - ML - MR, PH = H - MT - MB;
 
   let peak = 0;
   series.forEach(s => s.values.forEach(v => { if (v != null && v > peak) peak = v; }));
-  const { max: YMAX, step } = niceMax(peak || 1);
+  const { max: YMAX, step } = fineMax(peak);
   const Y = (v: number) => MT + (1 - v / YMAX) * PH;
 
   const dates = times.map(t => toDate(t));
@@ -41,8 +42,8 @@ export function MonitorChart({ mode, times, series, width: W, height: H, yTitle,
   const xs = times.map((_, i) => X(i));
 
   const axes: JSX.Element[] = [];
-  for (let v = 0; v <= YMAX + 1e-9; v += step) {
-    const y = Y(v);
+  for (let k = 0; k * step <= YMAX + 1e-9; k++) {
+    const v = +(k * step).toFixed(6), y = Y(v);
     axes.push(<line key={'g' + v} className="gl" x1={ML} y1={y} x2={W - MR} y2={y} />,
       <text key={'t' + v} className="axt" x={ML - 8} y={y + 3.5} textAnchor="end">{+v.toFixed(3)}</text>);
   }
@@ -109,7 +110,7 @@ export function MonitorChart({ mode, times, series, width: W, height: H, yTitle,
         <div className="tt">{mode === 'day' ? time12(d) : (d ? d.getDate() + ' ' + MON[d.getMonth()] + ' ' + d.getFullYear() + ' · peak' : '')}</div>
         {series.map(s => {
           const v = s.values[hov];
-          return <div className="tr" key={s.id}><i style={{ background: s.color }} />{s.name}<b>{v == null ? '—' : v.toFixed(1) + (unit ? ' ' + unit : '')}</b></div>;
+          return <div className="tr" key={s.id}><i style={{ background: s.color }} />{s.name}<b>{v == null ? '—' : v.toFixed(digits) + (unit ? ' ' + unit : '')}</b></div>;
         })}
       </div>
     );

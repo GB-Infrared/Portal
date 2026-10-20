@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import * as api from '../api/portal';
 import type { Device } from '../api/types';
 import { useSite } from '../auth/SiteContext';
@@ -36,6 +36,7 @@ export default function Monitoring() {
 
   const [dtype, setDtype] = useState(DEVICE_TYPES[0].label);
   const type = DEVICE_TYPES.find(t => t.label === dtype) ?? DEVICE_TYPES[0];
+  const typeWord = dtype === dtype.toUpperCase() ? dtype : dtype.toLowerCase();
   const [dp, setDp] = useState(type.points[0]);
   useEffect(() => { if (!type.points.includes(dp)) setDp(type.points[0]); }, [type, dp]);
   const today = isoDay(new Date());
@@ -169,12 +170,13 @@ export default function Monitoring() {
   const rowsAll = dayTs.data ? dayTs.data.times.map((t, i) => ({ t, i })).filter(r => dayTs.data!.series.some(s => s.values[r.i] != null)).reverse() : [];
   const from = page * per, slice = rowsAll.slice(from, from + per);
   const UNIT = labelWithUnit(dp);
+  const digits = dp === 'COS_PHI' ? 3 : 1, cellDigits = dp === 'COS_PHI' ? 3 : 2;
   const valOf = (id: string, i: number) => dayTs.data?.series.find(s => s.deviceId === id)?.values[i] ?? null;
   const blank = !chosen.length || !rowsAll.length;
 
   const exportCsv = () => {
     const rows: (string | number | null)[][] = [['', ...chosen.map(nameOf)], ['Time Stamp', ...chosen.map(() => UNIT)]];
-    for (const r of rowsAll) rows.push([stamp(toDate(r.t)), ...chosen.map(id => { const v = valOf(id, r.i); return v == null ? '' : v.toFixed(2); })]);
+    for (const r of rowsAll) rows.push([stamp(toDate(r.t)), ...chosen.map(id => { const v = valOf(id, r.i); return v == null ? '' : v.toFixed(cellDigits); })]);
     downloadCsv('monitoring_' + day + '.csv', rows);
     toast(chosen.length ? 'Exported ' + chosen.map(nameOf).join(', ') : 'Exported time stamps only');
   };
@@ -187,6 +189,50 @@ export default function Monitoring() {
   const gpct = pNow != null && rated ? Math.max(0, Math.min(1, pNow / rated)) : 0;
   const C = 2 * Math.PI * 30;
   const v2 = (k: string, d = 2) => fx(lv?.values[k] ?? null, d);
+  const pv = (k: string, d = 2) => {
+    const u = unitOf(k);
+    return <div className="pv" key={k}><div className="v"><span>{v2(k, d)}</span>{u && <span className="u">{u}</span>}</div><div className="l">{k}</div></div>;
+  };
+  const kind = curDev?.kind ?? 'INV';
+  const points = DEVICE_TYPES.find(t => t.kind === kind)?.points ?? [];
+  let readout: ReactNode;
+  if (kind === 'MFM') {
+    readout = (
+      <div className="pbody">
+        <div className="gaugebox"><div className="txt">
+          <div className="big"><span>{v2('P_AC')}</span><span className="u">kW</span></div>
+          <div className="cap">P_AC · active power</div>
+        </div></div>
+        <div className="ptitle">AC output</div>
+        <div className="pgrid">{pv('S_AC')}{pv('Q_AC')}{pv('F_AC')}{pv('COS_PHI', 3)}</div>
+        <div className="ptitle">Grid side</div>
+        <div className="pgrid">{pv('V_AC')}{pv('I_AC')}</div>
+      </div>
+    );
+  } else if (kind === 'WMS') {
+    readout = (
+      <div className="pbody">
+        <div className="gaugebox"><div className="txt">
+          <div className="big"><span>{v2('GHI', 0)}</span><span className="u">W/m²</span></div>
+          <div className="cap">GHI · global horizontal irradiance</div>
+        </div></div>
+        <div className="ptitle">Readings</div>
+        <div className="pgrid three">{pv('POA', 0)}{pv('T_AMB', 1)}{pv('T_MOD', 1)}</div>
+      </div>
+    );
+  } else if (kind !== 'INV' && points.length) {
+    const u0 = unitOf(points[0]);
+    readout = (
+      <div className="pbody">
+        <div className="gaugebox"><div className="txt">
+          <div className="big"><span>{v2(points[0])}</span>{u0 && <span className="u">{u0}</span>}</div>
+          <div className="cap">{points[0]} · {paramOf(points[0])?.label ?? ''}</div>
+        </div></div>
+        <div className="ptitle">Readings</div>
+        <div className="pgrid three">{points.slice(1).map(k => pv(k))}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="pg-monitoring">
@@ -224,17 +270,17 @@ export default function Monitoring() {
                      data-dev={d.id} style={plotted ? { ['--ring' as string]: colorOf(d.id) } : undefined}
                      onMouseEnter={() => openPanel(d.id)} onClick={() => openPanel(d.id)}>
                   <div className="head"><span className="name"><i className={'sdot ' + st} />{d.name}</span>
-                    <span className={'status ' + st}>{st === 'off' ? 'OFFLINE' : st === 'warn' ? 'CHECK' : 'PRODUCING'}</span></div>
-                  {st !== 'off' && (
+                    <span className={'status ' + st}>{st === 'off' ? 'OFFLINE' : st === 'warn' ? 'CHECK' : d.kind === 'INV' ? 'PRODUCING' : 'ONLINE'}</span></div>
+                  {st !== 'off' && d.energyTotalKwh != null && (
                     <div className="foot">
-                      <span className="etot">{d.energyTotalKwh == null ? DASH : nf(d.energyTotalKwh)}<span className="eu">kWh</span></span>
+                      <span className="etot">{nf(d.energyTotalKwh)}<span className="eu">kWh</span></span>
                       {pct != null && <span className={'edelta ' + (pct >= 0 ? 'up' : 'down')} title={'vs fleet average (' + nf(fleetAvg) + ' kWh)'}>{(pct >= 0 ? '+' : '') + pct.toFixed(1)}%</span>}
                     </div>
                   )}
                 </div>
               );
             }) : <DataGate loading={devices.loading} error={devices.error} what="devices" onRetry={devices.reload} />}
-            {devices.data && !list.length && <div className="empty-note tall">No {dtype.toLowerCase()} devices on this site</div>}
+            {devices.data && !list.length && <div className="empty-note tall">No {typeWord} devices on this site</div>}
           </div>
 
           <div className="rail-kpis">
@@ -268,7 +314,7 @@ export default function Monitoring() {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
                   </button>
                 </div>
-                {!lv ? <DataGate loading={live.loading} error={live.error} what="this device's readings" onRetry={live.reload} /> : (
+                {!lv ? <DataGate loading={live.loading} error={live.error} what="this device's readings" onRetry={live.reload} /> : readout ?? (
                   <div className="pbody">
                     <div className="gaugebox">
                       <svg width="66" height="66" viewBox="0 0 72 72">
@@ -310,7 +356,7 @@ export default function Monitoring() {
                     return (
                       <span key={id} className={'lg' + (hidden[id] ? ' off' : '')} onClick={() => setHidden(h => ({ ...h, [id]: !h[id] }))}>
                         <i style={{ background: colorOf(id) }} /><span className="n">{nameOf(id)}</span>
-                        <span className="v">{last == null ? DASH : last.toFixed(1) + (unit ? ' ' + unit : '')}</span>
+                        <span className="v">{last == null ? DASH : last.toFixed(digits) + (unit ? ' ' + unit : '')}</span>
                       </span>
                     );
                   })}
@@ -328,8 +374,9 @@ export default function Monitoring() {
               {!chosen.length || chartState.data
                 ? <MonitorChart mode={range === 'day' ? 'day' : 'days'} times={chartTimes} series={chartSeries}
                                 width={sz.w} height={sz.h} unit={unit} foot={foot} live={day === today} markers={markers}
-                                yTitle={((P?.label ?? dp) + (unit ? ' · ' + unit : '')).toUpperCase()}
-                                emptyNote={!chosen.length ? 'No devices selected - choose them in FILTER below' : undefined} />
+                                yTitle={(P?.label ?? dp).toUpperCase() + (unit ? ' · ' + unit : '')} digits={digits}
+                                emptyNote={!devices.data ? undefined : !list.length ? 'No ' + typeWord + ' devices on this site'
+                                  : !chosen.length ? 'No devices selected - choose them in FILTER below' : undefined} />
                 : <div className="chartwrap" style={{ height: sz.h + 18 }}>
                     <DataGate loading={chartState.loading} error={chartState.error} what="readings" onRetry={chartState.reload} style={{ height: '100%' }} />
                   </div>}
@@ -343,7 +390,7 @@ export default function Monitoring() {
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16l-6.2 7.3v6l-3.6 1.8v-7.8L4 5z" /></svg>FILTER</button>
                 {colOpen && (
                   <div className="colpanel" id="colpanel">
-                    <div className="colhead">Shown in the table and the export</div>
+                    <div className="colhead">Shown in the chart, the table and the export</div>
                     <label className="colrow locked"><input type="checkbox" checked disabled />Time Stamp<span className="req">REQUIRED</span></label>
                     <div className="coldiv" />
                     {list.map(d => {
@@ -396,7 +443,7 @@ export default function Monitoring() {
                           if (v == null) return <td key={id} className="ts">{DASH}</td>;
                           const since = warnSince.get(id);
                           const warn = !!(since && at && at >= since);
-                          return <td key={id} className={warn ? 'warn' : undefined} title={warn ? 'Below expected — see alarms' : undefined}>{v.toFixed(2)}</td>;
+                          return <td key={id} className={warn ? 'warn' : undefined} title={warn ? 'Below expected — see alarms' : undefined}>{v.toFixed(cellDigits)}</td>;
                         })}
                       </tr>
                     );
